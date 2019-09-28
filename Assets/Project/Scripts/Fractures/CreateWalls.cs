@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Project.Scripts.Utils;
 using UnityEngine;
@@ -5,8 +6,11 @@ using Random = System.Random;
 
 namespace Project.Scripts.Fractures
 {
+    [ExecuteInEditMode]
     public class CreateWalls : MonoBehaviour
     {
+        public bool MakeArt;
+        public Mesh Mesh;
         [SerializeField] private Vector3 dimensions =  new Vector3(5,5,.5f);
         [SerializeField] private float distance =1 ;
         [SerializeField] private int count = 1;
@@ -23,11 +27,24 @@ namespace Project.Scripts.Fractures
 
         private Random rng = new Random();
 
+
+        private void Update()
+        {
+            if (MakeArt)
+            {
+                MakeArt = false;
+                Start();
+            }
+        }
+
         private void Start()
         {
+            if (Mesh == null)
+                return;
+            
              for (int j = 0; j < count; j++)
-            {
-                var cubeMesh = MeshUtils.GetCubeMesh(dimensions);
+             {
+                 var cubeMesh = Mesh;//MeshUtils.GetCubeMesh(dimensions);
 
                 var fracture = new Fracture(
                     chunks,
