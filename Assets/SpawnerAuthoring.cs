@@ -17,7 +17,6 @@ public class SpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDecl
         {
             var em = World.Active.EntityManager;
             em.Instantiate(m_PrefabEntity);
-
         }
     }
 
