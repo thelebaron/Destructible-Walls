@@ -14,6 +14,9 @@ namespace Project.Scripts.Fractures
         private float jointBreakForce;
         private float totalMass;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Fracture(int totalChunks, int seed, Mesh mesh, Material insideMaterial, Material outsideMaterial, float jointBreakForce, float totalMass)
         {
             this.totalChunks = totalChunks;
