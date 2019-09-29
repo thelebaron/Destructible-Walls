@@ -4,6 +4,7 @@ using Unity.Entities;
 using UnityEngine;
 using System;
 using System.Runtime.CompilerServices;
+using Destructibles;
 using Unity.Physics.Authoring;
 using UnityEditor;
 
@@ -206,14 +207,14 @@ namespace Project.Scripts.Fractures
 
             foreach (Transform tr in transform)
             {
-                var connectednode = tr.gameObject.GetComponent<ConnectedNodeAuthoring>();
+                var connectednode = tr.gameObject.GetComponent<NodeAuthoring>();
                 if(connectednode==null)
-                    tr.gameObject.AddComponent<ConnectedNodeAuthoring>();
+                    tr.gameObject.AddComponent<NodeAuthoring>();
                 
                 var joints = tr.GetComponents<Joint>();
                 foreach (var joint in joints)
                 {
-                    var node = joint.transform.GetComponent<ConnectedNodeAuthoring>();
+                    var node = joint.transform.GetComponent<NodeAuthoring>();
                     if(!node.Connections.Contains(joint.connectedBody.transform))
                         node.Connections.Add(joint.connectedBody.transform);
                 }
