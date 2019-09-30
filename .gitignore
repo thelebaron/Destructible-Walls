@@ -3,6 +3,7 @@
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
+[Gg]eometryCollection/
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory

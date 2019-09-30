@@ -11,6 +11,7 @@ using UnityEditor;
 namespace Project.Scripts.Fractures
 {
     [ExecuteInEditMode]
+    [DisallowMultipleComponent]
     public class FractureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
     {
         public bool CreateFolders;
@@ -201,7 +202,6 @@ namespace Project.Scripts.Fractures
                     var joint = overlap.gameObject.AddComponent<FixedJoint>();
                     joint.connectedBody = rb;
                     joint.breakForce = breakForce;
-                    
                 }
             }
 
@@ -218,9 +218,9 @@ namespace Project.Scripts.Fractures
                     if(!node.Connections.Contains(joint.connectedBody.transform))
                         node.Connections.Add(joint.connectedBody.transform);
                 }
+                
+                tr.gameObject.AddComponent<RemoveVelocity>();
             }
-            
-            
             
         }
         private void Voronoi(NvFractureTool fractureTool, NvMesh mesh)
