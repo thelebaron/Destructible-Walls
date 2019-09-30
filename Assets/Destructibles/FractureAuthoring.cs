@@ -5,8 +5,13 @@ using UnityEngine;
 using System;
 using System.Runtime.CompilerServices;
 using Destructibles;
+using Unity.Physics;
 using Unity.Physics.Authoring;
 using UnityEditor;
+using Collider = UnityEngine.Collider;
+using Joint = UnityEngine.Joint;
+using Material = UnityEngine.Material;
+using MeshCollider = UnityEngine.MeshCollider;
 
 namespace Project.Scripts.Fractures
 {
@@ -175,11 +180,11 @@ namespace Project.Scripts.Fractures
             rigibody.mass = totalMass / totalChunks;
 
             var mc = chunk.AddComponent<MeshCollider>();
-            mc.inflateMesh = true;
+            //mc.inflateMesh = true;
             mc.convex = true;
             
             var psa = chunk.AddComponent<PhysicsShapeAuthoring>();
-            psa.SetConvexHull();
+            psa.SetConvexHull(ConvexHullGenerationParameters.Default );
             var pba = chunk.AddComponent<PhysicsBodyAuthoring>();
             pba.Mass = totalMass / totalChunks;
         }
@@ -219,7 +224,9 @@ namespace Project.Scripts.Fractures
                         node.Connections.Add(joint.connectedBody.transform);
                 }
                 
-                tr.gameObject.AddComponent<RemoveVelocity>();
+                var removeVelocity = tr.gameObject.GetComponent<RemoveVelocity>();
+                if(removeVelocity==null)
+                    tr.gameObject.AddComponent<RemoveVelocity>();
             }
             
         }
