@@ -1,25 +1,22 @@
 ﻿using System.Linq;
 using Project.Scripts.Utils;
 using Unity.Entities;
-using UnityEngine;
-using System;
-using System.Runtime.CompilerServices;
-using Destructibles;
 using Unity.Physics;
 using Unity.Physics.Authoring;
 using UnityEditor;
+using UnityEngine;
+using UnityEngine.Windows;
 using Collider = UnityEngine.Collider;
 using Joint = UnityEngine.Joint;
 using Material = UnityEngine.Material;
 using MeshCollider = UnityEngine.MeshCollider;
 
-namespace Project.Scripts.Fractures
+namespace Destructibles
 {
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
     public class FractureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
     {
-        public bool CreateFolders;
         public bool FractureThis;
         public bool CleanupThis;
         public bool ResetThis;
@@ -33,7 +30,9 @@ namespace Project.Scripts.Fractures
         private float totalMass;
         private Transform[] allChildren;
         private System.Random rng;
+
         
+        private string mainPath = "Assets/GeometryCollection";
         public void Update()
         {
             MakeFolders();
@@ -46,12 +45,28 @@ namespace Project.Scripts.Fractures
         {
             if (FractureThis)
             {
+                if(!Directory.Exists(mainPath))
+                {    
+                    //if it doesn't, create it
+                    Directory.CreateDirectory(mainPath);
+ 
+                }
+
+                var subPath = mainPath + "/" + name;
+                if(!Directory.Exists(subPath))
+                {    
+                    //if it doesn't, create it
+                    Directory.CreateDirectory(subPath);
+ 
+                }
+                /*
                 //CreateFolders = false;
                 var guid0 = AssetDatabase.CreateFolder("Assets", "GeometryCollection");
                 var path0 = AssetDatabase.GUIDToAssetPath(guid0);
                 
                 var guid1 = AssetDatabase.CreateFolder("Assets/GeometryCollection", name);
                 var path1 = AssetDatabase.GUIDToAssetPath(guid1);
+                */
             }
         }
 
@@ -115,7 +130,7 @@ namespace Project.Scripts.Fractures
                 chunk.transform.SetParent(go.transform, false);
 
                 Setup(i, chunk, fractureTool);
-                joints(chunk, jointBreakForce);
+                Joints(chunk, jointBreakForce);
                 //
             }
         }
@@ -176,8 +191,8 @@ namespace Project.Scripts.Fractures
             AssetDatabase.CreateAsset(mesh, "Assets/GeometryCollection/" + name + "/" + "chunk_"+i+".mesh");
             //AssetDatabase.CreateAsset(mesh, newFolderPath + "/" + "chunk_"+i+".mesh");
             
-            var rigibody = chunk.AddComponent<Rigidbody>();
-            rigibody.mass = totalMass / totalChunks;
+            var rigidbody = chunk.AddComponent<Rigidbody>();
+            rigidbody.mass = totalMass / totalChunks;
 
             var mc = chunk.AddComponent<MeshCollider>();
             //mc.inflateMesh = true;
@@ -189,7 +204,7 @@ namespace Project.Scripts.Fractures
             pba.Mass = totalMass / totalChunks;
         }
         
-        private void joints(GameObject child, float breakForce)
+        private void Joints(GameObject child, float breakForce)
         {
             var rb = child.GetComponent<Rigidbody>();
             var mesh = child.GetComponent<MeshFilter>().sharedMesh;
