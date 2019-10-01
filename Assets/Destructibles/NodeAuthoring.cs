@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
-using Unity.Transforms;
+using Unity.Physics.Authoring;
 using UnityEngine;
-using Math = Unity.Physics.Math;
-using Unity.Physics.Extensions;
 
 namespace Destructibles
 {
+    
+    
     [DisallowMultipleComponent]
     public class NodeAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDeclareReferencedPrefabs
     {
@@ -31,7 +30,15 @@ namespace Destructibles
             {
                 var otherentity = conversionSystem.GetPrimaryEntity(node.gameObject);
 
-                var jointData = JointData.CreateFixed(transform.position, node.position, transform.rotation, node.rotation);
+                // Do stuff I dont understand..
+                RigidTransform bFromA = math.mul(math.inverse(worldFromB(node)), worldFromA);
+                var PositionInConnectedEntity = float3.zero;
+                var OrientationInConnectedEntity = quaternion.identity;
+                var PositionLocal    = math.transform(bFromA, PositionInConnectedEntity);
+                var OrientationLocal = math.mul(bFromA.rot, OrientationInConnectedEntity);
+                
+                
+                var jointData = JointData.CreateFixed(PositionLocal, PositionInConnectedEntity, OrientationLocal, OrientationInConnectedEntity);
                 PhysicsBaseMethods.CreateJoint(jointData, entity, otherentity, dstManager);
             }
 
@@ -44,6 +51,13 @@ namespace Destructibles
                 referencedPrefabs.Add(Connections[i].gameObject);
             }
         }
+
+        public RigidTransform worldFromA => new RigidTransform(gameObject.transform.rotation, gameObject.transform.position);
+        public RigidTransform worldFromB(Transform tr)
+        {
+            return new RigidTransform(tr.rotation, tr.position);
+        }
+        
     }
     
     /// <summary>

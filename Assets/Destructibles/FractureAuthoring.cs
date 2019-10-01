@@ -17,9 +17,6 @@ namespace Destructibles
     [DisallowMultipleComponent]
     public class FractureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
     {
-        public bool FractureThis;
-        public bool CleanupThis;
-        public bool ResetThis;
         [SerializeField] private float density = 500;
         [SerializeField] private int totalChunks = 20;
         [SerializeField] private int seed;
@@ -31,75 +28,14 @@ namespace Destructibles
         private Transform[] allChildren;
         private System.Random rng;
 
-        
-        private string mainPath = "Assets/GeometryCollection";
-        public void Update()
+        private const string MainPath = "Assets/GeometryCollection";
+
+        public void Create()
         {
-            MakeFolders();
-            Create();
-            CleanupCode();
-            Reset();
-        }
-
-        private void MakeFolders()
-        {
-            if (FractureThis)
-            {
-                if(!Directory.Exists(mainPath))
-                {    
-                    //if it doesn't, create it
-                    Directory.CreateDirectory(mainPath);
- 
-                }
-
-                var subPath = mainPath + "/" + name;
-                if(!Directory.Exists(subPath))
-                {    
-                    //if it doesn't, create it
-                    Directory.CreateDirectory(subPath);
- 
-                }
-                /*
-                //CreateFolders = false;
-                var guid0 = AssetDatabase.CreateFolder("Assets", "GeometryCollection");
-                var path0 = AssetDatabase.GUIDToAssetPath(guid0);
-                
-                var guid1 = AssetDatabase.CreateFolder("Assets/GeometryCollection", name);
-                var path1 = AssetDatabase.GUIDToAssetPath(guid1);
-                */
-            }
-        }
-
-        private void Reset()
-        {
-            if (ResetThis)
-            {
-                ResetThis = false;
-                allChildren = GetComponentsInChildren<Transform>();
-                
-                for (int i = 0; i < allChildren.Length; i++)
-                {
-                    if(i==0)
-                        continue;
-                    DestroyImmediate(allChildren[i].gameObject);
-                }
-
-                allChildren = null;
-            }
-        }
-
-        private void Create()
-        {
-            if (FractureThis)
-            {
-                
-                FractureThis = false;
-                rng = new System.Random();
-                seed = rng.Next();
-                totalMass = density * (mesh.bounds.extents.x * mesh.bounds.extents.y * mesh.bounds.extents.z);
-                Bake(this.gameObject);
-            }
-
+            rng = new System.Random();
+            seed = rng.Next();
+            totalMass = density * (mesh.bounds.extents.x * mesh.bounds.extents.y * mesh.bounds.extents.z);
+            Bake(this.gameObject);
         }
 
 
@@ -135,10 +71,8 @@ namespace Destructibles
             }
         }
 
-        private void CleanupCode()
+        public void Cleanup()
         {
-            if(!CleanupThis)
-                return;
             var rigidbodies = GetComponentsInChildren(typeof(Rigidbody));
             var joints = GetComponentsInChildren(typeof(Joint));
             var colliders = GetComponentsInChildren(typeof(MeshCollider));
@@ -159,8 +93,6 @@ namespace Destructibles
                 if(c is Collider)
                     DestroyImmediate(c);
             }
-
-            CleanupThis = false;
         }
 
 
@@ -243,11 +175,43 @@ namespace Destructibles
                 if(removeVelocity==null)
                     tr.gameObject.AddComponent<RemoveVelocity>();
             }
-            
         }
-        private void Voronoi(NvFractureTool fractureTool, NvMesh mesh)
+        
+        public void MakeFolders()
         {
-            var sites = new NvVoronoiSitesGenerator(mesh);
+            if(!Directory.Exists(MainPath))
+            {    
+                //if it doesn't, create it
+                Directory.CreateDirectory(MainPath);
+ 
+            }
+
+            var subPath = MainPath + "/" + name;
+            if(!Directory.Exists(subPath))
+            {    
+                //if it doesn't, create it
+                Directory.CreateDirectory(subPath);
+ 
+            }
+        }
+
+        public void Reset()
+        {
+            allChildren = GetComponentsInChildren<Transform>();
+                
+            for (int i = 0; i < allChildren.Length; i++)
+            {
+                if(i==0)
+                    continue;
+                DestroyImmediate(allChildren[i].gameObject);
+            }
+
+            allChildren = null;
+        }
+        
+        private void Voronoi(NvFractureTool fractureTool, NvMesh nvMesh)
+        {
+            var sites = new NvVoronoiSitesGenerator(nvMesh);
             sites.uniformlyGenerateSitesInMesh(totalChunks);
             fractureTool.voronoiFracturing(0, sites);
         }
