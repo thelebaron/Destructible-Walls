@@ -7,27 +7,36 @@ using UnityEngine;
 
 namespace Destructibles
 {
-    public class AnchorAuthoring : MonoBehaviour, IConvertGameObjectToEntity
+    [DisallowMultipleComponent]
+    public class AnchoredNodeAuthoring : MonoBehaviour, IConvertGameObjectToEntity
     {
+        
+        
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
-            dstManager.AddComponentData(entity, new AnchoredNode());
+            dstManager.AddComponentData(entity, new StaticAnchor());
         }
     }
     
     /// <summary>
-    /// An anchor prevents a physicsvelocity from being added to an entity. 
+    /// An static anchor prevents a physicsvelocity from being added to an entity. 
     /// </summary>
-    public struct AnchoredNode : IComponentData
+    public struct StaticAnchor : IComponentData
     {
 
     }
+    /// <summary>
+    /// An anchor prevents a physicsvelocity from being added to an entity. 
+    /// </summary>
+    public struct DynamicAnchor : IComponentData
+    {
 
+    }
     
     public class FractureWorkSystem : JobComponentSystem
     {
-        [RequireComponentTag(typeof(FractureNode))]
-        [ExcludeComponent(typeof(Connection),typeof(PhysicsVelocity),typeof(AnchoredNode))]
+        [RequireComponentTag(typeof(Node))]
+        [ExcludeComponent(typeof(Connection),typeof(PhysicsVelocity),typeof(StaticAnchor))]
         struct BreakConnection : IJobForEachWithEntity<Translation>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
@@ -40,7 +49,7 @@ namespace Destructibles
         
         
             
-        [ExcludeComponent(typeof(PhysicsVelocity),typeof(AnchoredNode))]
+        [ExcludeComponent(typeof(PhysicsVelocity),typeof(StaticAnchor))]
         private struct DetachNodeJob : IJobForEachWithEntity_EBC<Connection, Health>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;

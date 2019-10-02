@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using thelebaron.Damage;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -11,31 +12,34 @@ using UnityEngine;
 
 namespace Destructibles
 {
-    public struct FractureNode : IComponentData {}
-    
+    public struct Node : IComponentData
+    {
+    }
+
     [DisallowMultipleComponent]
     public class NodeAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDeclareReferencedPrefabs
     {
         private GameObject RootGameObject;
         public List<Transform> Connections = new List<Transform>();
-        
+
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
             var rootEntity = conversionSystem.GetPrimaryEntity(transform.parent);
             var connectionGraph = dstManager.GetBuffer<ConnectionGraph>(rootEntity);
             connectionGraph.Add(entity);
-            
+
             // Add the node buffer
-            dstManager.AddComponentData(entity, new Health{ Value = 10, Max = 10 });
-            dstManager.AddComponentData(entity, new FractureNode());
-            
+            dstManager.AddComponentData(entity, new Health {Value = 10, Max = 10});
+            dstManager.AddComponentData(entity, new Node());
+            dstManager.AddComponentData(entity, new DynamicAnchor());
+
             dstManager.SetName(entity, "FractureNode_" + name);
-            
+
             var connectionJoints = dstManager.AddBuffer<Connection>(entity);
             for (int i = 0; i < Connections.Count; i++)
             {
                 var otherentity = conversionSystem.GetPrimaryEntity(Connections[i].gameObject);
-                
+
                 connectionJoints.Add(otherentity);
             }
 
@@ -55,9 +59,8 @@ namespace Destructibles
                 var jointData = JointData.CreateFixed(PositionLocal, PositionInConnectedEntity, OrientationLocal, OrientationInConnectedEntity);
                 PhysicsBaseMethods.CreateJoint(jointData, entity, otherentity, dstManager);
             }*/
-
         }
-        
+
         public void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs)
         {
             for (int i = 0; i < Connections.Count; i++)
@@ -66,14 +69,15 @@ namespace Destructibles
             }
         }
 
-        public RigidTransform worldFromA => new RigidTransform(gameObject.transform.rotation, gameObject.transform.position);
+        public RigidTransform worldFromA =>
+            new RigidTransform(gameObject.transform.rotation, gameObject.transform.position);
+
         public RigidTransform worldFromB(Transform tr)
         {
             return new RigidTransform(tr.rotation, tr.position);
         }
-        
     }
-    
+
     /// <summary>
     /// A connection joint contains only the immediate entities which are connected to a node.
     /// </summary>
@@ -83,7 +87,7 @@ namespace Destructibles
         /// A node entity.
         /// </summary>
         public Entity Node;
-        
+
         /// <summary>
         /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
         /// </summary>
@@ -94,7 +98,7 @@ namespace Destructibles
             return new Connection {Node = e};
         }
     }
-    
+
     /// <summary>
     /// A node contains all other entities connected to the current node.
     /// </summary>
@@ -104,7 +108,7 @@ namespace Destructibles
         /// A node entity.
         /// </summary>
         public Entity Node;
-        
+
         /// <summary>
         /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
         /// </summary>
@@ -120,42 +124,119 @@ namespace Destructibles
     {
         private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
 
-        [ExcludeComponent(typeof(ConnectionGraph))]
-        [RequireComponentTag(typeof(ConnectionGraph))]
-        private struct ConnectivityMap : IJobForEachWithEntity<Translation>
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            m_EndSimulationEntityCommandBufferSystem =
+                World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+        }
+
+        private struct CheckConnectivityMap : IJobForEachWithEntity_EB<ConnectionGraph>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-            public BufferFromEntity<Connection> JointsFromEntity;
-            public void Execute(Entity entity, int index, ref Translation translation)
+            [ReadOnly] public BufferFromEntity<Connection> ConnectionData;
+            [ReadOnly] public ComponentDataFromEntity<StaticAnchor> AnchoredNodeData;
+
+            public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
             {
-                var graph = EntityCommandBuffer.AddBuffer<ConnectionGraph>(index, entity);
-
-                var connectionJoints = JointsFromEntity[entity];
+                var count = 0;
+                var depth = graph.Length;
                 
-                
-                for (var i = 0; i < connectionJoints.Length; i++)
+                for (var i = 0; i < graph.Length; i++)
                 {
-                    graph.Add(connectionJoints[i].Node);
-
-                    if (JointsFromEntity.Exists(connectionJoints[i].Node))
+                    var node = graph[i].Node;
+                    if (!FindAnchorNode(node, index, EntityCommandBuffer, depth, ref count))
                     {
-                        var distantJoints = JointsFromEntity[connectionJoints[i].Node];
-                        for (var j = 0; j < distantJoints.Length; j++)
-                        {
-                            
-                        }
+                        if (ConnectionData.Exists(node))
+                            EntityCommandBuffer.RemoveComponent<Connection>(index, node);
+                        Debug.Log(node + "is disconnected");
+                        //Disconnect(node, index, EntityCommandBuffer);
                     }
-                    
-
-                    
                 }
+
+                // Destroy if no more connections exist
+                if (graph.Length.Equals(0))
+                    EntityCommandBuffer.DestroyEntity(index, entity);
             }
 
+            private bool FindAnchorNode(Entity node, int index, EntityCommandBuffer.Concurrent EntityCommandBuffer, int depth, ref int count)
+            {
+                count++;
+                if (count > 99)
+                    return false;
+                
+                if (AnchoredNodeData.Exists(node))
+                    return true;
+                if (!ConnectionData.Exists(node))
+                    return false;
+
+                if (ConnectionData.Exists(node))
+                {
+                    for (var i = 0; i < ConnectionData[node].Length; i++)
+                    {
+                        return FindAnchorNode2(node, index, EntityCommandBuffer, depth, ref count);
+                    }
+                }
+
+                return false;
+            }
+
+            private bool FindAnchorNode2(Entity node, int index, EntityCommandBuffer.Concurrent EntityCommandBuffer, int depth, ref int count)
+            {
+                if (AnchoredNodeData.Exists(node))
+                    return true;
+                if (!ConnectionData.Exists(node))
+                    return false;
+
+                
+                if (ConnectionData.Exists(node))
+                {
+                    for (var i = 0; i < ConnectionData[node].Length; i++)
+                    {
+                        var subnode = ConnectionData[node][i].Node;
+                        if (AnchoredNodeData.Exists(subnode))
+                            return true;
+                        if (!ConnectionData.Exists(subnode))
+                            return false;
+                    }
+                }
+
+                return false;
+            }
+            
+            private void Disconnect(Entity node, int index, EntityCommandBuffer.Concurrent EntityCommandBuffer, int depth, ref int count)
+            {
+                count++;
+                if (count > depth)
+                    return;
+                
+                if (!ConnectionData.Exists(node))
+                    return;
+                
+                if (ConnectionData.Exists(node))
+                {
+                    EntityCommandBuffer.RemoveComponent<Connection>(index, node);
+
+                    for (var i = 0; i < ConnectionData[node].Length; i++)
+                    {
+                        Disconnect(node, index, EntityCommandBuffer, depth, ref count);
+                    }
+                }
+            }
         }
-        
+
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            return inputDeps;
+            var connectivityMapJob = new CheckConnectivityMap
+            {
+                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                ConnectionData = GetBufferFromEntity<Connection>(true),
+                AnchoredNodeData = GetComponentDataFromEntity<StaticAnchor>(true)
+            };
+            var checkConnectivityHandle = connectivityMapJob.Schedule(this, inputDeps);
+            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(checkConnectivityHandle);
+
+            return checkConnectivityHandle;
         }
     }
 }
