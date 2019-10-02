@@ -46,15 +46,28 @@ namespace Destructibles
             }
 
             AddGraphRecurse(dstManager, conversionSystem, transform);
-
+            
+            
+            
+            
+            
+            
             // Add each 
             var connectionGraph = dstManager.GetBuffer<ConnectionGraph>(rootEntity);
             connectionGraph.Add(entity);
 
 
+            
+            
+            
             // Add the node buffer
             dstManager.AddComponentData(entity, new Health {Value = 10, Max = 10});
+            
+            
+            
             dstManager.AddComponentData(entity, new Node());
+            
+            
             dstManager.AddComponentData(entity, new DynamicAnchor());
 
             dstManager.SetName(entity, "FractureNode_" + name);
@@ -71,6 +84,7 @@ namespace Destructibles
         public static void AddGraphRecurse(EntityManager manager, GameObjectConversionSystem conversionSystem, Transform tr)
         {
             var entity = conversionSystem.GetPrimaryEntity(tr);
+            manager.AddComponentData(entity, new AnchoredNode());
             var graph = new DynamicBuffer<GraphChild>();
             
             if (!manager.HasComponent<GraphChild>(entity))
