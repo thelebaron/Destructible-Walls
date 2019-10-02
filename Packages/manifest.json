@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "com.thelebaron.damage": "https://github.com/thelebaron/Damage.git",
+    "com.unity.burst": "1.2.0-preview.5",
     "com.unity.entities": "0.1.1-preview",
     "com.unity.ide.rider": "1.1.0",
     "com.unity.ide.vscode": "1.1.2",

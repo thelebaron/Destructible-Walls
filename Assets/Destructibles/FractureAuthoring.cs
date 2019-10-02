@@ -218,7 +218,8 @@ namespace Destructibles
 
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
-            
+            dstManager.AddBuffer<ConnectionGraph>(entity);
+            dstManager.SetName(entity, name);
         }
     }
     
