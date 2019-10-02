@@ -167,8 +167,8 @@ namespace Destructibles
                 foreach (var joint in joints)
                 {
                     var node = joint.transform.GetComponent<NodeAuthoring>();
-                    if(!node.Connections.Contains(joint.connectedBody.transform))
-                        node.Connections.Add(joint.connectedBody.transform);
+                    if(!node.NodeConnections.Contains(joint.connectedBody.transform))
+                        node.NodeConnections.Add(joint.connectedBody.transform);
                 }
                 
                 var removeVelocity = tr.gameObject.GetComponent<RemoveVelocity>();

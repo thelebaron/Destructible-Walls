@@ -305,7 +305,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f8d2bdc6964483ac9bdd8463c60476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Connections:
+  isAnchor: 0
+  NodeConnections:
   - {fileID: 556687661}
 --- !u!114 &416374888
 MonoBehaviour:
@@ -603,7 +604,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f8d2bdc6964483ac9bdd8463c60476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Connections: []
+  isAnchor: 0
+  NodeConnections: []
 --- !u!114 &556687664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1096,7 +1098,6 @@ GameObject:
   - component: {fileID: 1986052021}
   - component: {fileID: 1986052020}
   - component: {fileID: 1986052019}
-  - component: {fileID: 1986052025}
   m_Layer: 0
   m_Name: Chunk1
   m_TagString: Untagged
@@ -1142,7 +1143,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f8d2bdc6964483ac9bdd8463c60476, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Connections:
+  isAnchor: 1
+  NodeConnections:
   - {fileID: 416374885}
 --- !u!114 &1986052021
 MonoBehaviour:
@@ -1313,15 +1315,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &1986052025
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1986052017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e5db6f9ab9a4eb68191813e28230feb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
