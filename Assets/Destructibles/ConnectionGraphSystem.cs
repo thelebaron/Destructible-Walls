@@ -1,3 +1,4 @@
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -5,26 +6,7 @@ using UnityEngine;
 
 namespace Destructibles
 {
-    /// <summary>
-    /// A graph entity is created for each entity which has a StaticAnchor component.
-    /// </summary>
-    public struct ConnectionGraph : IBufferElementData
-    {
-        /// <summary>
-        /// A node entity.
-        /// </summary>
-        public Entity RootNode;
 
-        /// <summary>
-        /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
-        /// </summary>
-        /// <param name="e">The entity to convert</param>
-        /// <returns>A new buffer element.</returns>
-        public static implicit operator ConnectionGraph(Entity e)
-        {
-            return new ConnectionGraph {RootNode = e};
-        }
-    }
 
     
     
@@ -95,13 +77,53 @@ namespace Destructibles
             base.OnCreate();
             m_EndSimulationEntityCommandBufferSystem = World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
-        
-        
+
+        private struct ProcessEvents : IJobForEachWithEntity<BreakEvent>
+        {
+            public ComponentDataFromEntity<Anchored> AnchoredNode;
+            public ComponentDataFromEntity<NodeParent> NodeParent;
+            public BufferFromEntity<NodeChild> NodeChild;
+
+            public void Execute(Entity entity, int index, ref BreakEvent breakEvent)
+            {
+                
+                
+                if (NodeChild.Exists(breakEvent.NodeEntity))
+                {
+                    Recurse(breakEvent.NodeEntity, NodeChild[breakEvent.NodeEntity]);
+                    
+                    
+                }
+            }
+
+            private void Recurse(Entity entity, DynamicBuffer<NodeChild>dynamicBuffer)
+            {
+                for (int i = 0; i < dynamicBuffer.Length; i++)
+                {
+                        //if(dynamicBuffer[i].Node)
+                }
+            }
+        }
+
+        [BurstCompile]
+        private struct ClearDetachedNodes : IJobForEachWithEntity_EB<ConnectionGraph>
+        {
+            [ReadOnly]public ComponentDataFromEntity<Unanchored> UnanchoredNode;
+            
+            public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
+            {
+                for (int i = 0; i < graph.Length; i++)
+                {
+                    if(UnanchoredNode.Exists(graph[i].Node))
+                        graph.RemoveAt(i);
+                }
+            }
+        }
 
         private struct CheckConnectivityMap : IJobForEachWithEntity_EB<ConnectionGraph>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-            [ReadOnly] public BufferFromEntity<Connection> Connection;
+            [ReadOnly] public BufferFromEntity<Neighbors> Connection;
             [ReadOnly] public ComponentDataFromEntity<StaticAnchor> StaticAnchor;
 
             public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
@@ -111,11 +133,11 @@ namespace Destructibles
                 
                 for (var i = 0; i < graph.Length; i++)
                 {
-                    var node = graph[i].RootNode;
+                    var node = graph[i].Node;
                     if (!TryFindDisconnectedNodes(node, index, depth, ref count))
                     {
                         if (Connection.Exists(node))
-                            EntityCommandBuffer.RemoveComponent<Connection>(index, node);
+                            EntityCommandBuffer.RemoveComponent<Neighbors>(index, node);
                         Debug.Log(node + "is disconnected");
                         //Disconnect(node, index, EntityCommandBuffer);
                     }
@@ -184,7 +206,7 @@ namespace Destructibles
                 
                 if (Connection.Exists(node))
                 {
-                    EntityCommandBuffer.RemoveComponent<Connection>(index, node);
+                    EntityCommandBuffer.RemoveComponent<Neighbors>(index, node);
 
                     for (var i = 0; i < Connection[node].Length; i++)
                     {
@@ -196,6 +218,11 @@ namespace Destructibles
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+            var clearJob = new ClearDetachedNodes
+            {
+                UnanchoredNode = GetComponentDataFromEntity<Unanchored>(true)
+            };
+            
             /*
             
             var connectivityMapJob = new CheckConnectivityMap
@@ -210,7 +237,7 @@ namespace Destructibles
             return checkConnectivityHandle;
             */
             
-            return inputDeps;
+            return clearJob.Schedule(this, inputDeps);
         }
     }
 }

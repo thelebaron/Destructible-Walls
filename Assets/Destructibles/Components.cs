@@ -3,9 +3,25 @@ using Unity.Entities;
 namespace Destructibles
 {
     /// <summary>
+    /// Components for nodes
+    /// </summary>
+    public struct Node : IComponentData
+    {
+        public Entity Graph;
+    }
+    
+    public struct Strain : IComponentData
+    {
+        //public float Radius;
+        public float Current;
+        public float Threshold;
+    }
+    
+    
+    /// <summary>
     /// A connection joint contains only the immediate entities which are connected to a node.
     /// </summary>
-    public struct Connection : IBufferElementData
+    public struct Neighbors : IBufferElementData
     {
         /// <summary>
         /// A node entity.
@@ -17,9 +33,9 @@ namespace Destructibles
         /// </summary>
         /// <param name="e">The entity to convert</param>
         /// <returns>A new buffer element.</returns>
-        public static implicit operator Connection(Entity e)
+        public static implicit operator Neighbors(Entity e)
         {
-            return new Connection {Node = e};
+            return new Neighbors {Node = e};
         }
     }
     
@@ -28,13 +44,13 @@ namespace Destructibles
     /// </summary>
     public struct NodeParent : IComponentData
     {
-        public Entity Value;
+        public Entity Node;
     }
     
     /// <summary>
     /// 
     /// </summary>
-    public struct GraphChild : IBufferElementData
+    public struct NodeChild : IBufferElementData
     {
         /// <summary>
         /// A node entity.
@@ -46,12 +62,119 @@ namespace Destructibles
         /// </summary>
         /// <param name="e">The entity to convert</param>
         /// <returns>A new buffer element.</returns>
-        public static implicit operator GraphChild(Entity e)
+        public static implicit operator NodeChild(Entity e)
         {
-            return new GraphChild {Node = e};
+            return new NodeChild {Node = e};
         }
     }
 
+    /// <summary>
+    /// An static anchor prevents a physicsvelocity from being added to an entity. 
+    /// </summary>
+    public struct StaticAnchor : IComponentData
+    {
+
+    }
+    /// <summary>
+    /// An anchor prevents a physicsvelocity from being added to an entity. 
+    /// </summary>
+    public struct DynamicAnchor : IComponentData
+    {
+
+    }
+    
+    public struct Anchored : IComponentData
+    {
+
+    }
+    public struct Unanchored : IComponentData
+    {
+
+    }
+
+    
+    
+    /// <summary>
+    /// A ConnectionGraph is created from the root/parent gameobject containing fracture parts.
+    /// It is an array of all nodes within a certain fracturable object.
+    /// </summary>
+    public struct ConnectionGraph : IBufferElementData
+    {
+        /// <summary>
+        /// A node entity.
+        /// </summary>
+        public Entity Node;
+
+        /// <summary>
+        /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
+        /// </summary>
+        /// <param name="e">The entity to convert</param>
+        /// <returns>A new buffer element.</returns>
+        public static implicit operator ConnectionGraph(Entity e)
+        {
+            return new ConnectionGraph {Node = e};
+        }
+    }
+    
+    
+    
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    public struct Anchors : IBufferElementData
+    {
+        /// <summary>
+        /// A node entity.
+        /// </summary>
+        public Entity NodeList;
+
+        /// <summary>
+        /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
+        /// </summary>
+        /// <param name="e">The entity to convert</param>
+        /// <returns>A new buffer element.</returns>
+        public static implicit operator Anchors(Entity e)
+        {
+            return new Anchors {NodeList = e};
+        }
+    }
+
+    
+    /// <summary>
+    /// A list of entities that form a chain to the anchored node.
+    /// </summary>
+    public struct AnchorChain : IBufferElementData
+    {
+        /// <summary>
+        /// A node entity.
+        /// </summary>
+        public Entity Node;
+
+        /// <summary>
+        /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
+        /// </summary>
+        /// <param name="e">The entity to convert</param>
+        /// <returns>A new buffer element.</returns>
+        public static implicit operator AnchorChain(Entity e)
+        {
+            return new AnchorChain {Node = e};
+        }
+    }
+    
+    public struct BreakEvent : IComponentData
+    {
+        public Entity NodeEntity;
+        public Entity GraphEntity;
+    }
+
+    
+    
+    
+    
+    
+    
+    
     /*
      * JOINT CODE
      *

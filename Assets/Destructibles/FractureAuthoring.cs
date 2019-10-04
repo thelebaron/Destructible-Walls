@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Project.Scripts.Utils;
 using Unity.Entities;
 using Unity.Physics;
@@ -24,17 +25,19 @@ namespace Destructibles
         [SerializeField] private Material insideMaterial;
         [SerializeField] private Material outsideMaterial;
         [SerializeField] private float jointBreakForce = 100;
-        private float totalMass;
-        private Transform[] allChildren;
-        private System.Random rng;
+        private float m_TotalMass;
+        private Transform[] m_Children;
+        private System.Random m_SystemRandom;
+        private NodeAuthoring[] m_Nodes;
 
         private const string MainPath = "Assets/GeometryCollection";
 
         public void Create()
         {
-            rng = new System.Random();
-            seed = rng.Next();
-            totalMass = density * (mesh.bounds.extents.x * mesh.bounds.extents.y * mesh.bounds.extents.z);
+            MakeFolders();
+            m_SystemRandom = new System.Random();
+            seed = m_SystemRandom.Next();
+            m_TotalMass = density * (mesh.bounds.extents.x * mesh.bounds.extents.y * mesh.bounds.extents.z);
             Bake(this.gameObject);
         }
 
@@ -116,24 +119,21 @@ namespace Destructibles
             meshFilter.sharedMesh = mesh;
             mesh.MarkDynamic();
             
-            // create a folder for the asset
-            //string guid0 = AssetDatabase.CreateFolder("Assets//", "GeometryCollection");
-            //string path0 = AssetDatabase.GUIDToAssetPath(guid0);
-            
             AssetDatabase.CreateAsset(mesh, "Assets/GeometryCollection/" + name + "/" + "chunk_"+i+".mesh");
-            //AssetDatabase.CreateAsset(mesh, newFolderPath + "/" + "chunk_"+i+".mesh");
             
-            var rigidbody = chunk.AddComponent<Rigidbody>();
-            rigidbody.mass = totalMass / totalChunks;
+            var rigid = chunk.AddComponent<Rigidbody>();
+            rigid.mass = m_TotalMass / totalChunks;
 
             var mc = chunk.AddComponent<MeshCollider>();
             //mc.inflateMesh = true;
             mc.convex = true;
+            //if(mc.sharedMesh.triangles.Length>256)
+                //Debug.Log("tri error? " + gameObject.name);
             
             var psa = chunk.AddComponent<PhysicsShapeAuthoring>();
             psa.SetConvexHull(ConvexHullGenerationParameters.Default );
             var pba = chunk.AddComponent<PhysicsBodyAuthoring>();
-            pba.Mass = totalMass / totalChunks;
+            pba.Mass = m_TotalMass / totalChunks;
         }
         
         private void Joints(GameObject child, float breakForce)
@@ -143,7 +143,7 @@ namespace Destructibles
         
             var overlaps = mesh.vertices
                 .Select(v => child.transform.TransformPoint(v))
-                .SelectMany(v => Physics.OverlapSphere(v, .01f))
+                .SelectMany(v => Physics.OverlapSphere(v, 0.01f))
                 .Where(o => o.GetComponent<Rigidbody>())
                 .ToSet();
 
@@ -163,20 +163,25 @@ namespace Destructibles
                 if(connectednode==null)
                     tr.gameObject.AddComponent<NodeAuthoring>();
                 
+                // Get all joints and add a node to each child with its joint neighbors
                 var joints = tr.GetComponents<Joint>();
                 foreach (var joint in joints)
                 {
                     var node = joint.transform.GetComponent<NodeAuthoring>();
-                    if(!node.NodeConnections.Contains(joint.connectedBody.transform))
-                        node.NodeConnections.Add(joint.connectedBody.transform);
+                    
+                    if(!node.connections.Contains(joint.connectedBody.transform))
+                        node.connections.Add(joint.connectedBody.transform);
                 }
                 
                 var removeVelocity = tr.gameObject.GetComponent<RemoveVelocity>();
                 if(removeVelocity==null)
                     tr.gameObject.AddComponent<RemoveVelocity>();
             }
+            
+            
         }
         
+        // extract to separate class
         public void MakeFolders()
         {
             if(!Directory.Exists(MainPath))
@@ -197,18 +202,19 @@ namespace Destructibles
 
         public void Reset()
         {
-            allChildren = GetComponentsInChildren<Transform>();
+            m_Children = GetComponentsInChildren<Transform>();
                 
-            for (int i = 0; i < allChildren.Length; i++)
+            for (int i = 0; i < m_Children.Length; i++)
             {
                 if(i==0)
                     continue;
-                DestroyImmediate(allChildren[i].gameObject);
+                DestroyImmediate(m_Children[i].gameObject);
             }
 
-            allChildren = null;
+            m_Children = null;
         }
         
+        // extract to separate class
         private void Voronoi(NvFractureTool fractureTool, NvMesh nvMesh)
         {
             var sites = new NvVoronoiSitesGenerator(nvMesh);
@@ -219,11 +225,99 @@ namespace Destructibles
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
             dstManager.AddBuffer<ConnectionGraph>(entity);
-            dstManager.SetName(entity, name);
+            dstManager.SetName(entity, "Fracture Graph: "+ name);
+        }
+
+        public void FindAnchors()
+        {
+            // Then get all anchors, add to list and distribute to all nodes
+            m_Nodes = GetComponentsInChildren<NodeAuthoring>();
+            ConnectUnconnectedNodes();
+            
+            var anchorNodes = new List<Transform>();
+            
+            foreach (var node in m_Nodes)
+            {
+                if(node.isAnchor && !anchorNodes.Contains(node.transform))
+                    anchorNodes.Add(node.transform);
+            }
+            
+            for (int i = 0; i < m_Nodes.Length; i++)
+            {
+                var node = m_Nodes[i];               
+                node.anchors = anchorNodes;
+
+                CreateAnchorConnectivityMap(node);
+            }
+            
+        }
+
+        /// <summary>
+        /// Connects any nodes that didnt get connected initially
+        /// </summary>
+        private void ConnectUnconnectedNodes()
+        {
+            foreach (var node in m_Nodes)
+            {
+                if (node.connections.Count == 0)
+                {
+                    foreach (var subnode in m_Nodes)
+                    {
+                        if(subnode.connections.Contains(node.transform) && !node.connections.Contains(subnode.transform))
+                            node.connections.Add(subnode.transform);
+                    }
+                }
+            }
+            
+        }
+
+        /// <summary>
+        /// Bit of a recursive hell but: find all nodes connecting to an anchor
+        /// </summary>
+        private void CreateAnchorConnectivityMap(NodeAuthoring node)
+        {
+            foreach (var anchor in node.anchors)
+            {
+            
+                var unused = new List<Transform>();
+
+                Find(anchor, node,node, new List<Transform>(), 0);
+            }
+        }
+
+
+        private void Find(Transform anchor, NodeAuthoring node, NodeAuthoring searchNode, List<Transform> list, int iterations)
+        {
+            const int max = 9999;
+            iterations++;
+            if (iterations >= max)
+                return ;
+            
+            foreach (var connection in searchNode.connections)
+            {
+                if (connection == anchor)
+                {
+                    if (!list.Contains(connection))
+                    {
+                        list.Add(connection);
+                        var chainAuthoring = node.gameObject.AddComponent<AnchorChainAuthoring>();
+                        chainAuthoring.actuallyFoundAnchor = true;
+                        chainAuthoring.AnchorList = list;
+                        chainAuthoring.AnchorTransform = connection;
+                        chainAuthoring.Nodes = m_Nodes;
+                        chainAuthoring.Node = node;
+                        chainAuthoring.m_Connections = node.connections;
+                        chainAuthoring.ValidateList();
+                    }
+                    break;
+                }
+
+                if (!list.Contains(connection))
+                {
+                    list.Add(connection);
+                    Find(anchor, node, connection.GetComponent<NodeAuthoring>(), list, iterations);
+                }
+            }
         }
     }
-    
-    
-    
-    
 }
