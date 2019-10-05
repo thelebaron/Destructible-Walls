@@ -81,7 +81,7 @@ namespace Destructibles
         private struct ProcessEvents : IJobForEachWithEntity<BreakEvent>
         {
             public ComponentDataFromEntity<Anchored> AnchoredNode;
-            public ComponentDataFromEntity<NodeParent> NodeParent;
+            public ComponentDataFromEntity<Node> NodeParent;
             public BufferFromEntity<NodeChild> NodeChild;
 
             public void Execute(Entity entity, int index, ref BreakEvent breakEvent)
@@ -123,7 +123,7 @@ namespace Destructibles
         private struct CheckConnectivityMap : IJobForEachWithEntity_EB<ConnectionGraph>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-            [ReadOnly] public BufferFromEntity<Neighbors> Connection;
+            [ReadOnly] public BufferFromEntity<NodeNeighbor> Connection;
             [ReadOnly] public ComponentDataFromEntity<StaticAnchor> StaticAnchor;
 
             public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
@@ -137,7 +137,7 @@ namespace Destructibles
                     if (!TryFindDisconnectedNodes(node, index, depth, ref count))
                     {
                         if (Connection.Exists(node))
-                            EntityCommandBuffer.RemoveComponent<Neighbors>(index, node);
+                            EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, node);
                         Debug.Log(node + "is disconnected");
                         //Disconnect(node, index, EntityCommandBuffer);
                     }
@@ -206,7 +206,7 @@ namespace Destructibles
                 
                 if (Connection.Exists(node))
                 {
-                    EntityCommandBuffer.RemoveComponent<Neighbors>(index, node);
+                    EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, node);
 
                     for (var i = 0; i < Connection[node].Length; i++)
                     {

@@ -9,90 +9,194 @@ using UnityEngine;
 
 namespace Destructibles
 {
-    
+    public struct RemoveNeighborEvent : IComponentData
+    {
+        public Entity Target;
+        public int Index;
+    }
 
-    
     public class StrainSystem : JobComponentSystem
     {
-        /*
-        private struct UnanchorChildGraph : IJobForEachWithEntity_EBC<GraphChild, PhysicsVelocity>
+        private EntityQuery m_ChainsQuery;
+
+        //[BurstCompile]
+        //[RequireComponentTag(typeof(PhysicsVelocity))]
+        private struct RemoveNodeNeighbor : IJobForEachWithEntity_EB<NodeNeighbor>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-            [ReadOnly]public ComponentDataFromEntity<AnchoredNode> Anchored;
-            public void Execute(Entity entity, int index, DynamicBuffer<GraphChild> graphChildren, ref PhysicsVelocity c1)
+            [ReadOnly] public ComponentDataFromEntity<PhysicsVelocity> Velocity;
+
+            public void Execute(Entity entity, int index, DynamicBuffer<NodeNeighbor> neighbors)
             {
-                for (int i = 0; i < graphChildren.Length; i++)
+                if (neighbors.Length <= 0)
                 {
-                    if (Anchored.Exists(graphChildren[i].Node))
+                    EntityCommandBuffer.AddComponent<PhysicsVelocity>(index, entity);
+                    EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, entity);
+                    return;
+                }
+
+                for(var i = neighbors.Length - 1; i > -1; i--)
+                {
+                    if(Velocity.Exists(neighbors[i].Node))//neighbors[i].Node.Equals(Entity.Null) && 
                     {
-                        EntityCommandBuffer.RemoveComponent(index, graphChildren[i].Node, typeof(AnchoredNode));
-                        EntityCommandBuffer.AddComponent(index, graphChildren[i].Node, new UnanchoredNode());
+                        neighbors.RemoveAt(i);
+                    }
+                }
+                
+
+            }
+        }
+
+        
+
+
+        private struct ChunkChainJob : IJobChunk
+        {
+            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            [ReadOnly] public ArchetypeChunkEntityType EntityType;
+            public ArchetypeChunkComponentType<Node> NodeType;
+
+            public ArchetypeChunkBufferType<Chain> ChainType;
+            //public BufferAccessor<Chain> ChainBufferAccessor;
+
+            //public            EntityCommandBuffer.Concurrent                    ECB;
+
+            public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
+            {
+                var chunkEntity = chunk.GetNativeArray(EntityType);
+                var chunkNode = chunk.GetNativeArray(NodeType);
+                var chainBufferAccessor = chunk.GetBufferAccessor(ChainType);
+                for (int entityIndex = 0; entityIndex < chunkEntity.Length; entityIndex++)
+                {
+                    // Does entity exist in other chains? if not, add velocity to it.
+                    var exists = false;
+                    var node = chunkNode[entityIndex];
+                    var entity = chunkEntity[entityIndex];
+
+
+                    for (int i = 0; i < chainBufferAccessor.Length; i++)
+                    {
+                        var b = chainBufferAccessor[i];
+                        for (int j = 0; j < b.Length; j++)
+                        {
+                            if (node.Value.Equals(b[j].Node))
+                                exists = true;
+                        }
+                    }
+
+                    if (!exists)
+                    {
+                        EntityCommandBuffer.SetComponent(chunkIndex, node.Value, new Health
+                        {
+                            Max = 10,
+                            Value = 0
+                        });
                     }
                 }
             }
-        }*/
-        
-        [RequireComponentTag(typeof(Anchored))]
-        [ExcludeComponent(typeof(PhysicsVelocity))] //, typeof(StaticAnchor)
-        private struct CheckHealth : IJobForEachWithEntity<Health, Node>
+        }
+
+        private struct DestroyChain : IJobForEachWithEntity_EBC<Chain, Node>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-            
-            public void Execute(Entity entity, int index, ref Health health, ref Node node)
+            [ReadOnly] public ComponentDataFromEntity<PhysicsVelocity> Velocity;
+
+            public void Execute(Entity entity, int index, DynamicBuffer<Chain> buffer, ref Node node)
+            {
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    if (Velocity.Exists(buffer[i].Node))
+                    {
+                        EntityCommandBuffer.DestroyEntity(index, entity);
+                    }
+                }
+            }
+        }
+
+        //[RequireComponentTag(typeof(Anchored))]
+        [ExcludeComponent(typeof(PhysicsVelocity))]
+        private struct CheckHealth : IJobForEachWithEntity<Health, NodeBreakable>
+        {
+            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+
+            public void Execute(Entity entity, int index, ref Health health, ref NodeBreakable nodeBreakable)
             {
                 if (health.Value <= 0)
                 {
-                    //EntityCommandBuffer.AddComponent(index, entity, new PhysicsVelocity());
+                    EntityCommandBuffer.AddComponent(index, entity, new PhysicsVelocity());
                     EntityCommandBuffer.AddComponent(index, entity, new Unanchored());
-                    EntityCommandBuffer.RemoveComponent(index, entity, typeof(Anchored));
-
+                    //EntityCommandBuffer.RemoveComponent(index, entity, typeof(Anchored));
+/*
                     var e = EntityCommandBuffer.CreateEntity(index);
                     
                     EntityCommandBuffer.AddComponent(index, e, new BreakEvent
                     {
                         NodeEntity = entity,
-                        GraphEntity = node.Graph
-                    });
+                        //GraphEntity = node.Graph //TODO replace with graph component that has graph entity on it!!!!!!!
+                    });*/
+
+
                     //EntityCommandBuffer.RemoveComponent(index, entity, typeof(Connection));
                     //EntityCommandBuffer.RemoveComponent(index, entity, typeof(DynamicAnchor));
                 }
             }
         }
-        
-        [RequireComponentTag(typeof(Node), typeof(Unanchored))]
-        [ExcludeComponent(typeof(PhysicsVelocity))]
-        struct AddVelocity : IJobForEachWithEntity<Translation>
-        {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-            
-            public void Execute(Entity entity, int index, ref Translation c0)
-            {
-                EntityCommandBuffer.AddComponent(index, entity, new PhysicsVelocity());
-            }
-        }
-        
+
+
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            var checkHealthJob = new CheckHealth{ EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent() };
-            var checkHealthHandle = checkHealthJob.Schedule(this, inputDeps);
+            var removeNeighborsJob = new RemoveNodeNeighbor
+            {
+                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                Velocity = GetComponentDataFromEntity<PhysicsVelocity>(true)
+            };
+            var removeNeighborsHandle = removeNeighborsJob.Schedule(this, inputDeps);
+            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(removeNeighborsHandle);
+
+
+            var checkHealthJob = new CheckHealth
+                {EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()};
+            var checkHealthHandle = checkHealthJob.Schedule(this, removeNeighborsHandle);
             m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(checkHealthHandle);
-            
+            return checkHealthHandle;
+
+
+            /*
             var addVelocityJob = new AddVelocity { EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()};
             var addVelocityHandle = addVelocityJob.Schedule(this, checkHealthHandle);
             m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(addVelocityHandle);
             
             
-            /*
-            var unanchorChildGraphJob = new UnanchorChildGraph
-            {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
-                Anchored = GetComponentDataFromEntity<AnchoredNode>(true)
-            };
-            var unanchorChildGraphHandle = unanchorChildGraphJob.Schedule(this, checkHealthHandle);
-            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(unanchorChildGraphHandle);
-            */
+            
+            var destroyChain = new DestroyChain
+                {
+                    EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                    Velocity = GetComponentDataFromEntity<PhysicsVelocity>(true)
+                };
+            var destroyChainHandle = destroyChain.Schedule(this,addVelocityHandle);
+            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(destroyChainHandle);
+            
+            
+            
+            var entityType             = GetArchetypeChunkEntityType();
+            var nodeType             = GetArchetypeChunkComponentType<Node>();
+            var chainType             = GetArchetypeChunkBufferType<Chain>();
+            
+            var chunkJob = new ChunkChainJob
+                {
+                    EntityCommandBuffer =  m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                    EntityType = entityType,
+                    NodeType = nodeType,
+                    ChainType = chainType,
+                    //ChainBufferAccessor = m_ChainsQuery.to,
+                    //ECB = 
+                };
+            
+            var chunkJobHandle = chunkJob.Schedule(m_ChainsQuery, destroyChainHandle);
+            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(chunkJobHandle);
+            
 
-            return addVelocityHandle;
+            return chunkJobHandle;*/
         }
 
         protected override void OnCreate()
@@ -100,6 +204,7 @@ namespace Destructibles
             base.OnCreate();
             m_EndSimulationEntityCommandBufferSystem =
                 World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+            m_ChainsQuery = GetEntityQuery(typeof(Node), typeof(Chain));
         }
 
         private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;

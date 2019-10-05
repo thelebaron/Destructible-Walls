@@ -238,8 +238,13 @@ namespace Destructibles
             
             foreach (var node in m_Nodes)
             {
+                //Reset any node anchor lists
+                node.nodeChains = new List<NestedTransformList>();
+                
                 if(node.isAnchor && !anchorNodes.Contains(node.transform))
                     anchorNodes.Add(node.transform);
+                
+                
             }
             
             for (int i = 0; i < m_Nodes.Length; i++)
@@ -300,7 +305,7 @@ namespace Destructibles
                     if (!list.Contains(connection))
                     {
                         list.Add(connection);
-                        var chainAuthoring = node.gameObject.AddComponent<AnchorChainAuthoring>();
+                        var chainAuthoring = node.gameObject.AddComponent<NodeChain>();
                         chainAuthoring.actuallyFoundAnchor = true;
                         chainAuthoring.AnchorList = list;
                         chainAuthoring.AnchorTransform = connection;
@@ -318,6 +323,11 @@ namespace Destructibles
                     Find(anchor, node, connection.GetComponent<NodeAuthoring>(), list, iterations);
                 }
             }
+        }
+
+        public void ClearChains()
+        {
+            
         }
     }
 }

@@ -5,9 +5,9 @@ namespace Destructibles
     /// <summary>
     /// Components for nodes
     /// </summary>
-    public struct Node : IComponentData
+    public struct NodeBreakable : IComponentData
     {
-        public Entity Graph;
+        public Entity Value;
     }
     
     public struct Strain : IComponentData
@@ -21,7 +21,7 @@ namespace Destructibles
     /// <summary>
     /// A connection joint contains only the immediate entities which are connected to a node.
     /// </summary>
-    public struct Neighbors : IBufferElementData
+    public struct NodeNeighbor : IBufferElementData
     {
         /// <summary>
         /// A node entity.
@@ -33,19 +33,40 @@ namespace Destructibles
         /// </summary>
         /// <param name="e">The entity to convert</param>
         /// <returns>A new buffer element.</returns>
-        public static implicit operator Neighbors(Entity e)
+        public static implicit operator NodeNeighbor(Entity e)
         {
-            return new Neighbors {Node = e};
+            return new NodeNeighbor {Node = e};
         }
     }
     
     /// <summary>
-    /// 
+    /// Component that gets attached to a chain entity.
     /// </summary>
-    public struct NodeParent : IComponentData
+    public struct Node : IComponentData
     {
-        public Entity Node;
+        public Entity Value;
     }
+    /// <summary>
+    /// Component that gets attached to a chain entity
+    /// </summary>
+    public struct Anchor : IBufferElementData
+    {
+        /// <summary>
+        /// A node entity.
+        /// </summary>
+        public Entity Node;
+
+        /// <summary>
+        /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
+        /// </summary>
+        /// <param name="e">The entity to convert</param>
+        /// <returns>A new buffer element.</returns>
+        public static implicit operator Anchor(Entity e)
+        {
+            return new Anchor {Node = e};
+        }
+    }
+    
     
     /// <summary>
     /// 
@@ -141,10 +162,12 @@ namespace Destructibles
     }
 
     
+    
+    
     /// <summary>
     /// A list of entities that form a chain to the anchored node.
     /// </summary>
-    public struct AnchorChain : IBufferElementData
+    public struct Chain : IBufferElementData
     {
         /// <summary>
         /// A node entity.
@@ -156,11 +179,13 @@ namespace Destructibles
         /// </summary>
         /// <param name="e">The entity to convert</param>
         /// <returns>A new buffer element.</returns>
-        public static implicit operator AnchorChain(Entity e)
+        public static implicit operator Chain(Entity e)
         {
-            return new AnchorChain {Node = e};
+            return new Chain {Node = e};
         }
     }
+    
+    
     
     public struct BreakEvent : IComponentData
     {

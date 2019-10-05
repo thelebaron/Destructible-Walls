@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using thelebaron.Damage;
 using Unity.Entities;
 using UnityEngine;
@@ -6,7 +7,12 @@ using UnityEngine.Serialization;
 
 namespace Destructibles
 {
-
+    [System.Serializable]
+    public class NestedTransformList
+    {
+        public List<Transform> myList;
+    }
+    
     [DisallowMultipleComponent]
     public class NodeAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDeclareReferencedPrefabs
     {
@@ -14,10 +20,17 @@ namespace Destructibles
         public Transform Root => transform.root;
         public List<Transform> anchors = new List<Transform>();
         public List<Transform> connections = new List<Transform>();
-        public List<Transform> anchorChain = new List<Transform>();
+        //public List<List<Transform>> nodeChains = new List<List<Transform>>();
+        public List<NestedTransformList> nodeChains =new List<NestedTransformList>();
 
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
+            
+            dstManager.AddComponentData(entity, new NodeBreakable
+            {
+                Value = entity
+            });
+            
             {
                 // Get the root graph 
                 var graph = conversionSystem.GetPrimaryEntity(transform.parent);
@@ -27,39 +40,29 @@ namespace Destructibles
                     dstManager.AddComponentData(entity, new StaticAnchor());
                 
                 // Add node and set the fracture graph entity
-                dstManager.AddComponentData(entity, new Node{ Graph = graph});
+                //dstManager.AddComponentData(entity, new Node{ Graph = graph});
                 
-                var connectionJoints = dstManager.AddBuffer<Neighbors>(entity);
+                var connectionJoints = dstManager.AddBuffer<NodeNeighbor>(entity);
+                for (int i = 0; i < connections.Count; i++)
+                {
+                    var otherentity = conversionSystem.GetPrimaryEntity(connections[i]);
+
+                    connectionJoints.Add(otherentity);
+                }
+                /*
                 foreach (var j in connections)
                 {
                     var otherentity = conversionSystem.GetPrimaryEntity(j.gameObject);
 
                     connectionJoints.Add(otherentity);
-                }
+                }*/
                 
                 // Add each 
                 var connectionGraph = dstManager.GetBuffer<ConnectionGraph>(graph);
                 connectionGraph.Add(entity);
             }
             
-
-            var anchorChain = new List<Transform>();
-            AddRecurse(anchorChain);
             
-            //AddGraphRecurse(dstManager, conversionSystem, transform, convertedTransformList);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             {
                 // Add the node buffer
@@ -70,12 +73,47 @@ namespace Destructibles
 
                 dstManager.SetName(entity, "FractureNode_" + name);
             }
+
+
+            {
+                //nodeChains = GetComponents<NodeChain>();
+                
+                foreach (var nodeChain in nodeChains)
+                {
+                    var e = dstManager.CreateEntity();
+
+                    var buffer = dstManager.AddBuffer<Chain>(e);
+
+                    foreach (var tr in nodeChain.myList)
+                    {
+                        buffer.Add(conversionSystem.GetPrimaryEntity(tr));
+                    }
+            
+                    dstManager.SetName(e, "nodeChain");
+                    
+                    //if(!dstManager.HasComponent<Node>(e))
+                    dstManager.AddComponentData(e, new Node
+                    {
+                        Value = entity
+                    });
+
+                    if (!dstManager.HasComponent(e, typeof(Anchor)))
+                    {
+                        dstManager.AddBuffer<Anchor>(e);
+                    }
+
+                    if (dstManager.HasComponent(e, typeof(Anchor)))
+                    {
+                        var anchor = dstManager.GetBuffer<Anchor>(e);
+                        
+                        
+                        //anchor.Add()
+                    }
+                }
+
+            }
         }
 
-        private void AddRecurse(List<Transform> anchorChainTransform)
-        {
-            
-        }
 
         public void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs)
         {
@@ -84,57 +122,25 @@ namespace Destructibles
                 referencedPrefabs.Add(connections[i].gameObject);
             }
         }
-        
-        public static void AddGraphRecurse(EntityManager manager, GameObjectConversionSystem conversionSystem,
-            Transform tr, List<Transform> convertedTransformList)
+
+        public void AddNodeChain(NestedTransformList list)
         {
-            if(!convertedTransformList.Contains(tr))
-                convertedTransformList.Add(tr);
+            if(!nodeChains.Contains(list))
+                nodeChains.Add(list);
             
-            var entity = conversionSystem.GetPrimaryEntity(tr);
-            manager.AddComponentData(entity, new Anchored());
-            var nodeChildren = new DynamicBuffer<NodeChild>();
-            
-            if (!manager.HasComponent<NodeChild>(entity))
-            {
-                nodeChildren = manager.AddBuffer<NodeChild>(entity);
-            }
-            if (manager.HasComponent<NodeChild>(entity))
-            {
-                nodeChildren = manager.GetBuffer<NodeChild>(entity);
-            }
-            
-            // Loop through connected nodes
-            var node = tr.GetComponent<NodeAuthoring>();
-            if (node != null && node.connections.Count > 0)
-            {
-                foreach (Transform childTransform in node.connections)
-                {
-                    // Add connection child to graph but dont add duplicates
-                    var childEntity = conversionSystem.GetPrimaryEntity(childTransform);
-                    var isDuplicate = false;
-                    foreach (var nodechild in nodeChildren)
-                    {
-                        if (nodechild.Node.Equals(childEntity))
-                            isDuplicate = true;
-                    }
-                    
-                    if(!isDuplicate)
-                        nodeChildren.Add(childEntity);
-
-                    if(!manager.HasComponent<NodeParent>(childEntity))
-                        manager.AddComponentData(childEntity, new NodeParent{ Node = entity });
-                    
-                    if (!convertedTransformList.Contains(childTransform))
-                        AddGraphRecurse(manager, conversionSystem, childTransform, convertedTransformList);
-                    
-                    
-                }
-            }
-            
-            
+            Debug.Log("Added list");
         }
-        
+/*        public void AddNodeChain(List<Transform> list)
+        {
+            if(!nodeChains.Contains(list))
+                nodeChains.Add(list);
+            
+            Debug.Log("Added list");
+        }*/
+    }
 
+    public struct noderoot : IComponentData
+    {
+        public Entity Value;
     }
 }

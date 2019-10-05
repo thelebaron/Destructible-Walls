@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using Unity.Entities;
 using UnityEngine;
 
 namespace Destructibles
 {
-    public class AnchorChainAuthoring : MonoBehaviour
+    public class NodeChain : MonoBehaviour 
     {
         public NodeAuthoring Node;
         public bool actuallyFoundAnchor;
@@ -19,7 +20,7 @@ namespace Destructibles
         public NodeAuthoring[] m_Nodes;
         public List<Transform> m_Connections = new List<Transform>();
 
-        public List<Transform> tempList = new List<Transform>();
+        public List<Transform> validList = new List<Transform>();
 
         public void ValidateList()
         {
@@ -44,11 +45,18 @@ namespace Destructibles
 
                         if (!nConnections.Contains(currentTransform))
                         {
-                            tempList.Add(currentTransform);
+                            validList.Add(currentTransform);
                         }
                     }
                 }
             }
+
+            var chainnode = new NestedTransformList {myList = validList};
+
+            Node.AddNodeChain(chainnode);
+            DestroyImmediate(this);
         }
+
+        
     }
 }
