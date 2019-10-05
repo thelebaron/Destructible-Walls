@@ -50,8 +50,11 @@ namespace Destructibles
                     }
                 }
             }
-
-            var chainnode = new NestedTransformList {myList = validList};
+            
+            // List doesnt contain anchor in previous search, feels hacky to put here
+            validList.Add(AnchorTransform);
+            
+            var chainnode = new NestedNodeTrabsformList {myList = validList, AnchorTransform = AnchorTransform};
 
             Node.AddNodeChain(chainnode);
             DestroyImmediate(this);

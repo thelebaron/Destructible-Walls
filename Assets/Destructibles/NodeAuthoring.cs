@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using thelebaron.Damage;
 using Unity.Entities;
 using UnityEngine;
@@ -8,9 +9,10 @@ using UnityEngine.Serialization;
 namespace Destructibles
 {
     [System.Serializable]
-    public class NestedTransformList
+    public class NestedNodeTrabsformList
     {
         public List<Transform> myList;
+        public Transform AnchorTransform;
     }
     
     [DisallowMultipleComponent]
@@ -20,16 +22,13 @@ namespace Destructibles
         public Transform Root => transform.root;
         public List<Transform> anchors = new List<Transform>();
         public List<Transform> connections = new List<Transform>();
-        //public List<List<Transform>> nodeChains = new List<List<Transform>>();
-        public List<NestedTransformList> nodeChains =new List<NestedTransformList>();
+        public List<NestedNodeTrabsformList> nodeLinks =new List<NestedNodeTrabsformList>();
 
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
-            
-            dstManager.AddComponentData(entity, new NodeBreakable
-            {
-                Value = entity
-            });
+            dstManager.AddComponentData(entity, new BreakableNode());
+            dstManager.AddComponentData(entity, new Health {Value = 10, Max = 10});
+            dstManager.SetName(entity, "Breakable node " + name);
             
             {
                 // Get the root graph 
@@ -37,10 +36,7 @@ namespace Destructibles
 
                 // If considered a static anchor
                 if(isAnchor)
-                    dstManager.AddComponentData(entity, new StaticAnchor());
-                
-                // Add node and set the fracture graph entity
-                //dstManager.AddComponentData(entity, new Node{ Graph = graph});
+                    dstManager.AddComponentData(entity, new AnchorNode());
                 
                 var connectionJoints = dstManager.AddBuffer<NodeNeighbor>(entity);
                 for (int i = 0; i < connections.Count; i++)
@@ -49,66 +45,88 @@ namespace Destructibles
 
                     connectionJoints.Add(otherentity);
                 }
-                /*
-                foreach (var j in connections)
-                {
-                    var otherentity = conversionSystem.GetPrimaryEntity(j.gameObject);
 
-                    connectionJoints.Add(otherentity);
-                }*/
                 
-                // Add each 
+                // Add all neighbor nodes 
                 var connectionGraph = dstManager.GetBuffer<ConnectionGraph>(graph);
                 connectionGraph.Add(entity);
-            }
-            
-            
-
-            {
-                // Add the node buffer
-                dstManager.AddComponentData(entity, new Health {Value = 10, Max = 10});
-                // Todo evaluate if necessary?
-                dstManager.AddComponentData(entity, new Anchored());
-                dstManager.AddComponentData(entity, new DynamicAnchor());
-
-                dstManager.SetName(entity, "FractureNode_" + name);
-            }
-
-
-            {
-                //nodeChains = GetComponents<NodeChain>();
                 
-                foreach (var nodeChain in nodeChains)
+                // Add all anchors
+                foreach (var tr in anchors)
                 {
+                    var anchorEntity = conversionSystem.GetPrimaryEntity(tr);
+                    var hasEntity = false;
+                    // Do lookup for buffer
+                    if (!dstManager.HasComponent(entity, typeof(NodeAnchorBuffer)))
+                    {
+                        var buffer = dstManager.AddBuffer<NodeAnchorBuffer>(entity);
+                        
+                        // Dont add if contains
+                        for (int i = 0; i < buffer.Length; i++)
+                        {
+                            if (buffer[i].Node.Equals(anchorEntity))
+                                hasEntity = true;
+                        }
+                        if(!hasEntity)
+                            buffer.Add(conversionSystem.GetPrimaryEntity(tr));
+                    }
+
+                    if (dstManager.HasComponent(entity, typeof(NodeAnchorBuffer)))
+                    {
+                        var buffer = dstManager.GetBuffer<NodeAnchorBuffer>(entity);
+                        
+                        // Dont add if contains
+                        for (int i = 0; i < buffer.Length; i++)
+                        {
+                            if (buffer[i].Node.Equals(anchorEntity))
+                                hasEntity = true;
+                        }
+                        if(!hasEntity)
+                            buffer.Add(conversionSystem.GetPrimaryEntity(tr));
+                    }
+                }
+                
+            }
+            
+
+
+            {
+                // Create Node Chains
+                foreach (var nodeChain in nodeLinks)
+                {
+                    Debug.Log("link" + gameObject.name);
                     var e = dstManager.CreateEntity();
 
-                    var buffer = dstManager.AddBuffer<Chain>(e);
+                    var buffer = dstManager.AddBuffer<GraphLink>(e);
 
                     foreach (var tr in nodeChain.myList)
                     {
                         buffer.Add(conversionSystem.GetPrimaryEntity(tr));
                     }
             
-                    dstManager.SetName(e, "nodeChain");
+                    dstManager.SetName(e, "Graph Link");
                     
                     //if(!dstManager.HasComponent<Node>(e))
-                    dstManager.AddComponentData(e, new Node
+                    dstManager.AddComponentData(e, new GraphNode
                     {
-                        Value = entity
+                        Node = entity
+                    });
+                    dstManager.AddComponentData(e, new GraphAnchor
+                    {
+                        Node = conversionSystem.GetPrimaryEntity(nodeChain.AnchorTransform)
                     });
 
-                    if (!dstManager.HasComponent(e, typeof(Anchor)))
+                    
+                    /*
+                    if (!dstManager.HasComponent(e, typeof(NodeAnchorBuffer)))
                     {
-                        dstManager.AddBuffer<Anchor>(e);
+                        dstManager.AddBuffer<NodeAnchorBuffer>(e);
                     }
 
-                    if (dstManager.HasComponent(e, typeof(Anchor)))
+                    if (dstManager.HasComponent(e, typeof(NodeAnchorBuffer)))
                     {
-                        var anchor = dstManager.GetBuffer<Anchor>(e);
-                        
-                        
-                        //anchor.Add()
-                    }
+                        var anchor = dstManager.GetBuffer<NodeAnchorBuffer>(e);
+                    }*/
                 }
 
             }
@@ -123,12 +141,12 @@ namespace Destructibles
             }
         }
 
-        public void AddNodeChain(NestedTransformList list)
+        public void AddNodeChain(NestedNodeTrabsformList list)
         {
-            if(!nodeChains.Contains(list))
-                nodeChains.Add(list);
+            if(!nodeLinks.Contains(list))
+                nodeLinks.Add(list);
             
-            Debug.Log("Added list");
+            //Debug.Log("Added list");
         }
 /*        public void AddNodeChain(List<Transform> list)
         {

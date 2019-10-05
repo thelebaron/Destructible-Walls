@@ -2,6 +2,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Physics;
+using Unity.Transforms;
 using UnityEngine;
 
 namespace Destructibles
@@ -20,8 +22,8 @@ namespace Destructibles
             base.OnCreate();
             m_EndSimulationEntityCommandBufferSystem = World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
-        
-        
+
+
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
@@ -78,37 +80,13 @@ namespace Destructibles
             m_EndSimulationEntityCommandBufferSystem = World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
 
-        private struct ProcessEvents : IJobForEachWithEntity<BreakEvent>
-        {
-            public ComponentDataFromEntity<Anchored> AnchoredNode;
-            public ComponentDataFromEntity<Node> NodeParent;
-            public BufferFromEntity<NodeChild> NodeChild;
 
-            public void Execute(Entity entity, int index, ref BreakEvent breakEvent)
-            {
-                
-                
-                if (NodeChild.Exists(breakEvent.NodeEntity))
-                {
-                    Recurse(breakEvent.NodeEntity, NodeChild[breakEvent.NodeEntity]);
-                    
-                    
-                }
-            }
-
-            private void Recurse(Entity entity, DynamicBuffer<NodeChild>dynamicBuffer)
-            {
-                for (int i = 0; i < dynamicBuffer.Length; i++)
-                {
-                        //if(dynamicBuffer[i].Node)
-                }
-            }
-        }
-
+        
+        
         [BurstCompile]
         private struct ClearDetachedNodes : IJobForEachWithEntity_EB<ConnectionGraph>
         {
-            [ReadOnly]public ComponentDataFromEntity<Unanchored> UnanchoredNode;
+            [ReadOnly]public ComponentDataFromEntity<BrokenNode> UnanchoredNode;
             
             public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
             {
@@ -119,12 +97,51 @@ namespace Destructibles
                 }
             }
         }
+        
+        [BurstCompile]
+        private struct DeleteChainJob : IJobForEachWithEntity_EBCC<GraphLink, GraphAnchor, GraphNode>
+        {
+            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            [NativeDisableParallelForRestriction] public BufferFromEntity<NodeAnchorBuffer> NodeAnchorBuffer;
+            [ReadOnly]public ComponentDataFromEntity<PhysicsVelocity> PhysicsVelocity;
+            public void Execute(Entity entity, int index, DynamicBuffer<GraphLink> linkBuffer, ref GraphAnchor anchorNode, ref GraphNode graphNode)
+            {
+                for (int i = 0; i < linkBuffer.Length; i++)
+                {
+                    if (PhysicsVelocity.Exists(linkBuffer[i].Node))
+                    {
+                        EntityCommandBuffer.DestroyEntity(index, entity);
+
+                        if (NodeAnchorBuffer.Exists(graphNode.Node))
+                        {
+                            var nodeAnchorBuffer = NodeAnchorBuffer[graphNode.Node];
+                            
+                            for(var k = nodeAnchorBuffer.Length - 1; k > -1; k--)
+                            {
+                                if (anchorNode.Node.Equals(nodeAnchorBuffer[k].Node))
+                                {
+                                    nodeAnchorBuffer.RemoveAt(k);
+                                }
+                            }
+                            
+                            
+                        }
+                        // Also send ecb to remove anchor from Node's buffer of anchors
+                        /*
+                         Node
+                         *
+                         * 
+                         */
+                    }
+                }
+            }
+        }
 
         private struct CheckConnectivityMap : IJobForEachWithEntity_EB<ConnectionGraph>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
             [ReadOnly] public BufferFromEntity<NodeNeighbor> Connection;
-            [ReadOnly] public ComponentDataFromEntity<StaticAnchor> StaticAnchor;
+            [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
 
             public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
             {
@@ -220,8 +237,18 @@ namespace Destructibles
         {
             var clearJob = new ClearDetachedNodes
             {
-                UnanchoredNode = GetComponentDataFromEntity<Unanchored>(true)
+                UnanchoredNode = GetComponentDataFromEntity<BrokenNode>(true)
             };
+            var clearJobHandle = clearJob.Schedule(this, inputDeps);
+
+            var deleteJob = new DeleteChainJob
+            {
+                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                NodeAnchorBuffer = GetBufferFromEntity<NodeAnchorBuffer>(),
+                PhysicsVelocity = GetComponentDataFromEntity<PhysicsVelocity>(true)
+            };
+            var deleteJobHandle = deleteJob.Schedule(this, clearJobHandle);
+            deleteJobHandle.Complete();
             
             /*
             
@@ -236,8 +263,8 @@ namespace Destructibles
 
             return checkConnectivityHandle;
             */
-            
-            return clearJob.Schedule(this, inputDeps);
+
+            return deleteJobHandle;
         }
     }
 }

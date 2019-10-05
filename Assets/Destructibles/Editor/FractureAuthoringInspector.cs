@@ -72,12 +72,6 @@ namespace Destructibles
             }
             
             
-            if (GUILayout.Button("temp clear Chains"))
-            {
-                if (fracture != null) 
-                    fracture.ClearChains();
-            }
-            
             if (GUILayout.Button("Reset"))
             {
                 if (fracture != null) 

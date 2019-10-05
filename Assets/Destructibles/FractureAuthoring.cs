@@ -239,7 +239,7 @@ namespace Destructibles
             foreach (var node in m_Nodes)
             {
                 //Reset any node anchor lists
-                node.nodeChains = new List<NestedTransformList>();
+                node.nodeLinks = new List<NestedNodeTrabsformList>();
                 
                 if(node.isAnchor && !anchorNodes.Contains(node.transform))
                     anchorNodes.Add(node.transform);
