@@ -53,6 +53,11 @@ namespace Destructibles
         public override void OnInspectorGUI()
         {
             var fracture = target as FractureAuthoring;
+            
+            if (GUILayout.Button("MUST CONTAIN MORE THAN 3 FRACTURES"))
+            {
+            }
+            
             if (GUILayout.Button("Fracture mesh"))
             {
                 if (fracture != null) 

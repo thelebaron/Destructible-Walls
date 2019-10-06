@@ -175,6 +175,44 @@ namespace Destructibles
 
         public void OnDrawGizmosSelected()
         {
+            //draw for connections
+            
+            if (isAnchor)
+            {
+                var anchorpos = GetComponent<Renderer>().bounds.center;
+                
+                Gizmos.color = Color.red;
+                Gizmos.DrawCube(anchorpos, 0.55f * Vector3.one);
+            }
+            if (!isAnchor)
+            {
+                var anchorpos = GetComponent<Renderer>().bounds.center;
+                
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawCube(anchorpos, 0.55f * Vector3.one);
+            }
+            if (connections.Count > 0)
+            {
+                for (int i = 0; i < connections.Count; i++)
+                {
+                    Gizmos.color = Color.yellow;
+                    
+                    
+                    
+                    
+                    
+                    var currentPos = connections[i].GetComponent<Renderer>().bounds.center;
+                    Gizmos.DrawSphere(currentPos, 0.25f);
+
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawLine(Position,connections[i].GetComponent<NodeAuthoring>().Position);
+                    
+                }
+                
+            }
+            
+            /*
+             // Draw for nodelink
             if (isAnchor)
             {
                 var anchorpos = GetComponent<Renderer>().bounds.center;
@@ -214,7 +252,7 @@ namespace Destructibles
                     }
                 }
                 
-            }
+            }*/
         }
     }
 

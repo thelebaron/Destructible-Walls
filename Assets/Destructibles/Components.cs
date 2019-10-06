@@ -5,7 +5,11 @@ namespace Destructibles
     /// <summary>
     /// Components for nodes
     /// </summary>
-    public struct BreakableNode : IComponentData { }
+    public struct BreakableNode : IComponentData
+    {
+        //public float Strain;
+        //public float MaxStrain;
+    }
     
     /// <summary>
     /// A connection joint contains only the immediate entities which are connected to a node.

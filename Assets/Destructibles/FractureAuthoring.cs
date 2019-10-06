@@ -2,6 +2,7 @@
 using System.Linq;
 using Project.Scripts.Utils;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Authoring;
 using UnityEditor;
@@ -65,14 +66,81 @@ namespace Destructibles
 
             for (var i = 1; i < fractureTool.getChunkCount(); i++)
             {
-                var chunk = new GameObject("Chunk" + i);
+                var chunk = new GameObject("Chunk_" + i);
                 chunk.transform.SetParent(go.transform, false);
 
                 Setup(i, chunk, fractureTool);
-                Joints(chunk, jointBreakForce);
+                //Joints(chunk, jointBreakForce);
                 //
+                AddAuthoringComponents(chunk,jointBreakForce);
+                //SetupAuthoringComponents(chunk);
             }
+
+            CreateNodeConnections();
             Cleanup();
+        }
+
+        private void SetupAuthoringComponents(GameObject chunk)
+        {
+            // Go through, sort nodes by distance for each node and add connections. Must be at least one 
+            // on every connection and connections cannot be double the distance of the shortest distance.
+            var nodes = transform.root.GetComponentsInChildren<NodeAuthoring>();
+            
+            //var subtractedList = nodes.Where(x=>x != node).ToList();
+            // Step 1 - iterate on every node.
+            foreach (var node in nodes)
+            {
+                // Subtract self from list
+                var subtractedList = nodes.Where(x=>x != node).ToList();
+                
+                var distanceSortedList = subtractedList.OrderBy( x => Vector3.Distance(node.Position,x.Position)).ToList();
+                
+                // Step two, iterate on each sorted node
+                var maxDistance =  math.distance(node.Position, distanceSortedList[1].Position) * 1.3f;
+                
+                
+                foreach (var sortedNode in distanceSortedList)
+                {
+                    // must pass distance test to add
+                    if (!node.connections.Contains(sortedNode.transform) && node.transform!= sortedNode.transform &&
+                        math.distance(sortedNode.Position, node.Position) <= maxDistance)
+                    {
+                        node.connections.Add(sortedNode.transform);
+                    }
+                }
+
+                // If we couldnt add a node for some reason just grab the first one
+                if (node.connections.Count.Equals(0))
+                {
+                    foreach (var sortedNode in distanceSortedList)
+                    {
+                        if (node.transform!= sortedNode.transform)
+                        {
+                            node.connections.Add(sortedNode.transform);
+                            break;
+                        }
+                    }
+                }
+                
+                
+                
+                
+            }
+        }
+
+        private void AddAuthoringComponents(GameObject chunk, float f)
+        {
+            var connectednode = chunk.gameObject.GetComponent<NodeAuthoring>();
+            if (connectednode == null)
+            {
+                var node = chunk.gameObject.AddComponent<NodeAuthoring>();
+                node.dirty = true;
+            }
+            var removeVelocity = chunk.gameObject.GetComponent<RemoveVelocity>();
+            if(removeVelocity==null)
+                chunk.gameObject.AddComponent<RemoveVelocity>();
+                
+            chunk.gameObject.AddComponent<MeshRenderer>();;
         }
 
         public void Cleanup()
@@ -152,8 +220,8 @@ namespace Destructibles
             
             AssetDatabase.CreateAsset(mesh, "Assets/GeometryCollection/" + name + "/" + "chunk_"+i+".mesh");
             
-            var rigid = chunk.AddComponent<Rigidbody>();
-            rigid.mass = m_TotalMass / totalChunks;
+            //var rigid = chunk.AddComponent<Rigidbody>();
+            //rigid.mass = m_TotalMass / totalChunks;
 
             var mc = chunk.AddComponent<MeshCollider>();
             //mc.inflateMesh = true;
@@ -166,12 +234,91 @@ namespace Destructibles
             var pba = chunk.AddComponent<PhysicsBodyAuthoring>();
             pba.Mass = m_TotalMass / totalChunks;
         }
+
+        private void CreateNodeConnections()
+        {
+            /*m_Children = GetComponentsInChildren<Transform>();
+            
+            // Add node authoring components
+            foreach (var child in m_Children)
+            {
+                //if(child.transform==transform.root)
+                    //return;
+                
+                var connectednode = child.gameObject.GetComponent<NodeAuthoring>();
+                if (connectednode == null)
+                {
+                    var node = child.gameObject.AddComponent<NodeAuthoring>();
+                    node.dirty = true;
+                }
+                var removeVelocity = child.gameObject.GetComponent<RemoveVelocity>();
+                if(removeVelocity==null)
+                    child.gameObject.AddComponent<RemoveVelocity>();
+                
+                child.gameObject.AddComponent<MeshRenderer>();;
+            }*/
+
+            // Go through, sort nodes by distance for each node and add connections. Must be at least one 
+            // on every connection and connections cannot be double the distance of the shortest distance.
+            var nodes = GetComponentsInChildren<NodeAuthoring>();
+            
+            //var subtractedList = nodes.Where(x=>x != node).ToList();
+            // Step 1 - iterate on every node.
+            foreach (var node in nodes)
+            {
+                // Subtract self from list
+                var subtractedList = nodes.Where(x=>x != node).ToList();
+                
+                var distanceSortedList = subtractedList.OrderBy( x => Vector3.Distance(node.Position,x.Position)).ToList();
+                
+                // Step two, iterate on each sorted node
+                var maxDistance =  math.distance(node.Position, distanceSortedList[1].Position) * 1.3f;
+                
+                
+                foreach (var sortedNode in distanceSortedList)
+                {
+                    // must pass distance test to add
+                    if (!node.connections.Contains(sortedNode.transform) && node.transform!= sortedNode.transform &&
+                        math.distance(sortedNode.Position, node.Position) <= maxDistance)
+                    {
+                        node.connections.Add(sortedNode.transform);
+                    }
+                }
+
+                // If we couldnt add a node for some reason just grab the first one
+                if (node.connections.Count.Equals(0))
+                {
+                    foreach (var sortedNode in distanceSortedList)
+                    {
+                        if (node.transform!= sortedNode.transform)
+                        {
+                            node.connections.Add(sortedNode.transform);
+                            break;
+                        }
+                    }
+                }
+                
+                
+                
+                
+            }
+            
+            
+
+            /*
+            var hits = new List<GameObject>();
+            hits = hits.OrderBy(x => Vector2.Distance(this.transform.position,x.transform.position)
+            ).ToList();*/
+        }
+        
         
         private void Joints(GameObject child, float breakForce)
         {
             var rb = child.GetComponent<Rigidbody>();
             var mesh = child.GetComponent<MeshFilter>().sharedMesh;
         
+            
+            
             var overlaps = mesh.vertices
                 .Select(v => child.transform.TransformPoint(v))
                 .SelectMany(v => Physics.OverlapSphere(v, 0.01f))
