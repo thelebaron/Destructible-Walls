@@ -19,6 +19,23 @@ namespace Destructibles
     {
         [HideInInspector] public bool dirty = true;
         public bool isAnchor;
+        public Vector3 Position => Renderer.bounds.center;
+
+        private Renderer Renderer
+        {
+            get
+            {
+                if (m_Renderer == null)
+                    m_Renderer = GetComponent<Renderer>();
+
+                return m_Renderer;
+            }
+        }
+
+        private Renderer m_Renderer;
+        
+        
+        
         public Transform Root => transform.root;
         public List<Transform> anchors = new List<Transform>();
         public List<Transform> connections = new List<Transform>();
@@ -158,12 +175,20 @@ namespace Destructibles
 
         public void OnDrawGizmosSelected()
         {
+            if (isAnchor)
+            {
+                var anchorpos = GetComponent<Renderer>().bounds.center;
+                
+                Gizmos.color = Color.red;
+                Gizmos.DrawCube(anchorpos, 0.55f * Vector3.one);
+            }
             if (nodeLinks.Count > 0)
             {
                 foreach (var nodelink in nodeLinks)
                 {
                     foreach (var item in nodelink.myList)
                     {
+                        
                     }
                     
                     // draw lines
@@ -173,7 +198,7 @@ namespace Destructibles
                         var currentPos = nodelink.myList[i].GetComponent<Renderer>().bounds.center;
                         Gizmos.DrawSphere(currentPos, 0.25f);
 
-                        var nextindex = i + 1;
+                        var nextindex = math.min(i + 1, nodelink.myList.Count -1);
                         if (nextindex > nodelink.myList.Count)
                             nextindex = 0;
                         var nextPos = nodelink.myList[nextindex].GetComponent<Renderer>().bounds.center;
