@@ -28,9 +28,6 @@ namespace Destructibles
         }
     }
     
-
-    
-    
     /// <summary>
     /// Component that gets attached to a chain entity
     /// </summary>
@@ -51,6 +48,29 @@ namespace Destructibles
             return new NodeAnchorBuffer {Node = e};
         }
     }
+    
+    /// <summary>
+    /// Component that gets attached to a chain entity
+    /// </summary>
+    public struct NodeLinkBuffer : IBufferElementData
+    {
+        /// <summary>
+        /// A node entity.
+        /// </summary>
+        public Entity Link;
+
+        /// <summary>
+        /// Provides implicit conversion of an <see cref="Entity"/> to a Node element.
+        /// </summary>
+        /// <param name="e">The entity to convert</param>
+        /// <returns>A new buffer element.</returns>
+        public static implicit operator NodeLinkBuffer(Entity e)
+        {
+            return new NodeLinkBuffer { Link = e };
+        }
+    }
+    
+    
     
     /// <summary>
     /// An anchor prevents a physicsvelocity from being added to an entity(unless its health meets the requirements). 
@@ -131,6 +151,11 @@ namespace Destructibles
         {
             return new GraphAnchor {Node = e};
         }
+    }
+
+    public struct DestroyLinkEvent : IComponentData
+    {
+        public Entity DestroyedLink;
     }
     
     /*

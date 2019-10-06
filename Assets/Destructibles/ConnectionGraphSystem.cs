@@ -8,68 +8,6 @@ using UnityEngine;
 
 namespace Destructibles
 {
-
-
-    
-    
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
-    public class CreateConnectionGraphSystem : JobComponentSystem
-    {
-        private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
-
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-            m_EndSimulationEntityCommandBufferSystem = World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-        }
-
-
-
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
-        {
-            /*
-            
-            var connectivityMapJob = new CheckConnectivityMap
-            {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
-                ConnectionData = GetBufferFromEntity<Connection>(true),
-                AnchoredNodeData = GetComponentDataFromEntity<StaticAnchor>(true)
-            };
-            var checkConnectivityHandle = connectivityMapJob.Schedule(this, inputDeps);
-            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(checkConnectivityHandle);
-
-            return checkConnectivityHandle;
-            */
-            
-            return inputDeps;
-        }
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
     public class ConnectionGraphSystem : JobComponentSystem
     {
         private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
@@ -80,9 +18,6 @@ namespace Destructibles
             m_EndSimulationEntityCommandBufferSystem = World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
 
-
-        
-        
         [BurstCompile]
         private struct ClearDetachedNodes : IJobForEachWithEntity_EB<ConnectionGraph>
         {
@@ -98,8 +33,8 @@ namespace Destructibles
             }
         }
         
-        [BurstCompile]
-        private struct DeleteChainJob : IJobForEachWithEntity_EBCC<GraphLink, GraphAnchor, GraphNode>
+        //[BurstCompile]
+        private struct DestroyLinkJob : IJobForEachWithEntity_EBCC<GraphLink, GraphAnchor, GraphNode>
         {
             public EntityCommandBuffer.Concurrent EntityCommandBuffer;
             [NativeDisableParallelForRestriction] public BufferFromEntity<NodeAnchorBuffer> NodeAnchorBuffer;
@@ -111,6 +46,13 @@ namespace Destructibles
                     if (PhysicsVelocity.Exists(linkBuffer[i].Node))
                     {
                         EntityCommandBuffer.DestroyEntity(index, entity);
+
+                        var evententity = EntityCommandBuffer.CreateEntity(index);
+                        EntityCommandBuffer.AddComponent(index, evententity, new DestroyLinkEvent
+                        {
+                            DestroyedLink = entity
+                        });
+                        
 
                         if (NodeAnchorBuffer.Exists(graphNode.Node))
                         {
@@ -241,7 +183,7 @@ namespace Destructibles
             };
             var clearJobHandle = clearJob.Schedule(this, inputDeps);
 
-            var deleteJob = new DeleteChainJob
+            var deleteJob = new DestroyLinkJob
             {
                 EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
                 NodeAnchorBuffer = GetBufferFromEntity<NodeAnchorBuffer>(),

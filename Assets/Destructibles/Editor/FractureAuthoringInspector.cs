@@ -58,12 +58,12 @@ namespace Destructibles
                 if (fracture != null) 
                     fracture.Create(); //Refresh in editor view
             }
-            
+            /*
             if (GUILayout.Button("Cleanup"))
             {
                 if (fracture != null) 
                     fracture.Cleanup();
-            }
+            }*/
             //GUILayout.TextArea("Cleanup"))
             if (GUILayout.Button("Find Anchors"))
             {

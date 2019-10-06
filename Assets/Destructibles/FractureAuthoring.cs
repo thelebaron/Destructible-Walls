@@ -72,10 +72,41 @@ namespace Destructibles
                 Joints(chunk, jointBreakForce);
                 //
             }
+            Cleanup();
         }
 
         public void Cleanup()
         {
+            foreach (var node in GetComponentsInChildren<NodeAuthoring>())
+            {
+                if (node.dirty)
+                {
+                    var rigidbodies = node.transform.GetComponents(typeof(Rigidbody));
+                    var joints = node.transform.GetComponents(typeof(Joint));
+                    var colliders = node.transform.GetComponents(typeof(MeshCollider));
+                    
+                    foreach (var j in joints)
+                    {
+                        if(j is Joint)
+                            DestroyImmediate(j);
+                    }
+                    foreach (var r in rigidbodies)
+                    {
+                        if(r is Rigidbody)
+                            DestroyImmediate(r);
+                    }
+            
+                    foreach (var c in colliders)
+                    {
+                        if(c is Collider)
+                            DestroyImmediate(c);
+                    }
+
+                    node.dirty = false;
+                }
+            }
+            
+            /*
             var rigidbodies = GetComponentsInChildren(typeof(Rigidbody));
             var joints = GetComponentsInChildren(typeof(Joint));
             var colliders = GetComponentsInChildren(typeof(MeshCollider));
@@ -95,7 +126,7 @@ namespace Destructibles
             {
                 if(c is Collider)
                     DestroyImmediate(c);
-            }
+            }*/
         }
 
 
@@ -160,8 +191,11 @@ namespace Destructibles
             foreach (Transform tr in transform)
             {
                 var connectednode = tr.gameObject.GetComponent<NodeAuthoring>();
-                if(connectednode==null)
-                    tr.gameObject.AddComponent<NodeAuthoring>();
+                if (connectednode == null)
+                {
+                    var node = tr.gameObject.AddComponent<NodeAuthoring>();
+                    node.dirty = true;
+                }
                 
                 // Get all joints and add a node to each child with its joint neighbors
                 var joints = tr.GetComponents<Joint>();
@@ -177,7 +211,6 @@ namespace Destructibles
                 if(removeVelocity==null)
                     tr.gameObject.AddComponent<RemoveVelocity>();
             }
-            
             
         }
         

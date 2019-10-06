@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using thelebaron.Damage;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Destructibles
 {
@@ -18,6 +17,7 @@ namespace Destructibles
     [DisallowMultipleComponent]
     public class NodeAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDeclareReferencedPrefabs
     {
+        [HideInInspector] public bool dirty = true;
         public bool isAnchor;
         public Transform Root => transform.root;
         public List<Transform> anchors = new List<Transform>();
@@ -56,6 +56,7 @@ namespace Destructibles
                 {
                     var anchorEntity = conversionSystem.GetPrimaryEntity(tr);
                     var hasEntity = false;
+                    
                     // Do lookup for buffer
                     if (!dstManager.HasComponent(entity, typeof(NodeAnchorBuffer)))
                     {
@@ -87,16 +88,25 @@ namespace Destructibles
                 }
                 
             }
-            
+
 
 
             {
-                // Create Node Chains
+                dstManager.AddBuffer<NodeLinkBuffer>(entity);
+                
+                // Create Node Links
                 foreach (var nodeChain in nodeLinks)
                 {
-                    Debug.Log("link" + gameObject.name);
+                    //Debug.Log("link" + gameObject.name);
                     var e = dstManager.CreateEntity();
-
+                    
+                    /*
+                    if (dstManager.HasComponent(entity, typeof(NodeLinkBuffer)))
+                    {
+                        var linkBuffers = dstManager.GetBuffer<NodeLinkBuffer>(entity);
+                        linkBuffers.Add(e);
+                    }
+                    */
                     var buffer = dstManager.AddBuffer<GraphLink>(e);
 
                     foreach (var tr in nodeChain.myList)
@@ -106,7 +116,6 @@ namespace Destructibles
             
                     dstManager.SetName(e, "Graph Link");
                     
-                    //if(!dstManager.HasComponent<Node>(e))
                     dstManager.AddComponentData(e, new GraphNode
                     {
                         Node = entity
@@ -145,20 +154,44 @@ namespace Destructibles
         {
             if(!nodeLinks.Contains(list))
                 nodeLinks.Add(list);
-            
-            //Debug.Log("Added list");
         }
-/*        public void AddNodeChain(List<Transform> list)
+
+        public void OnDrawGizmosSelected()
         {
-            if(!nodeChains.Contains(list))
-                nodeChains.Add(list);
-            
-            Debug.Log("Added list");
-        }*/
+            if (nodeLinks.Count > 0)
+            {
+                foreach (var nodelink in nodeLinks)
+                {
+                    foreach (var item in nodelink.myList)
+                    {
+                    }
+                    
+                    // draw lines
+                    for (int i = 0; i < nodelink.myList.Count; i++)
+                    {
+                        Gizmos.color = Color.yellow;
+                        var currentPos = nodelink.myList[i].GetComponent<Renderer>().bounds.center;
+                        Gizmos.DrawSphere(currentPos, 0.25f);
+
+                        var nextindex = i + 1;
+                        if (nextindex > nodelink.myList.Count)
+                            nextindex = 0;
+                        var nextPos = nodelink.myList[nextindex].GetComponent<Renderer>().bounds.center;
+                        //Gizmos.DrawSphere(nextPos, 0.25f);
+
+                        //var dist = math.distance(currentPos, nextPos);
+                        
+                        
+                        //Gizmos.DrawSphere(item.GetComponent<Renderer>().bounds.center, 0.25f);
+                        
+                        Gizmos.color = Color.blue;
+                        Gizmos.DrawLine(currentPos,nextPos);
+                    }
+                }
+                
+            }
+        }
     }
 
-    public struct noderoot : IComponentData
-    {
-        public Entity Value;
-    }
+    
 }
