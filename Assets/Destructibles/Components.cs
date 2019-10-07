@@ -10,6 +10,11 @@ namespace Destructibles
         //public float Strain;
         //public float MaxStrain;
     }
+
+    public struct Strain : IComponentData
+    {
+        
+    }
     
     /// <summary>
     /// A connection joint contains only the immediate entities which are connected to a node.

@@ -20,6 +20,7 @@ namespace Destructibles
         [HideInInspector] public bool dirty = true;
         public bool isAnchor;
         public Vector3 Position => Renderer.bounds.center;
+        public Mesh Mesh => MeshFilter.sharedMesh;
 
         private Renderer Renderer
         {
@@ -34,7 +35,18 @@ namespace Destructibles
 
         private Renderer m_Renderer;
         
-        
+        private MeshFilter MeshFilter
+        {
+            get
+            {
+                if (m_MeshFilter == null)
+                    m_MeshFilter = GetComponent<MeshFilter>();
+
+                return m_MeshFilter;
+            }
+        }
+
+        private MeshFilter m_MeshFilter;
         
         public Transform Root => transform.root;
         public List<Transform> anchors = new List<Transform>();
