@@ -67,12 +67,21 @@ namespace Destructibles
                 if(isAnchor)
                     dstManager.AddComponentData(entity, new AnchorNode());
                 
-                var connectionJoints = dstManager.AddBuffer<NodeNeighbor>(entity);
+                var nodeNeighbors = dstManager.AddBuffer<NodeNeighbor>(entity);
                 for (int i = 0; i < connections.Count; i++)
                 {
                     var otherentity = conversionSystem.GetPrimaryEntity(connections[i]);
 
-                    connectionJoints.Add(otherentity);
+                    nodeNeighbors.Add(otherentity);
+                    foreach (var neighbor in nodeNeighbors)
+                    {
+                        if (neighbor.Node.Equals(entity))
+                        {
+                            Debug.Log("Adding self?!");
+                        }
+                            
+                    }
+                    
                 }
 
                 
@@ -193,14 +202,15 @@ namespace Destructibles
             {
                 var anchorpos = GetComponent<Renderer>().bounds.center;
                 
-                Gizmos.color = Color.red;
+                Gizmos.color = Color.white;
                 Gizmos.DrawCube(anchorpos, 0.55f * Vector3.one);
             }
             if (!isAnchor)
             {
                 var anchorpos = GetComponent<Renderer>().bounds.center;
                 
-                Gizmos.color = Color.magenta;
+                Gizmos.color = Color.blue;
+                //Gizmos.DrawMesh();
                 Gizmos.DrawCube(anchorpos, 0.55f * Vector3.one);
             }
             if (connections.Count > 0)
@@ -223,7 +233,7 @@ namespace Destructibles
                 
             }
             
-            /*
+            
              // Draw for nodelink
             if (isAnchor)
             {
@@ -252,19 +262,13 @@ namespace Destructibles
                         if (nextindex > nodelink.myList.Count)
                             nextindex = 0;
                         var nextPos = nodelink.myList[nextindex].GetComponent<Renderer>().bounds.center;
-                        //Gizmos.DrawSphere(nextPos, 0.25f);
-
-                        //var dist = math.distance(currentPos, nextPos);
-                        
-                        
-                        //Gizmos.DrawSphere(item.GetComponent<Renderer>().bounds.center, 0.25f);
                         
                         Gizmos.color = Color.blue;
                         Gizmos.DrawLine(currentPos,nextPos);
                     }
                 }
                 
-            }*/
+            }
         }
     }
 

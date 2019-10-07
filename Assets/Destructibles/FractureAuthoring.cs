@@ -30,6 +30,7 @@ namespace Destructibles
         private Transform[] m_Children;
         private System.Random m_SystemRandom;
         private NodeAuthoring[] m_Nodes;
+        public NodeAuthoring[] Nodes => m_Nodes;
 
         private const string MainPath = "Assets/GeometryCollection";
 
@@ -230,6 +231,7 @@ namespace Destructibles
             // Go through, sort nodes by distance for each node and add connections. Must be at least one 
             // on every connection and connections cannot be double the distance of the shortest distance.
             var nodes = GetComponentsInChildren<NodeAuthoring>();
+            m_Nodes = nodes;
             var meshReferences = new List<MeshReference>();
             // blargh
             /*
@@ -254,7 +256,9 @@ namespace Destructibles
                 // Loop other nodes
                 foreach (var otherNode in nodes)
                 {
-                    bool matchingConnection;
+                    if (otherNode.gameObject == node.gameObject)
+                        continue;
+                    //bool matchingConnection;
                     // other node's verts
                     var otherNodeVertices = otherNode.Mesh.vertices;
                     

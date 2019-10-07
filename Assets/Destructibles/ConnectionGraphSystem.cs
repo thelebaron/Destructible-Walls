@@ -192,19 +192,6 @@ namespace Destructibles
             var deleteJobHandle = deleteJob.Schedule(this, clearJobHandle);
             deleteJobHandle.Complete();
             
-            /*
-            
-            var connectivityMapJob = new CheckConnectivityMap
-            {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
-                ConnectionData = GetBufferFromEntity<Connection>(true),
-                AnchoredNodeData = GetComponentDataFromEntity<StaticAnchor>(true)
-            };
-            var checkConnectivityHandle = connectivityMapJob.Schedule(this, inputDeps);
-            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(checkConnectivityHandle);
-
-            return checkConnectivityHandle;
-            */
 
             return deleteJobHandle;
         }
