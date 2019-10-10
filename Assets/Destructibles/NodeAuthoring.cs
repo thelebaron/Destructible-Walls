@@ -19,6 +19,13 @@ namespace Destructibles
     {
         [HideInInspector] public bool dirty = true;
         public bool isAnchor;
+
+        public bool ShowConnections {
+            get { return _ShowConnections; }
+            set => _ShowConnections = value;
+        }
+
+        private static bool _ShowConnections;
         public Vector3 Position => Renderer.bounds.center;
         public Mesh Mesh => MeshFilter.sharedMesh;
 
@@ -232,43 +239,42 @@ namespace Destructibles
                 }
                 
             }
-            
-            
-             // Draw for nodelink
-            if (isAnchor)
-            {
-                var anchorpos = GetComponent<Renderer>().bounds.center;
-                
-                Gizmos.color = Color.red;
-                Gizmos.DrawCube(anchorpos, 0.55f * Vector3.one);
-            }
-            if (nodeLinks.Count > 0)
-            {
-                foreach (var nodelink in nodeLinks)
-                {
-                    foreach (var item in nodelink.myList)
-                    {
-                        
-                    }
-                    
-                    // draw lines
-                    for (int i = 0; i < nodelink.myList.Count; i++)
-                    {
-                        Gizmos.color = Color.yellow;
-                        var currentPos = nodelink.myList[i].GetComponent<Renderer>().bounds.center;
-                        Gizmos.DrawSphere(currentPos, 0.25f);
 
-                        var nextindex = math.min(i + 1, nodelink.myList.Count -1);
-                        if (nextindex > nodelink.myList.Count)
-                            nextindex = 0;
-                        var nextPos = nodelink.myList[nextindex].GetComponent<Renderer>().bounds.center;
+            if (_ShowConnections)
+            {
+                if (nodeLinks.Count > 0)
+                {
+                    foreach (var nodelink in nodeLinks)
+                    {
+                        // draw lines
+                        for (int i = 0; i < nodelink.myList.Count; i++)
+                        {
+                            Gizmos.color = Color.yellow;
+                            var currentPos = nodelink.myList[i].GetComponent<Renderer>().bounds.center;
+                            Gizmos.DrawSphere(currentPos, 0.25f);
+
+                            var nextindex = math.min(i + 1, nodelink.myList.Count - 1);
+                            if (nextindex > nodelink.myList.Count)
+                                nextindex = 0;
+                            var nextPos = nodelink.myList[nextindex].GetComponent<Renderer>().bounds.center;
+
+                            Gizmos.color = Color.white;
+                            Gizmos.DrawLine(currentPos, nextPos);
+
+                            var nodeIsAnchor = nodelink.myList[i].GetComponent<NodeAuthoring>().isAnchor;
+                            if (nodeIsAnchor)
+                            {
+                                var anchorpos = nodelink.myList[i].GetComponent<Renderer>().bounds.center;
+                                Gizmos.color = Color.white;
+                                Gizmos.DrawCube(anchorpos, 0.55f * Vector3.one);
+                            }
+                        }
                         
-                        Gizmos.color = Color.blue;
-                        Gizmos.DrawLine(currentPos,nextPos);
+                        
                     }
-                }
-                
+                } 
             }
+            
         }
     }
 
