@@ -17,6 +17,7 @@ namespace Destructibles
 {
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
+    [SelectionBase]
     public class FractureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
     {
         [SerializeField] private float density = 500;
