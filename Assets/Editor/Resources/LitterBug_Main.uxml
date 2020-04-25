@@ -1,0 +1,36 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Label text="Litterbug!" style="left: 0; margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px; -unity-text-align: upper-center;  -unity-font-style: normal; font-size: 46px;">
+        <Style src="/Assets/LitterBug_Style.uss" />
+    </ui:Label>
+    <ui:VisualElement name="Root" style="position: relative; opacity: 1; flex-direction: row; justify-content: flex-start; right: 45px; left: 2px; top: 2px; height: auto; min-width: auto; width: auto;">
+        <Style src="/Assets/LitterBug_Style.uss" />
+        <ui:Button text="Cube" name="Cube" style="height: 15px; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; width: 35px;" />
+        <ui:Button text="Sphere" name="Sphere" style="height: 15px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 45px;" />
+        <ui:Button text="Plane" name="Plane" style="height: 15px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 35px;" />
+        <ui:Button text="Capsule" name="Capsule" style="height: 15px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; width: 50px;" />
+        <ui:Button text="Cylinder" name="Cylinder" style="height: 15px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 50px;" />
+        <ui:Button text="UIBuilder" name="UIBuilder" style="height: 15px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 57px;" />
+        <ui:VisualElement name="Tools" class="buttons-container" style="align-items: flex-start; justify-content: flex-start; position: absolute; left: auto; flex-direction: row; right: auto; bottom: auto; top: 18px; max-width: none; width: 305px; flex-wrap: wrap;">
+            <ui:Button text="Spawn" name="Spawn" tooltip="Spawn prefabs" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
+            <ui:Button text="Merge" name="Merge" tooltip="Merge spawned prefabs" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
+            <ui:Button text="Clear" name="Clear" tooltip="Clear spawned prefabs" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
+            <ui:Button text="Delete&#10;Merged" name="Destroy" tooltip="Destroys ALL merged prefabs!" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
+        </ui:VisualElement>
+        
+        <ui:VisualElement name="Toggles" style="position: absolute; height: 445.2px; width: 302.2857px; top: 54px; left: 2px;">
+            <ui:Label text="Raycast properties" style="left: 0; margin-left: 3px; margin-right: 3px; margin-top: 12px; -unity-font-style: bold-and-italic; margin-bottom: 5px;" />
+            <uie:IntegerField label="Iterations" value="1" name="Iterations" tooltip="How many times to instantiate on spawn" />
+            <uie:FloatField label="Position Offset" value="0.01" name="PositionOffset" tooltip="Offset position by surface normal" />
+            <uie:Vector3Field label="Placement Spread" name="Spread" x="0.5" y="0.5" z="0.5" />
+            <uie:FloatField label="Max Distance" value="30" name="MaxDistance" tooltip="Maximum distance from the camera" />
+            <ui:Label text="Prefab properties" style="left: 0; margin-left: 3px; margin-right: 3px; margin-top: 12px; -unity-font-style: bold-and-italic; margin-bottom: 5px;" />
+            <uie:ObjectField label="Scene Container" name="SceneContainer" focusable="true" tooltip="Root container gameobject prefabs spawn inside" style="display: flex; visibility: visible; width: auto;" />
+            <uie:ObjectField label="Prefab" name="SpawnObject" focusable="true" tooltip="Prefab object to spawn" style="width: auto;" />
+            <uie:FloatField label="Prefab scale" value="1" name="Scale" tooltip="Adjust prefab scale" binding-path="scale" />
+            <uie:EnumField label="Scale randomization" value="s" name="PrefabScale" tooltip="Randomize scale or not" binding-path="prefabScaleType" />
+            <uie:PropertyField name="ArrayList" label="Array list" binding-path="spawnedList" style="min-width: auto; height: auto;">
+                <ui:Label text="Notes: Should not be used with hierarchical objects as LitterBug currently does not support merging hierarchies. You have been warned!" style="height: auto; width: 295.8px; white-space: normal; left: 12px; top: 12px; right: 12px; color: rgb(96, 96, 96);" />
+            </uie:PropertyField>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

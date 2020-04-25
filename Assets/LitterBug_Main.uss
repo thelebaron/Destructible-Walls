@@ -1,0 +1,16 @@
+.unity-toggle {
+}
+
+.unity-toggle--no-text {
+}
+
+.unity-base-field {
+}
+
+.my-base-field > .unity-base-field__label {
+    max-width: none;
+    width: auto;
+    opacity: 1;
+    min-width: 95px;
+    display: flex;
+}
