@@ -15,7 +15,7 @@ public class SpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDecl
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            var em = World.Active.EntityManager;
+            var em = World.DefaultGameObjectInjectionWorld.EntityManager;
             em.Instantiate(m_PrefabEntity);
         }
     }

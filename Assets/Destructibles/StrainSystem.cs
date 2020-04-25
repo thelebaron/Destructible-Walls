@@ -1,11 +1,8 @@
-using thelebaron.Damage;
-using Unity.Burst;
+using thelebaron.damage;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Physics;
-using Unity.Transforms;
-using UnityEngine;
 
 namespace Destructibles
 {
@@ -18,7 +15,7 @@ namespace Destructibles
         {
             base.OnCreate();
             m_EndSimulationEntityCommandBufferSystem =
-                World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+                World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
             m_DestroyLinkEventQuery = GetEntityQuery(typeof(DestroyLinkEvent));
         }
 
@@ -188,7 +185,7 @@ namespace Destructibles
         {
             base.OnCreate();
             m_EndSimulationEntityCommandBufferSystem =
-                World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+                World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
 
         private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;

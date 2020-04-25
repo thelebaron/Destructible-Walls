@@ -91,8 +91,12 @@ namespace Destructibles
                 node.dirty = true;
             }
             var removeVelocity = chunk.gameObject.GetComponent<RemoveVelocity>();
-            if(removeVelocity==null)
-                chunk.gameObject.AddComponent<RemoveVelocity>();
+            if (removeVelocity == null)
+            {
+                
+                removeVelocity = chunk.gameObject.AddComponent<RemoveVelocity>();
+                removeVelocity.gameObject.hideFlags = HideFlags.HideInInspector;
+            }
                 
             chunk.gameObject.AddComponent<MeshRenderer>();;
         }

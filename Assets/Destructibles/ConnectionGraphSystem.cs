@@ -3,7 +3,6 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Physics;
-using Unity.Transforms;
 using UnityEngine;
 
 namespace Destructibles
@@ -15,7 +14,7 @@ namespace Destructibles
         protected override void OnCreate()
         {
             base.OnCreate();
-            m_EndSimulationEntityCommandBufferSystem = World.Active.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+            m_EndSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
         }
 
         [BurstCompile]

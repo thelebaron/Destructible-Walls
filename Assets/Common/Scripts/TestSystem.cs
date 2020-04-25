@@ -19,9 +19,9 @@ namespace Common.Scripts
         {
             base.OnCreate();
 
-            m_BuildPhysicsWorldSystem = World.Active.GetOrCreateSystem<BuildPhysicsWorld>();
-            m_StepPhysicsWorld        = World.Active.GetOrCreateSystem<StepPhysicsWorld>();
-            m_ExportPhysicsWorld      = World.Active.GetOrCreateSystem<ExportPhysicsWorld>();
+            m_BuildPhysicsWorldSystem = World.GetOrCreateSystem<BuildPhysicsWorld>();
+            m_StepPhysicsWorld        = World.GetOrCreateSystem<StepPhysicsWorld>();
+            m_ExportPhysicsWorld      = World.GetOrCreateSystem<ExportPhysicsWorld>();
         }
         
         //[BurstCompile]

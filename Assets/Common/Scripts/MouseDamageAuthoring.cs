@@ -1,4 +1,5 @@
 using Unity.Entities;
+using Unity.Physics.Extensions;
 using UnityEngine;
 
 namespace Common.Scripts
@@ -14,6 +15,7 @@ namespace Common.Scripts
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
             dstManager.AddComponentData(entity, new MouseDamage());
+            //dstManager.AddComponentData(entity, new MousePick());
         }
     }
 }

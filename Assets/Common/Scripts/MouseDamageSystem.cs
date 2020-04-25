@@ -1,4 +1,4 @@
-using thelebaron.Damage;
+using thelebaron.damage;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -17,7 +17,7 @@ namespace Common.Scripts
 
         protected override void OnCreate()
         {
-            m_BuildPhysicsWorldSystem = World.Active.GetOrCreateSystem<BuildPhysicsWorld>();
+            m_BuildPhysicsWorldSystem = World.GetOrCreateSystem<BuildPhysicsWorld>();
             m_MouseGroup = GetEntityQuery(new EntityQueryDesc
             {
                 All = new ComponentType[] {typeof(MouseDamage)}
@@ -48,8 +48,10 @@ namespace Common.Scripts
 
                         if (hitentity.Equals(Entity.Null)) return;
 
+                        
                         if (HealthDataFromEntity.Exists(hitentity))
                         {
+                            Debug.Log("Damaged " + hitentity + "!");
                             var health = HealthDataFromEntity[hitentity];
                             health.Value -= 10;
                             HealthDataFromEntity[hitentity] = health;
@@ -62,6 +64,9 @@ namespace Common.Scripts
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+            if (Camera.main == null)
+                return inputDeps;
+            
             var finalhandle = JobHandle.CombineDependencies(inputDeps, m_BuildPhysicsWorldSystem.FinalJobHandle);
             
             var clickhandle = new ClickJob

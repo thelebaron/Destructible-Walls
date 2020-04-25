@@ -1,0 +1,8 @@
+{
+  "name": "com.thelebaron.mathematics",
+  "description": "helpful maths stuff",
+  "version": "0.0.4",
+  "displayName": "mathematics",
+  "type": "tool",
+  "unity": "2020.1"
+}

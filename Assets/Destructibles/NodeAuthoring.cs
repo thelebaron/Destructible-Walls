@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using thelebaron.Damage;
+using thelebaron.damage;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
