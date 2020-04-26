@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:Label text="Litterbug!" style="left: 0; margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px; -unity-text-align: upper-center;  -unity-font-style: normal; font-size: 46px;">
+    <ui:Label text="Litterbug!" style="left: 0; margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px; -unity-text-align: upper-center; -unity-font-style: normal; font-size: 46px;">
         <Style src="/Assets/LitterBug_Style.uss" />
     </ui:Label>
     <ui:VisualElement name="Root" style="position: relative; opacity: 1; flex-direction: row; justify-content: flex-start; right: 45px; left: 2px; top: 2px; height: auto; min-width: auto; width: auto;">
@@ -16,16 +16,17 @@
             <ui:Button text="Clear" name="Clear" tooltip="Clear spawned prefabs" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
             <ui:Button text="Delete&#10;Merged" name="Destroy" tooltip="Destroys ALL merged prefabs!" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
         </ui:VisualElement>
-        
         <ui:VisualElement name="Toggles" style="position: absolute; height: 445.2px; width: 302.2857px; top: 54px; left: 2px;">
             <ui:Label text="Raycast properties" style="left: 0; margin-left: 3px; margin-right: 3px; margin-top: 12px; -unity-font-style: bold-and-italic; margin-bottom: 5px;" />
             <uie:IntegerField label="Iterations" value="1" name="Iterations" tooltip="How many times to instantiate on spawn" />
+            <uie:EnumField label="Placement Type" value="Off" include-obsolete-values="false" name="PlacementType"  binding-path="placementType" tooltip="Surface placement options" style="width: 299px;" />
             <uie:FloatField label="Position Offset" value="0.01" name="PositionOffset" tooltip="Offset position by surface normal" />
             <uie:Vector3Field label="Placement Spread" name="Spread" x="0.5" y="0.5" z="0.5" />
             <uie:FloatField label="Max Distance" value="30" name="MaxDistance" tooltip="Maximum distance from the camera" />
             <ui:Label text="Prefab properties" style="left: 0; margin-left: 3px; margin-right: 3px; margin-top: 12px; -unity-font-style: bold-and-italic; margin-bottom: 5px;" />
             <uie:ObjectField label="Scene Container" name="SceneContainer" focusable="true" tooltip="Root container gameobject prefabs spawn inside" style="display: flex; visibility: visible; width: auto;" />
             <uie:ObjectField label="Prefab" name="SpawnObject" focusable="true" tooltip="Prefab object to spawn" style="width: auto;" />
+            <uie:EnumField label="Rotation Type" value="Off" include-obsolete-values="false" name="RotationType" binding-path="prefabRotationType" tooltip="Randomize rotation or not" style="width: 299px;" />
             <uie:FloatField label="Prefab scale" value="1" name="Scale" tooltip="Adjust prefab scale" binding-path="scale" />
             <uie:EnumField label="Scale randomization" value="s" name="PrefabScale" tooltip="Randomize scale or not" binding-path="prefabScaleType" />
             <uie:PropertyField name="ArrayList" label="Array list" binding-path="spawnedList" style="min-width: auto; height: auto;">

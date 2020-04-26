@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using thelebaron.CustomEditor;
 using Unity.Mathematics;
 #if UNITY_EDITOR
-using thelebaron.CustomEditor;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -89,10 +89,36 @@ public class LitterBug : EditorBase
         
         SetupRaycastProperties(rootVisualElement);
         SetupPrefabProperties(rootVisualElement);
+
+        var prefs = kaos.KaosEditorSerialization.Load();
+        //Debug.Log(prefs);
+        prefabObjectField.value = GameObject.Find(prefs.SelectionName);
     }
-    
+
+    private void OnDisable()
+    {
+        var selection = (GameObject) prefabObjectField.value;
+        var selectionName = selection.name;
+        var array = FindObjectsOfType<GameObject>();
+        int counter = 0;
+        foreach (var g in array)
+        {
+            if (g.name == selectionName)
+                counter++;
+        }
+
+        if (counter > 1)
+        {
+            Debug.Log("Multiple objects found with same name as selection, not saving.");
+            return;
+        }
+        kaos.KaosEditorSerialization.Save((GameObject)prefabObjectField.value);
+    }
+
     private void OnDestroy()
     {
+        
+        
         SceneView.duringSceneGui -= OnScene;
     }
 
