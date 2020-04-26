@@ -11,7 +11,7 @@ using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
-public class LitterBug : EditorBase
+public class KaosMainEditor : EditorBase
 {
     //private RotationType prefabRotationType = RotationType.None;
     //private ScaleType prefabScaleType = ScaleType.None;
@@ -39,9 +39,9 @@ public class LitterBug : EditorBase
     public static void ShowWindow()
     {
         // Opens the window, otherwise focuses it if it’s already open.
-        var window = GetWindow<LitterBug>();
+        var window = GetWindow<KaosMainEditor>();
         // Adds a title to the window.
-        window.titleContent = new GUIContent("LitterBug");
+        window.titleContent = new GUIContent("Kaos Editor");
         // Sets a minimum size to the window.
         window.minSize = new Vector2(315, 370);
     }
@@ -57,10 +57,10 @@ public class LitterBug : EditorBase
         //Debug.Log(root);
         // Associates a stylesheet to our root. Thanks to inheritance, all root’s
         // children will have access to it.
-        root.styleSheets.Add(Resources.Load<StyleSheet>("LitterBug_Style"));
+        root.styleSheets.Add(Resources.Load<StyleSheet>("KaosEditorMain_Style"));
 
         // Loads and clones our VisualTree (eg. our UXML structure) inside the root.
-        var quickToolVisualTree = Resources.Load<VisualTreeAsset>("LitterBug_Main");
+        var quickToolVisualTree = Resources.Load<VisualTreeAsset>("KaosEditorMain");
         quickToolVisualTree.CloneTree(root);
 
         // Queries all the buttons (via type) in our root and passes them

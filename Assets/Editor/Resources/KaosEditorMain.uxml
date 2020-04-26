@@ -1,9 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:Label text="Litterbug!" style="left: 0; margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px; -unity-text-align: upper-center; -unity-font-style: normal; font-size: 46px;">
-        <Style src="/Assets/LitterBug_Style.uss" />
+    <ui:Label text="Kaos Editor" style="left: 0; margin-left: 4px; margin-right: 4px; margin-top: 4px; margin-bottom: 4px; -unity-text-align: upper-center; -unity-font-style: normal; font-size: 46px;">
+        <Style src="/Assets/KaosEditorMain_Style.uss" />
     </ui:Label>
     <ui:VisualElement name="Root" style="position: relative; opacity: 1; flex-direction: row; justify-content: flex-start; right: 45px; left: 2px; top: 2px; height: auto; min-width: auto; width: auto;">
-        <Style src="/Assets/LitterBug_Style.uss" />
+        <Style src="/Assets/KaosEditorMain_Style.uss" />
         <ui:Button text="Cube" name="Cube" style="height: 15px; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; width: 35px;" />
         <ui:Button text="Sphere" name="Sphere" style="height: 15px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 45px;" />
         <ui:Button text="Plane" name="Plane" style="height: 15px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 35px;" />
