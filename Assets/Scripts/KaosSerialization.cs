@@ -6,8 +6,11 @@ using UnityEngine;
 
 namespace kaos
 {
-    public static class KaosEditorSerialization
+    public static class KaosSerialization
     {
+        
+        public const string SavedMeshDataPath = "GeometryCollection";
+        
         private static string DefaultPath()
         {
             var fileLocation = Application.dataPath; 
@@ -47,5 +50,7 @@ namespace kaos
     public class KaosPreferences
     {
         public string SelectionName;
+        public string PathMaterialInside;
+        public string PathMaterialOutside;
     }
 }
