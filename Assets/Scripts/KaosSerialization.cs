@@ -14,20 +14,17 @@ namespace kaos
         private static string DefaultPath()
         {
             var fileLocation = Application.dataPath; 
-            var filename    = "KaosData.json";
+            var filename    = "KaosPreferences.json";
             var path = fileLocation + "\\" + filename;
 
             return path;
         }
         
-        public static void Save(GameObject obj)
+        public static void Save(KaosPreferences prefs)
         {
-            if (obj == null) return;
+            if (prefs == null) 
+                return;
             
-            var prefs = new KaosPreferences {
-                SelectionName = obj.name
-            };
-
             XmlSerializer serializer = new XmlSerializer(typeof(KaosPreferences));
             TextWriter    textWriter = new StreamWriter(DefaultPath());
             serializer.Serialize(textWriter, prefs);
@@ -38,10 +35,20 @@ namespace kaos
 
         public static KaosPreferences Load()
         {
-            var x= File.ReadAllText(DefaultPath());
+            KaosPreferences data = null;
             
-            var data = (KaosPreferences) JsonUtility.FromJson(x, typeof(KaosPreferences));
+            if (!File.Exists(DefaultPath()))
+            {
+                data = new KaosPreferences();
+            }
             
+            if (File.Exists(DefaultPath()))
+            {
+                var x = File.ReadAllText(DefaultPath());
+            
+                data = (KaosPreferences) JsonUtility.FromJson(x, typeof(KaosPreferences));
+            }
+
             return data;
         }
     }
@@ -49,8 +56,8 @@ namespace kaos
     [Serializable]
     public class KaosPreferences
     {
-        public string SelectionName;
-        public string PathMaterialInside;
-        public string PathMaterialOutside;
+        public string Mesh;
+        public string MaterialInside;
+        public string MaterialOutside;
     }
 }

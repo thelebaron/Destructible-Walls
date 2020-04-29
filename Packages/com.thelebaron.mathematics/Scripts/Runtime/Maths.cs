@@ -54,6 +54,11 @@ namespace thelebaron.mathematics
         public static float round(float x, int decimals) {
             return math.round(x * math.pow(10, decimals));
         }*/
+       public static float round(float a)
+       {
+           return (float)System.Math.Round(a, 2);
+       }
+       
        public static float lerpSmooth(float x, float y, float t)
        {
            return (float)math.lerp(x, y, math.smoothstep(0.0, 1.0, math.smoothstep(0.0, 1.0, t)));

@@ -1,0 +1,5 @@
+{
+    "Mesh": "",
+    "MaterialInside": "Assets/Materials/Inside.mat",
+    "MaterialOutside": "Assets/Materials/Outside.mat"
+}

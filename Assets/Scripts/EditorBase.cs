@@ -46,6 +46,16 @@ namespace thelebaron.CustomEditor
         {
             SceneCameraRaycast();
         }
+        
+        public void Log(object obj)
+        {
+            Debug.Log(obj);
+        }
+        
+        public void Log(string obj)
+        {
+            Debug.Log(obj);
+        }
     }
 }
 

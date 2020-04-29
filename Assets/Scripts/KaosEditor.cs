@@ -15,22 +15,34 @@ public partial class KaosEditor : EditorBase
 {
     #region FIELDS
 
-    private ObjectField meshField;
-    private Mesh originalMesh;
+    private ObjectField meshInputField;
     
-    private IntegerField fractureCount;
+    private GameObject root;
+    private List<List<NodeInfo>> nestedNodes;
     
     private ObjectField materialInsideField;
     private ObjectField materialOutideField;
 
-    private Material insideMaterial;
-    private Material outsideMaterial;
+    private Label distanceLabel;
+    private Slider distancePreviewSlider;
+    private SliderInt fractureNestingSlider;
+    //private UnityEditor.UIElements. fractureCount;
     
     private System.Random systemRandom;
     private IntegerField seed;
     private float totalMass;
     private FloatField density;
 
+    // Voronoi fields
+    private IntegerField fractureCount;
+    // Cluster fields
+    private IntegerField Clusters; //5
+    private IntegerField SitesPerCluster; //5
+    private FloatField ClusterRadius; //1
+    public int   clusters        = 5;
+    public int   sitesPerCluster = 5;
+    public float clusterRadius   = 1;
+    
     private KaosPreferences kaosPreferences;
 
     #endregion
@@ -72,39 +84,41 @@ public partial class KaosEditor : EditorBase
 
         
         // Reference to the root of the window.
-        var root = rootVisualElement;
-        var children = root.Children();
+        //var root = rootVisualElement;
+        var children = rootVisualElement.Children();
         var child = children.FirstOrDefault();
 
         //Debug.Log(root);
         // Associates a stylesheet to our root. Thanks to inheritance, all root’s
         // children will have access to it.
-        root.styleSheets.Add(Resources.Load<StyleSheet>("KaosEditorMain_Style"));
+        rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("KaosEditorMain_Style"));
 
         // Loads and clones our VisualTree (eg. our UXML structure) inside the root.
         var quickToolVisualTree = Resources.Load<VisualTreeAsset>("KaosEditorMain");
-        quickToolVisualTree.CloneTree(root);
+        quickToolVisualTree.CloneTree(rootVisualElement);
 
+
+        
         // Queries all the buttons (via type) in our root and passes them
         // in the SetupButton method.
-        var toolButtons = root.Query<Button>();
+        var toolButtons = rootVisualElement.Query<Button>();
         toolButtons.ForEach(Setup_Button);
 
-        var objects = root.Query<ObjectField>();
+        var objects = rootVisualElement.Query<ObjectField>();
         objects.ForEach(Setup_ObjectField);
 
         //var enums = root.Query<EnumField>();
         //enums.ForEach(Setup_Enums);
         
-        var toggles = root.Query<Toggle>();
+        var toggles = rootVisualElement.Query<Toggle>();
         toggles.ForEach(Setup_Toggles);
         
         //var vector3s = root.Query<Vector3Field>();
         //vector3s.ForEach(Setup_Vector3Fields);
         
         //var floats = root.Query<FloatField>();
-        root.Query<FloatField>().ForEach(Setup_FloatFields);
-        var intfields = root.Query<IntegerField>();
+        rootVisualElement.Query<FloatField>().ForEach(Setup_FloatFields);
+        var intfields = rootVisualElement.Query<IntegerField>();
         intfields.ForEach(Setup_IntFields);
         
         /*
@@ -120,13 +134,16 @@ public partial class KaosEditor : EditorBase
             kaosPreferences = new KaosPreferences();
         
         OnRandomSeed();
-        //Debug.Log(prefs);
-        //materialOutideField.value = GameObject.Find(prefs.SelectionName);
+        TryGetMaterials();
+        //TryGetMesh(); // unsure how to approach for now as it returns obj
+        
 
     }
 
     private void OnDisable()
     {
+        Save();
+        
         return;
         /*
         var selection = (GameObject) materialOutideField.value;
@@ -179,113 +196,8 @@ public partial class KaosEditor : EditorBase
 
     private void OnReset()
     {
-        throw new NotImplementedException();
+        DestroyImmediate(root);
     }
-
-
-    private void MyCallback()
-    {
-        Debug.Log("doesitwork");
-    }
-    
-    private void RegisterCallbacks(VisualElement visualElement)
-    {
-        // event object
-        // Scale size adjustment field
-        var meshfield = visualElement.Q<ObjectField>("OriginalMesh");
-        
-        meshfield.RegisterCallback<ChangeEvent<ObjectField>>(evt =>
-        {
-            meshField = evt.newValue;
-            MyCallback();
-            //Debug.Log(meshfield);
-        });
-        //meshfield.RegisterCallback<ChangeEvent<ObjectField>>(ChangedMesh);
-        fractureCount = rootVisualElement.Q<IntegerField>("FractureCount");
-        fractureCount.RegisterCallback<ChangeEvent<IntegerField>>((evt) =>
-        {
-            fractureCount = evt.newValue;
-        });
-        
-        density = rootVisualElement.Q<FloatField>("Density");
-        density.RegisterCallback<ChangeEvent<FloatField>>((evt) =>
-        {
-            density = evt.newValue;
-        });
-        
-        seed = rootVisualElement.Q<IntegerField>("Seed");
-        seed.RegisterCallback<ChangeEvent<IntegerField>>((evt) =>
-        {
-            seed = evt.newValue;
-        });
-        
-
-        
-        // Placement enum
-        var placementUxmlField = rootVisualElement.Q<EnumField>("PlacementType");
-        // initialize enum
-        placementUxmlField.Init(PlacementType.Container);
-        placementUxmlField.value = PlacementType.Container;
-        prefabPlacementType = placementUxmlField;
-        // Mirror value of uxml field into the C# field.
-        placementUxmlField.RegisterCallback<ChangeEvent<EnumField>>((evt) =>
-        {
-            prefabPlacementType = evt.newValue;
-            MyCallback();
-        });
-        
-        var fractureUxmlField = rootVisualElement.Q<EnumField>("FractureType");
-        fractureUxmlField.Init(FractureType.Voronoi);
-        fractureType = fractureUxmlField;
-        // Mirror value of uxml field into the C# field.
-        fractureUxmlField.RegisterCallback<ChangeEvent<EnumField>>((evt) =>
-        {
-            fractureType = evt.newValue;
-            Debug.Log("sdffsd");
-        });
-        
-        
-        
-        // Rotation enum
-        var rotationUxmlField = rootVisualElement.Q<EnumField>("RotationType");
-        // initialize enum
-        rotationUxmlField.Init(RotationType.RandomNormal);
-        rotationUxmlField.value = RotationType.RandomNormal;
-        prefabRotationType = rotationUxmlField;
-        // Mirror value of uxml field into the C# field.
-        rotationUxmlField.RegisterCallback<ChangeEvent<EnumField>>((evt) =>
-        {
-            prefabRotationType = evt.newValue;
-            MyCallback();
-            Debug.Log("Hello");
-        });
-        
-        // Scale size adjustment field
-        var uxmlScaleField = rootVisualElement.Q<FloatField>("Scale");
-        prefabScale = uxmlScaleField;
-        uxmlScaleField.RegisterCallback<ChangeEvent<FloatField>>((evt) =>
-        {
-            prefabScale =  evt.newValue;
-        });
-        
-        // Scale randomization enum
-        var scaleUxmlField = rootVisualElement.Q<EnumField>("PrefabScale");
-        // initialize enum
-        scaleUxmlField.Init(ScaleType.None);
-        scaleUxmlField.value = ScaleType.None;
-        prefabScaleType = scaleUxmlField;
-        // Mirror value of uxml field into the C# field.
-        scaleUxmlField.RegisterCallback<ChangeEvent<EnumField>>((evt) =>
-        {
-            prefabScaleType = evt.newValue;
-        });
-        
-        
-        
-    }
-
-
-
 
     private void Setup_Toggles(Toggle toggle)
     {
@@ -477,8 +389,12 @@ public partial class KaosEditor : EditorBase
 
     private enum FractureType
     {
-        Voronoi, 
-        Slicing
+        Voronoi,
+        Clustered,
+        /*Slicing,
+        Skinned,
+        Plane,
+        Cutout*/
     }
     
     /*/// <summary>

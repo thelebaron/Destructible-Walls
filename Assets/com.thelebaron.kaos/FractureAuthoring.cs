@@ -131,28 +131,6 @@ namespace Destructibles
                     node.dirty = false;
                 }
             }
-            
-            /*
-            var rigidbodies = GetComponentsInChildren(typeof(Rigidbody));
-            var joints = GetComponentsInChildren(typeof(Joint));
-            var colliders = GetComponentsInChildren(typeof(MeshCollider));
-            
-            foreach (var j in joints)
-            {
-                if(j is Joint)
-                    DestroyImmediate(j);
-            }
-            foreach (var r in rigidbodies)
-            {
-                if(r is Rigidbody)
-                    DestroyImmediate(r);
-            }
-            
-            foreach (var c in colliders)
-            {
-                if(c is Collider)
-                    DestroyImmediate(c);
-            }*/
         }
 
 
