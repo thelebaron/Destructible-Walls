@@ -2,6 +2,7 @@
 using System;
 using Destructibles;
 using kaos;
+using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Authoring;
 using UnityEditor;
@@ -16,7 +17,7 @@ public partial class KaosEditor
 {
     private void OnFracture()
     {
-        var mesh = (Mesh)meshInputField.value;
+        var mesh = (Mesh)meshField.value;
         if (mesh == null)
         {
             Debug.LogError("Cannot work without a valid mesh! Try assigning one!");
@@ -24,10 +25,15 @@ public partial class KaosEditor
         }
         GetOrCreateDirectories(mesh);
         totalMass = density.value * (mesh.bounds.extents.x * mesh.bounds.extents.y * mesh.bounds.extents.z);
-        if (root == null)
+        if (fractureObject == null)
         {
-            root = new GameObject();
-            root.name = "Fracturable_"+mesh.name;
+            fractureObject = new GameObject();
+            fractureObject.name = "Fracturable_"+fractureObject.name;
+            
+            if(fractureObject.GetComponent<ConvertToEntity>()==null)
+                fractureObject.AddComponent<ConvertToEntity>();
+            //prefab.hideFlags = HideFlags.DontSaveInEditor;
+            //prefabField.value = prefab;
         }
         Bake(mesh);
         
@@ -84,7 +90,7 @@ public partial class KaosEditor
         for (var i = 1; i < fractureTool.getChunkCount(); i++)
         {
             var chunk = new GameObject("Chunk_" + i);
-            chunk.transform.SetParent(root.transform, false);
+            chunk.transform.SetParent(fractureObject.transform, false);
 
             CreateSubMeshes(i, chunk, fractureTool);
             //
@@ -123,7 +129,7 @@ public partial class KaosEditor
         mesh.MarkDynamic();
         mesh.UploadMeshData(false);
 
-        var meshDirectory = "Assets/" + preferences.MeshDirectory +"/" + root.name + "/";
+        var meshDirectory = "Assets/" + preferences.MeshDirectory +"/" + fractureObject.name + "/";
         var filename = "fracture_level_" + fractureNestingSlider.value + "_" + i + ".mesh";
         Serialization.CreateDirectory(meshDirectory);
         
@@ -144,6 +150,9 @@ public partial class KaosEditor
     
     private void AddAuthoringComponents(GameObject chunk, float breakForce = 0)
     {
+        if(!postprocess.value)
+            return;
+        
         var connectednode = chunk.gameObject.GetComponent<NodeAuthoring>();
         if (connectednode == null)
         {
@@ -164,7 +173,7 @@ public partial class KaosEditor
 
     public void Cleanup()
     {
-        foreach (var node in root.GetComponentsInChildren<NodeAuthoring>())
+        foreach (var node in fractureObject.GetComponentsInChildren<NodeAuthoring>())
         {
             if (node.dirty)
             {

@@ -15,13 +15,18 @@ public partial class KaosEditor : EditorBase
 {
     #region FIELDS
 
-    private ObjectField meshInputField;
+    private FractureData fractureData;
     
-    private GameObject root;
-    private List<List<NodeInfoBehaviour>> nestedNodes;
+    private GameObject fractureObject;
     
+    private ObjectField prefabField;
+    private ObjectField meshField;
+    private GameObject Prefab => (GameObject) prefabField.value;
+    private Mesh PrefabMesh { get; set; }
+
     private ObjectField materialInsideField;
     private ObjectField materialOutideField;
+    private Toggle postprocess;
 
     private Label distanceLabel;
     private Slider distancePreviewSlider;
@@ -36,13 +41,17 @@ public partial class KaosEditor : EditorBase
     // Voronoi fields
     private IntegerField fractureCount;
     // Cluster fields
-    private IntegerField Clusters; //5
-    private IntegerField SitesPerCluster; //5
-    private FloatField ClusterRadius; //1
-    public int   clusters        = 5;
-    public int   sitesPerCluster = 5;
-    public float clusterRadius   = 1;
+    private IntegerField Clusters; //5// lowercase
+    private IntegerField SitesPerCluster; //5// lowercase
+    private FloatField ClusterRadius; //1 // lowercase
+
+    private Vector3Field slices;
+    private Slider slicesOffset;
+    private Slider slicesAngle;
+    private FloatField slicesAmplitude;
+    private FloatField slicesOctave;
     
+    private List<List<NodeInfoBehaviour>> nestedNodes;
     private Preferences preferences;
 
     #endregion
@@ -195,7 +204,9 @@ public partial class KaosEditor : EditorBase
 
     private void OnReset()
     {
-        DestroyImmediate(root);
+        DestroyImmediate(fractureObject);
+        /*prefabField.value = null;
+        meshField.value = null;*/
     }
 
     private void Setup_Toggles(Toggle toggle)

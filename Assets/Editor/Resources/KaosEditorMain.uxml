@@ -4,15 +4,15 @@
     </ui:Label>
     <ui:VisualElement name="Root" style="position: relative;&#10;opacity: 1;&#10;flex-direction: row;&#10;justify-content: flex-start;&#10;right: 45px;&#10;left: 2px;&#10;top: 2px;&#10;height: auto;&#10;min-width: auto;&#10;width: auto;&#10;">
         <Style src="KaosEditorMain_Style.uss" />
-        <ui:Button text="Cube" name="Cube" style="height: 15px;&#10;margin-left: 0;&#10;margin-right: 0;&#10;padding-left: 0;&#10;padding-right: 0;&#10;padding-top: 0;&#10;padding-bottom: 0;&#10;margin-top: 0;&#10;margin-bottom: 0;&#10;width: 35px;&#10;" />
-        <ui:Button text="Sphere" name="Sphere" style="height: 15px;&#10;margin-left: 0;&#10;margin-right: 0;&#10;margin-top: 0;&#10;margin-bottom: 0;&#10;padding-left: 0;&#10;padding-right: 0;&#10;padding-top: 0;&#10;padding-bottom: 0;&#10;width: 45px;&#10;" />
         <ui:Button text="UIBuilder" name="UIBuilder" style="height: 15px;&#10;margin-left: 0;&#10;margin-right: 0;&#10;margin-top: 0;&#10;margin-bottom: 0;&#10;padding-left: 0;&#10;padding-right: 0;&#10;padding-top: 0;&#10;padding-bottom: 0;&#10;width: 57px;&#10;" />
         <ui:VisualElement name="Tools" class="buttons-container" style="align-items: flex-start;&#10;justify-content: flex-start;&#10;position: absolute;&#10;left: auto;&#10;flex-direction: row;&#10;right: auto;&#10;bottom: auto;&#10;top: 18px;&#10;max-width: none;&#10;width: 305px;&#10;flex-wrap: wrap;&#10;">
             <ui:Button text="Fracture" name="Fracture" tooltip="Create smaller chunks of an object" style="width: auto;&#10;height: 32px;&#10;margin-left: 1px;&#10;margin-right: 1px;&#10;padding-left: 1px;&#10;" />
             <ui:Button text="Reset" name="Reset" tooltip="Reset any fractured object" style="width: auto;&#10;height: 32px;&#10;margin-left: 1px;&#10;margin-right: 1px;&#10;padding-left: 1px;&#10;" />
+            <ui:Button text="Save" name="save" tooltip="Reset any fractured object" style="width: auto;&#10;height: 32px;&#10;margin-left: 1px;&#10;margin-right: 1px;&#10;padding-left: 1px;&#10;" />
             <ui:Button text="Export" name="Export" tooltip="Export to fbx" style="width: auto;&#10;height: 32px;&#10;margin-left: 1px;&#10;margin-right: 1px;&#10;padding-left: 1px;&#10;" />
         </ui:VisualElement>
         <ui:VisualElement name="Toggles" style="position: absolute;&#10;height: 445.2px;&#10;width: 302.2857px;&#10;top: 54px;&#10;left: 2px;&#10;">
+            <uie:ObjectField label="Prefab" name="prefab-field" focusable="true" tooltip="Prefab to fracture" style="display: flex;&#10;visibility: visible;&#10;width: auto;&#10;" />
             <uie:ObjectField label="Mesh" name="mesh-input" focusable="true" tooltip="Root container gameobject prefabs spawn inside" style="display: flex;&#10;visibility: visible;&#10;width: auto;&#10;" />
             <ui:SliderInt picking-mode="Ignore" label="Fracture Levels" value="1" high-value="4" name="fracture-nesting-label" low-value="1">
                 <ui:Label text="0" name="fracture-nesting-label" />
@@ -20,14 +20,15 @@
             <ui:Slider picking-mode="Ignore" label="Preview Distance" value="0.5" high-value="5" name="preview-distance-slider" style="width: 289px;&#10;">
                 <ui:Label text="0" name="preview-distance-label" />
             </ui:Slider>
+            <uie:EnumField label="Fracture Type" value="Off" include-obsolete-values="false" name="FractureType" binding-path="fractureType" style="width: 296px;&#10;background-color: rgba(156, 156, 156, 255);&#10;-unity-font-style: normal;&#10;margin-top: 11px;&#10;margin-bottom: 11px;&#10;font-size: 12px;&#10;color: rgba(0, 0, 0, 255);&#10;height: 19px;&#10;" />
             <ui:Label text="Object" style="left: 0;&#10;margin-left: 3px;&#10;margin-right: 3px;&#10;margin-top: 12px;&#10;-unity-font-style: bold-and-italic;&#10;margin-bottom: 5px;&#10;" />
-            <uie:EnumField label="Fracture Type" value="Off" include-obsolete-values="false" name="FractureType" binding-path="fractureType" style="width: 299px;&#10;" />
             <uie:FloatField label="Density" value="15" name="Density" tooltip="Total density/mass of the object(each chunk is divided by the num of chunks and this)" />
             <uie:IntegerField label="Seed" value="12345" name="Seed">
                 <ui:Button text="Random Seed" name="RandomSeed" style="height: 13px;&#10;margin-left: 0;&#10;margin-right: 0;&#10;margin-top: 3px;&#10;margin-bottom: 0;&#10;padding-left: 0;&#10;padding-right: 0;&#10;padding-top: 0;&#10;padding-bottom: 0;&#10;width: 85px;&#10;justify-content: flex-start;&#10;" />
             </uie:IntegerField>
             <uie:ObjectField label="Material Inside" name="MaterialInside" />
             <uie:ObjectField label="Material Outside" name="MaterialOutside" />
+            <ui:Toggle label="Postprocess" text=" " value="true" tooltip="Add the kaos fracturing conversion components" name="postprocess-option" />
             <ui:Label text="Voronoi" style="left: 0;&#10;margin-left: 3px;&#10;margin-right: 3px;&#10;margin-top: 12px;&#10;-unity-font-style: bold-and-italic;&#10;margin-bottom: 5px;&#10;" />
             <uie:IntegerField label="Fracture Count" value="5" name="FractureCount" tooltip="How many chunks a fractured object should be split into" />
             <ui:Toggle label="Shell" name="Shell" tooltip="Should every chunk be an anchor(ie in a thin wall situation)" />
@@ -38,7 +39,17 @@
             <uie:IntegerField label="Clusters" value="5" name="Clusters" tooltip="How many chunks a fractured object should be split into" />
             <uie:IntegerField label="Sites Per Cluster" value="5" name="SitesPerCluster" tooltip="How many chunks a fractured object should be split into" />
             <uie:FloatField label="Cluster Radius" value="2" name="ClusterRadius" tooltip="Total density/mass of the object(each chunk is divided by the num of chunks and this)" />
-            <ui:Label text="Notes: Should not be used with hierarchical objects as LitterBug currently does not support merging hierarchies. You have been warned!" style="height: auto;&#10;width: 295.8px;&#10;white-space: normal;&#10;left: 12px;&#10;top: 12px;&#10;right: 12px;&#10;color: rgb(96, 96, 96);&#10;justify-content: center;&#10;align-items: auto;&#10;" />
+            <ui:Label text="Slicing" style="left: 0;&#10;margin-left: 3px;&#10;margin-right: 3px;&#10;margin-top: 12px;&#10;-unity-font-style: bold-and-italic;&#10;margin-bottom: 5px;&#10;" />
+            <uie:Vector3Field label="Slices" x="1" y="1" z="1" name="slices-field" style="height: 21px;&#10;" />
+            <ui:Slider picking-mode="Ignore" label="Offset" value="0" high-value="1" name="slices-offset-slider" />
+            <ui:Slider picking-mode="Ignore" label="Angle" value="0" high-value="1" name="slices-angle-slider" />
+            <uie:FloatField label="Amplitude" value="0" tooltip="Frequency" name="slices-amplitude-field" />
+            <uie:IntegerField label="Octave" value="1" tooltip="Resolution" name="slices-octave-field" />
+            <ui:VisualElement style="height: 73px;&#10;position: absolute;&#10;top: 609px;&#10;left: 7px;&#10;width: 285px;&#10;">
+                <ui:HelpBox text="Help info" message-type="Info" name="the-uxml-help-box" style="height: auto;&#10;width: auto;&#10;align-items: auto;&#10;justify-content: flex-start;&#10;">
+                    <ui:Label text="Notes: Should not be used with hierarchical objects as LitterBug currently does not support merging hierarchies. You have been warned!" style="height: auto;&#10;width: 295.8px;&#10;white-space: normal;&#10;left: 12px;&#10;top: 12px;&#10;right: 12px;&#10;color: rgb(96, 96, 96);&#10;justify-content: center;&#10;align-items: auto;&#10;padding-top: 1px;&#10;padding-bottom: 5px;&#10;" />
+                </ui:HelpBox>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

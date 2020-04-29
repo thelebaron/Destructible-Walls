@@ -16,16 +16,20 @@ public static class Utils
         fractureTool.voronoiFracturing(0, sites);
     }
     
-    public static NvFractureTool Voronoi2(NvFractureTool fractureTool, NvMesh nvMesh, int count = 2)
+    private static void Slicing(NvFractureTool fractureTool, NvMesh mesh)
     {
-        
-        var sites = new NvVoronoiSitesGenerator(nvMesh);
-        sites.uniformlyGenerateSitesInMesh(count);
-        fractureTool.voronoiFracturing(0, sites);
+        SlicingConfiguration conf = new SlicingConfiguration();
+        conf.slices            = slices;
+        conf.offset_variations = offset_variations;
+        conf.angle_variations  = angle_variations;
 
-        return fractureTool;
+        conf.noise.amplitude         = amplitude;
+        conf.noise.frequency         = frequency;
+        conf.noise.octaveNumber      = octaveNumber;
+        conf.noise.surfaceResolution = surfaceResolution;
+
+        fractureTool.slicing(0, conf, false);
     }
-    
     /*
     private void _Skinned(NvFractureTool fractureTool, NvMesh mesh)
     {

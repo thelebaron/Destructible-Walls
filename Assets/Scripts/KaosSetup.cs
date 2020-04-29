@@ -84,34 +84,30 @@ public partial class KaosEditor
     
     private void RegisterCallbacks(VisualElement visualElement)
     {
-        
-        /*
-if (field.name == "OriginalMesh")
-{
-    field.RemoveAt(1); // why
-    meshField = new ObjectField
-    {
-        objectType = typeof(Mesh),
-        value      = null
-    };
-    field.Add(meshField);
-    
-    meshField.RegisterCallback<ChangeEvent<Mesh>>(evt =>
-    {
-        meshField.value = evt.newValue;
-        Debug.Log(meshField.value);
-    });
-}*/
-        // event object
         // Scale size adjustment field
+        var prefab_field = visualElement.Q<ObjectField>("prefab-field");
+        prefabField = prefab_field;
+        prefab_field.objectType = typeof(GameObject);
+        prefab_field.RegisterCallback<ChangeEvent<Object>>(evt =>
+        {
+            
+            prefabField.value = evt.newValue;//prefab;
+            
+            
+            OnChangePrefab(evt);
+        });
+        //prefabField = fracture_object;
+        
+
+        // event object
         var mesh_field = visualElement.Q<ObjectField>("mesh-input");
-        meshInputField = mesh_field;
+        meshField = mesh_field;
         mesh_field.objectType = typeof(Mesh);
         
         mesh_field.RegisterCallback<ChangeEvent<Object>>(evt => // needed Object not ObjectField or Mesh
         {
-            meshInputField.value = evt.newValue;
-            Debug.Log(AssetDatabase.GetAssetPath(evt.newValue));
+            meshField.value = evt.newValue;
+            
         });
         
 
@@ -234,12 +230,54 @@ if (field.name == "OriginalMesh")
         scaleUxmlField.RegisterCallback<ChangeEvent<EnumField>>((evt) =>
         {
             prefabScaleType = evt.newValue;
-        }); 
+        });
+
+        var toggle_field = rootVisualElement.Q<Toggle>("postprocess-option");
+        postprocess = toggle_field;
+        
+        
+        // Slices
+        {
+            var slices_field = rootVisualElement.Q<Vector3Field>("slices-field");
+            slices = slices_field;
+            slices_field.RegisterCallback<ChangeEvent<Vector3>>((evt) => {
+                slices.value = evt.newValue;
+            });
+            
+            var slices_offset = rootVisualElement.Q<Slider>("slices-offset-slider");
+            slicesOffset = slices_offset;
+            slices_offset.RegisterCallback<ChangeEvent<float>>((evt) => {
+                slicesOffset.value = evt.newValue;
+            });
+            
+            var slices_angle = rootVisualElement.Q<Slider>("slices-angle-slider");
+            slicesAngle = slices_angle;
+            slices_angle.RegisterCallback<ChangeEvent<float>>((evt) => {
+                slicesAngle.value = evt.newValue;
+            });
+            
+            var slices_amplitude = rootVisualElement.Q<FloatField>("slices-amplitude-field");
+            slicesAmplitude = slices_amplitude;
+            slices_amplitude.RegisterCallback<ChangeEvent<float>>((evt) => {
+                slicesAmplitude.value = evt.newValue;
+            });
+            
+            var slices_octave = rootVisualElement.Q<FloatField>("slices-octave-field");
+            slicesOctave = slices_octave;
+            slices_octave.RegisterCallback<ChangeEvent<float>>((evt) => {
+                slicesAmplitude.value = evt.newValue;
+            });
+
+
+
+
+        }
+
     }
 
     private void OnChangeFractureNesting(int count)
     {
-        OnReset();
+        //OnReset();
         nestedNodes = new List<List<NodeInfoBehaviour>>();
         for (var i = 0; i < count; i++)
         {
@@ -247,6 +285,44 @@ if (field.name == "OriginalMesh")
         }
     }
 
+    private void OnChangePrefab(ChangeEvent<Object> evt)
+    {        
+        if(evt.newValue==null)
+             return;
+        if(evt.newValue.GetType()!= typeof(GameObject))
+            Debug.LogError("Object is not a GameObject!");
+        
+        var go = (GameObject) evt.newValue;
+
+        if (go.GetComponent<FractureData>() == null)
+            fractureData = go.AddComponent<FractureData>();
+        if (go.GetComponent<FractureData>() != null)
+            fractureData = go.GetComponent<FractureData>();
+        fractureData.Reset();
+        
+        if(!IsPrefab((GameObject)evt.newValue))
+            Debug.LogError("Not a prefab!");
+        
+        var meshFilter = Prefab.GetComponent<MeshFilter>();
+        if(meshFilter==null)
+            Debug.LogError("No MeshFilter found!");
+
+        if(meshFilter.sharedMesh==null)
+            Debug.LogError("No mesh inside MeshFilter found!");
+        
+        var mesh = meshFilter.sharedMesh;
+
+        PrefabMesh = mesh;
+        meshField.value = PrefabMesh;
+    }
+
+    private bool IsPrefab(GameObject gameObject)
+    {
+        //return PrefabUtility.GetPrefabParent(gameObject) == null && PrefabUtility.GetPrefabObject(gameObject) != null; // Is a prefab
+        //return PrefabUtility.GetCorrespondingObjectFromSource(gameObject) == null && PrefabUtility.GetPrefabInstanceHandle(gameObject) != null; // Is a prefab
+        
+        return PrefabUtility.IsPartOfAnyPrefab(gameObject);
+    }
     
     
     private void TryGetMesh()
@@ -259,7 +335,7 @@ if (field.name == "OriginalMesh")
             return;
         // Try load last mesh
         if (AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(preferences.Mesh) != null)
-            meshInputField.value = AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(preferences.Mesh);
+            meshField.value = AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(preferences.Mesh);
     }
     
     private void TryGetMaterials()
