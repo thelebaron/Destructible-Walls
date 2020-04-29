@@ -18,7 +18,7 @@ public partial class KaosEditor : EditorBase
     private ObjectField meshInputField;
     
     private GameObject root;
-    private List<List<NodeInfo>> nestedNodes;
+    private List<List<NodeInfoBehaviour>> nestedNodes;
     
     private ObjectField materialInsideField;
     private ObjectField materialOutideField;

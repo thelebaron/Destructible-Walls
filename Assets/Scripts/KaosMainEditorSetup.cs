@@ -240,10 +240,10 @@ if (field.name == "OriginalMesh")
     private void OnChangeFractureNesting(int count)
     {
         OnReset();
-        nestedNodes = new List<List<NodeInfo>>();
+        nestedNodes = new List<List<NodeInfoBehaviour>>();
         for (var i = 0; i < count; i++)
         {
-            nestedNodes.Add(new List<NodeInfo>());
+            nestedNodes.Add(new List<NodeInfoBehaviour>());
         }
     }
 
