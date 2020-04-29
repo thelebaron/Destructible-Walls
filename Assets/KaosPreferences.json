@@ -1,5 +1,8 @@
 {
     "Mesh": "",
-    "MaterialInside": "Assets/Materials/Inside.mat",
-    "MaterialOutside": "Assets/Materials/Outside.mat"
+    "MaterialInside": "",
+    "MaterialOutside": "",
+    "MainDirectory": "KaosData",
+    "MeshDirectory": "KaosData/Mesh",
+    "PrefabDirectory": "KaosData/Prefabs"
 }

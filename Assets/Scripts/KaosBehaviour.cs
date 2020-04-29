@@ -6,6 +6,7 @@ using Unity.Physics;
 using Unity.Physics.Authoring;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Windows;
 using Collider = UnityEngine.Collider;
 using Joint = UnityEngine.Joint;
@@ -26,23 +27,23 @@ public partial class KaosEditor
         if (root == null)
         {
             root = new GameObject();
-            root.name = mesh.name + "Collection";
+            root.name = "Fracturable_"+mesh.name;
         }
         Bake(mesh);
         
     }
     
-    private static void GetOrCreateDirectories(Mesh mesh)
+    private void GetOrCreateDirectories(Mesh mesh)
     {
         //Debug.Log(Application.dataPath);
         //Debug.Log(KaosSerialization.SavedMeshDataPath);
-        var mainPath = Application.dataPath +"/"+ KaosSerialization.SavedMeshDataPath;
+        //Debug.Log( preferences.MainDirectory + " show main");
+        var mainPath = Application.dataPath +"/"+ preferences.MainDirectory;
+        //Debug.Log(mainPath + " show dirs");
+        //if it doesn't, create it
         if(!Directory.Exists(mainPath))
-        {    
-            //if it doesn't, create it
             Directory.CreateDirectory(mainPath);
-        }
-        //Debug.Log("mainPath dir " + mainPath);
+        
 
         //if it doesn't, create it
         var subPath = mainPath + "/" + mesh.name;
@@ -79,13 +80,13 @@ public partial class KaosEditor
             Utils.Clustered(fractureTool, nvMesh, Clusters.value, SitesPerCluster.value, ClusterRadius.value);
 
         fractureTool.finalizeFracturing();
-        
+        //Profiler.BeginSample("");
         for (var i = 1; i < fractureTool.getChunkCount(); i++)
         {
             var chunk = new GameObject("Chunk_" + i);
             chunk.transform.SetParent(root.transform, false);
 
-            Setup(i, chunk, fractureTool);
+            CreateSubMeshes(i, chunk, fractureTool);
             //
             AddAuthoringComponents(chunk);
         }
@@ -94,7 +95,14 @@ public partial class KaosEditor
         Cleanup();*/
     }
 
-    private void Setup(int i, GameObject chunk, NvFractureTool fractureTool)
+    // ReSharper disable once UnusedMember.Local
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="i"></param>
+    /// <param name="chunk"></param>
+    /// <param name="fractureTool"></param>
+    private void CreateSubMeshes(int i, GameObject chunk, NvFractureTool fractureTool)
     {
         var renderer = chunk.AddComponent<MeshRenderer>();
         renderer.sharedMaterials = new[]
@@ -114,12 +122,14 @@ public partial class KaosEditor
         meshFilter.sharedMesh = mesh;
         mesh.MarkDynamic();
         mesh.UploadMeshData(false);
-            
-        AssetDatabase.CreateAsset(mesh, "Assets/GeometryCollection/" + name + "/" + "chunk_"+i+".mesh");
-            
-        //var rigid = chunk.AddComponent<Rigidbody>();
-        //rigid.mass = m_TotalMass / totalChunks;
 
+        var meshDirectory = "Assets/" + preferences.MeshDirectory +"/" + root.name + "/";
+        var filename = "fracture_level_" + fractureNestingSlider.value + "_" + i + ".mesh";
+        Serialization.CreateDirectory(meshDirectory);
+        
+        var combined = meshDirectory + filename;
+        AssetDatabase.CreateAsset(mesh, combined);
+        
         var mc = chunk.AddComponent<MeshCollider>();
         //mc.inflateMesh = true;
         mc.convex = true;
@@ -148,7 +158,8 @@ public partial class KaosEditor
             //removeVelocity.gameObject.hideFlags = HideFlags.HideInInspector;
         }
                 
-        chunk.gameObject.AddComponent<MeshRenderer>();;
+        if(chunk.gameObject.GetComponent<MeshRenderer>()==null)
+            chunk.gameObject.AddComponent<MeshRenderer>();
     }
 
     public void Cleanup()

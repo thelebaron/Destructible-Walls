@@ -13,7 +13,7 @@
             <ui:Button text="Export" name="Export" tooltip="Export to fbx" style="width: auto;&#10;height: 32px;&#10;margin-left: 1px;&#10;margin-right: 1px;&#10;padding-left: 1px;&#10;" />
         </ui:VisualElement>
         <ui:VisualElement name="Toggles" style="position: absolute;&#10;height: 445.2px;&#10;width: 302.2857px;&#10;top: 54px;&#10;left: 2px;&#10;">
-            <uie:ObjectField label="Mesh" name="OriginalMesh" focusable="true" tooltip="Root container gameobject prefabs spawn inside" style="display: flex;&#10;visibility: visible;&#10;width: auto;&#10;" />
+            <uie:ObjectField label="Mesh" name="mesh-input" focusable="true" tooltip="Root container gameobject prefabs spawn inside" style="display: flex;&#10;visibility: visible;&#10;width: auto;&#10;" />
             <ui:SliderInt picking-mode="Ignore" label="Fracture Levels" value="1" high-value="4" name="fracture-nesting-label" low-value="1">
                 <ui:Label text="0" name="fracture-nesting-label" />
             </ui:SliderInt>
@@ -29,7 +29,7 @@
             <uie:ObjectField label="Material Inside" name="MaterialInside" />
             <uie:ObjectField label="Material Outside" name="MaterialOutside" />
             <ui:Label text="Voronoi" style="left: 0;&#10;margin-left: 3px;&#10;margin-right: 3px;&#10;margin-top: 12px;&#10;-unity-font-style: bold-and-italic;&#10;margin-bottom: 5px;&#10;" />
-            <uie:IntegerField label="Fracture Count" value="15" name="FractureCount" tooltip="How many chunks a fractured object should be split into" />
+            <uie:IntegerField label="Fracture Count" value="5" name="FractureCount" tooltip="How many chunks a fractured object should be split into" />
             <ui:Toggle label="Shell" name="Shell" tooltip="Should every chunk be an anchor(ie in a thin wall situation)" />
             <uie:EnumField label="Rotation Type" value="Off" include-obsolete-values="false" name="RotationType" binding-path="prefabRotationType" tooltip="Randomize rotation or not" style="width: 299px;&#10;" />
             <uie:FloatField label="Prefab scale" value="1" name="Scale" tooltip="Adjust prefab scale" binding-path="scale" />

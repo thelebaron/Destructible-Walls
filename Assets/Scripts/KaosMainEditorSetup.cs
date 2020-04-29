@@ -130,9 +130,10 @@ if (field.name == "OriginalMesh")
         });
         
         var fracture_label = visualElement.Q<Label>("fracture-nesting-label");
+        fracture_label.text = 1.ToString();
         var fracture_levels_slider = visualElement.Q<SliderInt>("fracture-nesting-label");
         fractureNestingSlider = fracture_levels_slider;
-        fracture_levels_slider.value   = 3;
+        fracture_levels_slider.value   = 1;
         fracture_levels_slider.RegisterCallback<ChangeEvent<int>>(evt => {
             fracture_label.text = evt.newValue.ToString();
             OnChangeFractureNesting(evt.newValue);
@@ -252,13 +253,13 @@ if (field.name == "OriginalMesh")
     {
         //Debug.Log("meshasset:"+AssetDatabase.GetAssetPath(Selection.activeGameObject.GetComponent<MeshFilter>().sharedMesh));
         // is actual obj
-        Debug.Log(AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(kaosPreferences.Mesh));
+        Debug.Log(AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(preferences.Mesh));
         
-        if(AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(kaosPreferences.Mesh) == null)
+        if(AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(preferences.Mesh) == null)
             return;
         // Try load last mesh
-        if (AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(kaosPreferences.Mesh) != null)
-            meshInputField.value = AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(kaosPreferences.Mesh);
+        if (AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(preferences.Mesh) != null)
+            meshInputField.value = AssetDatabase.LoadAssetAtPath<UnityEngine.Mesh>(preferences.Mesh);
     }
     
     private void TryGetMaterials()
@@ -287,10 +288,10 @@ if (field.name == "OriginalMesh")
         //Debug.Log(AssetDatabase.GetAssetPath(meshField.value));
         
         //kaosPreferences.Mesh = AssetDatabase.GetAssetPath(meshField.value);
-        kaosPreferences.MaterialInside = AssetDatabase.GetAssetPath(materialInsideField.value);
-        kaosPreferences.MaterialOutside = AssetDatabase.GetAssetPath(materialOutideField.value);
+        preferences.MaterialInside = AssetDatabase.GetAssetPath(materialInsideField.value);
+        preferences.MaterialOutside = AssetDatabase.GetAssetPath(materialOutideField.value);
         
-        KaosSerialization.Save(kaosPreferences);
+        Serialization.Save(preferences);
     }
 
 

@@ -6,11 +6,8 @@ using UnityEngine;
 
 namespace kaos
 {
-    public static class KaosSerialization
+    public static class Serialization
     {
-        
-        public const string SavedMeshDataPath = "GeometryCollection";
-        
         private static string DefaultPath()
         {
             var fileLocation = Application.dataPath; 
@@ -20,12 +17,12 @@ namespace kaos
             return path;
         }
         
-        public static void Save(KaosPreferences prefs)
+        public static void Save(Preferences prefs)
         {
             if (prefs == null) 
                 return;
             
-            XmlSerializer serializer = new XmlSerializer(typeof(KaosPreferences));
+            XmlSerializer serializer = new XmlSerializer(typeof(Preferences));
             TextWriter    textWriter = new StreamWriter(DefaultPath());
             serializer.Serialize(textWriter, prefs);
             textWriter.Close(); 
@@ -33,31 +30,55 @@ namespace kaos
             File.WriteAllText(DefaultPath(), jsondata);
         }
 
-        public static KaosPreferences Load()
+        public static Preferences Load()
         {
-            KaosPreferences data = null;
+            Preferences data = null;
             
             if (!File.Exists(DefaultPath()))
             {
-                data = new KaosPreferences();
+                data = Preferences.Default();
             }
             
             if (File.Exists(DefaultPath()))
             {
                 var x = File.ReadAllText(DefaultPath());
             
-                data = (KaosPreferences) JsonUtility.FromJson(x, typeof(KaosPreferences));
+                data = (Preferences) JsonUtility.FromJson(x, typeof(Preferences));
             }
 
             return data;
         }
+
+        public static string CreateDirectory(string path)
+        {
+            if (Directory.Exists(path))
+                return path;
+            
+            Directory.CreateDirectory(path);
+            return path;
+        }
     }
   
     [Serializable]
-    public class KaosPreferences
+    public class Preferences
     {
         public string Mesh;
         public string MaterialInside;
         public string MaterialOutside;
+        public string MainDirectory;
+        public string MeshDirectory;
+        public string PrefabDirectory;
+
+        public static Preferences Default()
+        {
+            var prefs = new Preferences();
+            prefs.Mesh = null;
+            prefs.MaterialOutside = "";
+            prefs.MaterialInside = "";
+            prefs.MainDirectory = "KaosData";
+            prefs.MeshDirectory = "KaosData/"+"Mesh";
+            prefs.PrefabDirectory = "KaosData/"+"Prefabs";
+            return prefs;
+        }
     }
 }

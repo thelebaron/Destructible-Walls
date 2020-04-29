@@ -43,7 +43,7 @@ public partial class KaosEditor : EditorBase
     public int   sitesPerCluster = 5;
     public float clusterRadius   = 1;
     
-    private KaosPreferences kaosPreferences;
+    private Preferences preferences;
 
     #endregion
     
@@ -129,10 +129,9 @@ public partial class KaosEditor : EditorBase
         RegisterCallbacks(rootVisualElement);
 
         // Load saved settings
-        var prefs = kaos.KaosSerialization.Load();
-        if(prefs == null)
-            kaosPreferences = new KaosPreferences();
-        
+        preferences = Preferences.Default();
+        preferences = kaos.Serialization.Load();
+        kaos.Serialization.Save(preferences);
         OnRandomSeed();
         TryGetMaterials();
         //TryGetMesh(); // unsure how to approach for now as it returns obj
