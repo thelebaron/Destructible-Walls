@@ -1,15 +1,11 @@
-﻿
-using System;
-using Destructibles;
+﻿using Destructibles;
 using kaos;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Authoring;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Profiling;
 using UnityEngine.Windows;
-using Collider = UnityEngine.Collider;
 using Joint = UnityEngine.Joint;
 using MeshCollider = UnityEngine.MeshCollider;
 
@@ -84,6 +80,8 @@ public partial class KaosEditor
             Utils.Voronoi(fractureTool, nvMesh, fractureCount.value);
         if(fractureType.value.Equals(FractureType.Clustered))
             Utils.Clustered(fractureTool, nvMesh, Clusters.value, SitesPerCluster.value, ClusterRadius.value);
+        if(fractureType.value.Equals(FractureType.Slicing))
+            Utils.Slicing(fractureTool, nvMesh, slices.value, slicesOffset.value, slicesAngle.value, slicesAmplitude.value, slicesFrequency.value, slicesOctave.value, slicesSurfaceResolution.value);
 
         fractureTool.finalizeFracturing();
         //Profiler.BeginSample("");

@@ -40,12 +40,14 @@
             <uie:IntegerField label="Sites Per Cluster" value="5" name="SitesPerCluster" tooltip="How many chunks a fractured object should be split into" />
             <uie:FloatField label="Cluster Radius" value="2" name="ClusterRadius" tooltip="Total density/mass of the object(each chunk is divided by the num of chunks and this)" />
             <ui:Label text="Slicing" style="left: 0;&#10;margin-left: 3px;&#10;margin-right: 3px;&#10;margin-top: 12px;&#10;-unity-font-style: bold-and-italic;&#10;margin-bottom: 5px;&#10;" />
-            <uie:Vector3Field label="Slices" x="1" y="1" z="1" name="slices-field" style="height: 21px;&#10;" />
+            <uie:Vector3IntField label="Slices" x="1" y="1" z="1" name="slices-field" style="height: 21px;&#10;" />
             <ui:Slider picking-mode="Ignore" label="Offset" value="0" high-value="1" name="slices-offset-slider" />
             <ui:Slider picking-mode="Ignore" label="Angle" value="0" high-value="1" name="slices-angle-slider" />
             <uie:FloatField label="Amplitude" value="0" tooltip="Frequency" name="slices-amplitude-field" />
+            <uie:FloatField label="Frequency" value="1" name="slices-frequency-field" />
             <uie:IntegerField label="Octave" value="1" tooltip="Resolution" name="slices-octave-field" />
-            <ui:VisualElement style="height: 73px;&#10;position: absolute;&#10;top: 609px;&#10;left: 7px;&#10;width: 285px;&#10;">
+            <uie:IntegerField label="Surface Resolution" value="2" tooltip="Resolution" name="slices-surface-resolution" />
+            <ui:VisualElement style="height: 73px;&#10;position: absolute;&#10;top: 669.8px;&#10;left: 5.4px;&#10;width: 285px;&#10;">
                 <ui:HelpBox text="Help info" message-type="Info" name="the-uxml-help-box" style="height: auto;&#10;width: auto;&#10;align-items: auto;&#10;justify-content: flex-start;&#10;">
                     <ui:Label text="Notes: Should not be used with hierarchical objects as LitterBug currently does not support merging hierarchies. You have been warned!" style="height: auto;&#10;width: 295.8px;&#10;white-space: normal;&#10;left: 12px;&#10;top: 12px;&#10;right: 12px;&#10;color: rgb(96, 96, 96);&#10;justify-content: center;&#10;align-items: auto;&#10;padding-top: 1px;&#10;padding-bottom: 5px;&#10;" />
                 </ui:HelpBox>

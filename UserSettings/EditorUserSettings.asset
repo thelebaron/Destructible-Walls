@@ -5,11 +5,23 @@ EditorUserSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 4
   m_ConfigSettings:
+    Advanced Settings:
+      value: 183b144645154b6805011b0314355e1e15121c1d233a2a343e6b4773e4e1382be78d2b
+      flags: 0
     RecentlyUsedScenePath-0:
-      value: 22424703114646680e0b0227036c7b151b182b292926237e38271427fb
+      value: 22424703114646680e0b0227036c7b151b182b292926237f092c0e27f0f5372cebe838daf2382c3f3c0cea721130082beb
       flags: 0
     RecentlyUsedScenePath-1:
-      value: 22424703114646680e0b0227036c7b151b182b292926237f092c0e27f0f5372cebe838daf2382c3f3c0cea721130082beb
+      value: 224247031146467708090d21096c6c1313191d6439262f2434
+      flags: 0
+    RecentlyUsedScenePath-2:
+      value: 22424703114646680e0b0227036c7b151b182b292926237e38271427fb
+      flags: 0
+    RecentlyUsedScenePath-3:
+      value: 22424703114646680e0b0227036c790217140c3f3e2d113f3f220e3bedf07a2decee22f0
+      flags: 0
+    lightmappingDeviceAndPlatform:
+      value: 53
       flags: 0
     vcSharedLogLevel:
       value: 0d5e400f0650

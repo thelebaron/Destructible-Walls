@@ -1,5 +1,7 @@
 ﻿
 
+using UnityEngine;
+
 public static class Utils
 {
     public static void Voronoi(NvFractureTool fractureTool, NvMesh nvMesh, int count = 5)
@@ -16,7 +18,8 @@ public static class Utils
         fractureTool.voronoiFracturing(0, sites);
     }
     
-    private static void Slicing(NvFractureTool fractureTool, NvMesh mesh)
+    public static void Slicing(NvFractureTool fractureTool, NvMesh mesh, Vector3Int slices, float offset_variations, float angle_variations, float amplitude, float frequency
+    , int octaveNumber, int surfaceResolution)
     {
         SlicingConfiguration conf = new SlicingConfiguration();
         conf.slices            = slices;

@@ -198,39 +198,6 @@ public partial class KaosEditor
         });
         
         
-        
-        // Rotation enum
-        var rotationUxmlField = rootVisualElement.Q<EnumField>("RotationType");
-        // initialize enum
-        rotationUxmlField.Init(RotationType.RandomNormal);
-        rotationUxmlField.value = RotationType.RandomNormal;
-        prefabRotationType = rotationUxmlField;
-        // Mirror value of uxml field into the C# field.
-        rotationUxmlField.RegisterCallback<ChangeEvent<EnumField>>((evt) =>
-        {
-            prefabRotationType = evt.newValue;
-            Debug.Log("Hello");
-        });
-        
-        // Scale size adjustment field
-        var uxmlScaleField = rootVisualElement.Q<FloatField>("Scale");
-        prefabScale = uxmlScaleField;
-        uxmlScaleField.RegisterCallback<ChangeEvent<FloatField>>((evt) =>
-        {
-            prefabScale =  evt.newValue;
-        });
-        
-        // Scale randomization enum
-        var scaleUxmlField = rootVisualElement.Q<EnumField>("PrefabScale");
-        // initialize enum
-        scaleUxmlField.Init(ScaleType.None);
-        scaleUxmlField.value = ScaleType.None;
-        prefabScaleType = scaleUxmlField;
-        // Mirror value of uxml field into the C# field.
-        scaleUxmlField.RegisterCallback<ChangeEvent<EnumField>>((evt) =>
-        {
-            prefabScaleType = evt.newValue;
-        });
 
         var toggle_field = rootVisualElement.Q<Toggle>("postprocess-option");
         postprocess = toggle_field;
@@ -238,9 +205,9 @@ public partial class KaosEditor
         
         // Slices
         {
-            var slices_field = rootVisualElement.Q<Vector3Field>("slices-field");
+            var slices_field = rootVisualElement.Q<Vector3IntField>("slices-field");
             slices = slices_field;
-            slices_field.RegisterCallback<ChangeEvent<Vector3>>((evt) => {
+            slices_field.RegisterCallback<ChangeEvent<Vector3Int>>((evt) => {
                 slices.value = evt.newValue;
             });
             
@@ -261,14 +228,23 @@ public partial class KaosEditor
             slices_amplitude.RegisterCallback<ChangeEvent<float>>((evt) => {
                 slicesAmplitude.value = evt.newValue;
             });
+            var slices_frequency = rootVisualElement.Q<FloatField>("slices-frequency-field");
+            slicesFrequency = slices_amplitude;
+            slices_frequency.RegisterCallback<ChangeEvent<float>>((evt) => {
+                slicesFrequency.value = evt.newValue;
+            });
             
-            var slices_octave = rootVisualElement.Q<FloatField>("slices-octave-field");
+            var slices_octave = rootVisualElement.Q<IntegerField>("slices-octave-field");
             slicesOctave = slices_octave;
-            slices_octave.RegisterCallback<ChangeEvent<float>>((evt) => {
-                slicesAmplitude.value = evt.newValue;
+            slices_octave.RegisterCallback<ChangeEvent<int>>((evt) => {
+                slicesOctave.value = evt.newValue;
             });
 
-
+            var slices_surfaceresolution = rootVisualElement.Q<IntegerField>("slices-surface-resolution");
+            slicesSurfaceResolution = slices_surfaceresolution;
+            slices_surfaceresolution.RegisterCallback<ChangeEvent<int>>((evt) => {
+                slicesSurfaceResolution.value = evt.newValue;
+            });
 
 
         }
@@ -295,10 +271,10 @@ public partial class KaosEditor
         var go = (GameObject) evt.newValue;
 
         if (go.GetComponent<FractureData>() == null)
-            fractureData = go.AddComponent<FractureData>();
+            data = go.AddComponent<FractureData>();
         if (go.GetComponent<FractureData>() != null)
-            fractureData = go.GetComponent<FractureData>();
-        fractureData.Reset();
+            data = go.GetComponent<FractureData>();
+        data.Reset();
         
         if(!IsPrefab((GameObject)evt.newValue))
             Debug.LogError("Not a prefab!");

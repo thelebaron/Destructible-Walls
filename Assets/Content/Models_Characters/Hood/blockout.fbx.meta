@@ -1,0 +1,1498 @@
+fileFormatVersion: 2
+guid: 053fce98418358544a588ee45e4d8975
+ModelImporter:
+  serializedVersion: 20100
+  internalIDToNameTable:
+  - first:
+      74: 2646724620217826704
+    second: Idle01
+  - first:
+      74: 2772812811124783404
+    second: Run01
+  - first:
+      74: -7543878191409683274
+    second: Pain01
+  - first:
+      74: 4764177693048371275
+    second: Pain02
+  - first:
+      74: 5666227886523526347
+    second: Shoot01
+  - first:
+      74: 7194057008509381903
+    second: Twitch_Shoot_01
+  - first:
+      74: -2766560281193442304
+    second: Twitch_Shoot_02
+  - first:
+      74: 7947602470924536775
+    second: Twitch_Shoot_03
+  - first:
+      74: -4475966323992954678
+    second: Deadth01
+  - first:
+      74: -230658281027852313
+    second: Death01
+  - first:
+      74: 4805448895203627368
+    second: Death02
+  - first:
+      74: 6715315507029358934
+    second: Death02
+  - first:
+      74: -2912830407219464816
+    second: Death03
+  - first:
+      74: 5637726511348231959
+    second: Death04
+  - first:
+      74: 6359417252485452978
+    second: Death05_Torso
+  - first:
+      74: 4485118894649010602
+    second: Walk01
+  - first:
+      74: 5277695319921273535
+    second: PainStagger01
+  - first:
+      74: -8616224262031246943
+    second: PainFalter01
+  - first:
+      74: -7508060636221086526
+    second: PainFalter01
+  - first:
+      74: -7931985380282742468
+    second: PainStagger01
+  - first:
+      74: -3818793249261475456
+    second: PainTwitch01
+  - first:
+      74: -1914182820524876583
+    second: PainTwitch02
+  - first:
+      74: -7241845548831608364
+    second: PainTwitch03
+  - first:
+      74: -3845366464772522949
+    second: Death06_Headless
+  externalObjects: {}
+  materials:
+    materialImportMode: 0
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 0
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths:
+    - HoodGuy_Reference/HoodGuy_Hips
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_LeftUpLeg
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_LeftUpLeg/HoodGuy_LeftLeg
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_LeftUpLeg/HoodGuy_LeftLeg/HoodGuy_LeftFoot
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_RightUpLeg
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_RightUpLeg/HoodGuy_RightLeg
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_RightUpLeg/HoodGuy_RightLeg/HoodGuy_RightFoot
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_LeftShoulder/HoodGuy_LeftArm
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_LeftShoulder/HoodGuy_LeftArm/HoodGuy_LeftForeArm
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_LeftShoulder/HoodGuy_LeftArm/HoodGuy_LeftForeArm/HoodGuy_LeftHand
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_Neck/HoodGuy_Head
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_RightShoulder/HoodGuy_RightArm
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_RightShoulder/HoodGuy_RightArm/HoodGuy_RightForeArm
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_RightShoulder/HoodGuy_RightArm/HoodGuy_RightForeArm/HoodGuy_RightHand
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2/HoodGuy_RightShoulder/HoodGuy_RightArm/HoodGuy_RightForeArm/HoodGuy_RightHand/shotgun:mesh_Shotgun
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1
+    - HoodGuy_Reference/HoodGuy_Hips/HoodGuy_Spine/HoodGuy_Spine1/HoodGuy_Spine2
+    extraUserProperties: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Run01
+      takeName: Run01
+      internalID: 0
+      firstFrame: 31
+      lastFrame: 43
+      wrapMode: 0
+      orientationOffsetY: 0.4
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 1
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 30.96
+    - serializedVersion: 16
+      name: Pain02
+      takeName: Pain02
+      internalID: 0
+      firstFrame: 71
+      lastFrame: 98
+      wrapMode: 0
+      orientationOffsetY: -12.4
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 1
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 70.8
+    - serializedVersion: 16
+      name: Shoot01
+      takeName: Shoot01
+      internalID: 0
+      firstFrame: 122
+      lastFrame: 182
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 1
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 121.92
+    - serializedVersion: 16
+      name: Twitch_Shoot_01
+      takeName: Twitch_Shoot_01
+      internalID: 0
+      firstFrame: 185
+      lastFrame: 195
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 184.79999
+    - serializedVersion: 16
+      name: Twitch_Shoot_02
+      takeName: Twitch_Shoot_02
+      internalID: 0
+      firstFrame: 196
+      lastFrame: 206
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 121.92
+    - serializedVersion: 16
+      name: Twitch_Shoot_03
+      takeName: Twitch_Shoot_03
+      internalID: 0
+      firstFrame: 207
+      lastFrame: 216
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 206.88
+    - serializedVersion: 16
+      name: Death01
+      takeName: Death01
+      internalID: 0
+      firstFrame: 217
+      lastFrame: 240
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 206.88
+    - serializedVersion: 16
+      name: Death02
+      takeName: Death02
+      internalID: 0
+      firstFrame: 241
+      lastFrame: 270
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 1
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 240.95999
+    - serializedVersion: 16
+      name: Death03
+      takeName: Death03
+      internalID: 0
+      firstFrame: 271
+      lastFrame: 358
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 1
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 1
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 240.95999
+    - serializedVersion: 16
+      name: Death04
+      takeName: Death04
+      internalID: 0
+      firstFrame: 359
+      lastFrame: 505
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 1
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 1
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 240.95999
+    - serializedVersion: 16
+      name: Idle01
+      takeName: Idle01
+      internalID: 0
+      firstFrame: 1
+      lastFrame: 28
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 29
+    - serializedVersion: 16
+      name: Walk01
+      takeName: Walk01
+      internalID: 0
+      firstFrame: 601
+      lastFrame: 625
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: -0.02
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 1
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 601
+    - serializedVersion: 16
+      name: PainFalter01
+      takeName: PainFalter01
+      internalID: 0
+      firstFrame: 60
+      lastFrame: 70
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 601
+    - serializedVersion: 16
+      name: PainStagger01
+      takeName: PainStagger02
+      internalID: 0
+      firstFrame: 71
+      lastFrame: 112
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 1
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 113
+    - serializedVersion: 16
+      name: PainTwitch01
+      takeName: PainTwitch01
+      internalID: 0
+      firstFrame: 185
+      lastFrame: 195
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 113
+    - serializedVersion: 16
+      name: PainTwitch02
+      takeName: PainTwitch02
+      internalID: 0
+      firstFrame: 196
+      lastFrame: 206
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 113
+    - serializedVersion: 16
+      name: PainTwitch03
+      takeName: PainTwitch03
+      internalID: 0
+      firstFrame: 207
+      lastFrame: 216
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 113
+    - serializedVersion: 16
+      name: Death06_Headless
+      takeName: Death06_Headless
+      internalID: 0
+      firstFrame: 650
+      lastFrame: 704
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 1
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 113
+    - serializedVersion: 16
+      name: Death05_Torso
+      takeName: Death05_Torso
+      internalID: 0
+      firstFrame: 506
+      lastFrame: 576
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 1
+      heightFromFeet: 1
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 506
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 180
+    normalImportMode: 1
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 2
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human:
+    - boneName: HoodGuy_Hips
+      humanName: Hips
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftUpLeg
+      humanName: LeftUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightUpLeg
+      humanName: RightUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftLeg
+      humanName: LeftLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightLeg
+      humanName: RightLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftFoot
+      humanName: LeftFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightFoot
+      humanName: RightFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_Spine
+      humanName: Spine
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_Spine1
+      humanName: Chest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_Neck
+      humanName: Neck
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_Head
+      humanName: Head
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftShoulder
+      humanName: LeftShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightShoulder
+      humanName: RightShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftArm
+      humanName: LeftUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightArm
+      humanName: RightUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftForeArm
+      humanName: LeftLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightForeArm
+      humanName: RightLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftHand
+      humanName: LeftHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightHand
+      humanName: RightHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftToeBase
+      humanName: LeftToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightToeBase
+      humanName: RightToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftHandThumb1
+      humanName: Left Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftHandThumb2
+      humanName: Left Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftHandThumb3
+      humanName: Left Thumb Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftHandMiddle1
+      humanName: Left Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftHandMiddle2
+      humanName: Left Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_LeftHandMiddle3
+      humanName: Left Middle Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightHandThumb1
+      humanName: Right Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightHandThumb2
+      humanName: Right Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightHandThumb3
+      humanName: Right Thumb Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightHandMiddle1
+      humanName: Right Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightHandMiddle2
+      humanName: Right Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_RightHandMiddle3
+      humanName: Right Middle Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: HoodGuy_Spine2
+      humanName: UpperChest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    skeleton:
+    - name: blockout(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Reference
+      parentName: blockout(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Hips
+      parentName: HoodGuy_Reference
+      position: {x: -0.00069483084, y: 0.98641837, z: -0.05218378}
+      rotation: {x: -0.000000005820766, y: 0.00000001164153, z: -7.275956e-10, w: 1}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: HoodGuy_LeftUpLeg
+      parentName: HoodGuy_Hips
+      position: {x: -0.15003128, y: -0.064167686, z: -0.0000000011021953}
+      rotation: {x: 0.000000005820766, y: -0.000000010186339, z: -0.000000008185452,
+        w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_LeftLeg
+      parentName: HoodGuy_LeftUpLeg
+      position: {x: -0.017779723, y: -0.37904036, z: 0.042212177}
+      rotation: {x: 0.000000023283064, y: -0.0000000043655746, z: 0.000000014733814,
+        w: 1}
+      scale: {x: 1, y: 1, z: 1.0000001}
+    - name: HoodGuy_LeftFoot
+      parentName: HoodGuy_LeftLeg
+      position: {x: -0.018847669, y: -0.45861784, z: -0.06437874}
+      rotation: {x: -0.000000023283064, y: 0.0000000029103833, z: -0.0000000061731953,
+        w: 1}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+    - name: HoodGuy_LeftToeBase
+      parentName: HoodGuy_LeftFoot
+      position: {x: -0.00000008606188, y: -0.057730377, z: 0.2594626}
+      rotation: {x: -0, y: -0, z: 6.776264e-17, w: 1}
+      scale: {x: 0.9999999, y: 1, z: 1}
+    - name: HoodGuy_RightUpLeg
+      parentName: HoodGuy_Hips
+      position: {x: 0.15003128, y: -0.06416774, z: 0.0000000012427581}
+      rotation: {x: -0.000000017462295, y: -0.000000008731147, z: 0.000000011641533,
+        w: 1}
+      scale: {x: 1.0000001, y: 1, z: 1}
+    - name: HoodGuy_RightLeg
+      parentName: HoodGuy_RightUpLeg
+      position: {x: 0.017779762, y: -0.3790406, z: 0.042209163}
+      rotation: {x: 0.000000029103827, y: -0, z: -0.00000001400622, w: 1}
+      scale: {x: 1, y: 1.0000001, z: 1.0000001}
+    - name: HoodGuy_RightFoot
+      parentName: HoodGuy_RightLeg
+      position: {x: 0.018847754, y: -0.45861846, z: -0.06437861}
+      rotation: {x: -0.0000000058321348, y: -0.0000000043655746, z: 0.0000000036497039,
+        w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_RightToeBase
+      parentName: HoodGuy_RightFoot
+      position: {x: 0.00000008169955, y: -0.05773033, z: 0.25946236}
+      rotation: {x: 1.7763568e-14, y: -0.00004189205, z: -2.7995525e-10, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Spine
+      parentName: HoodGuy_Hips
+      position: {x: 0.0000000058859806, y: 0.16764204, z: -0.037518654}
+      rotation: {x: 0.000000011641532, y: -0.0000000058207643, z: -7.7140985e-17,
+        w: 1}
+      scale: {x: 1, y: 0.99999994, z: 1}
+    - name: HoodGuy_Spine1
+      parentName: HoodGuy_Spine
+      position: {x: 4.0800893e-10, y: 0.18855003, z: 0.012984592}
+      rotation: {x: -0, y: -0.000000008731149, z: 0.0000000025465854, w: 1}
+      scale: {x: 1, y: 1, z: 0.99999994}
+    - name: HoodGuy_Spine2
+      parentName: HoodGuy_Spine1
+      position: {x: -0.000000013818283, y: 0.18855003, z: 0.017477658}
+      rotation: {x: -0.000000017462298, y: -0.000000008731149, z: -0.0000000018189896,
+        w: 1}
+      scale: {x: 1.0000001, y: 1, z: 1}
+    - name: HoodGuy_LeftShoulder
+      parentName: HoodGuy_Spine2
+      position: {x: -0.1338073, y: 0.105640344, z: -0.030154588}
+      rotation: {x: -0, y: -0, z: -4.1443628e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_LeftArm
+      parentName: HoodGuy_LeftShoulder
+      position: {x: -0.13783397, y: 0.00029429907, z: -0.013115092}
+      rotation: {x: 0.000000011641605, y: 0.0000000118233565, z: 0.000006413121, w: 1}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000001}
+    - name: HoodGuy_LeftForeArm
+      parentName: HoodGuy_LeftArm
+      position: {x: -0.2975008, y: 0.0024092782, z: -0.008878138}
+      rotation: {x: 7.2762063e-10, y: -1.8199664e-10, z: -0.00013474938, w: 1}
+      scale: {x: 0.99999976, y: 1.0000001, z: 1.0000004}
+    - name: HoodGuy_LeftHand
+      parentName: HoodGuy_LeftForeArm
+      position: {x: -0.32753766, y: -0.0017514755, z: -0.005788101}
+      rotation: {x: -0.00051034085, y: -0.0000007534241, z: 0.03022685, w: 0.99954295}
+      scale: {x: 1.0000005, y: 1.0000005, z: 1.0000002}
+    - name: HoodGuy_LeftHandThumb1
+      parentName: HoodGuy_LeftHand
+      position: {x: -0.056123383, y: -0.011731421, z: 0.07261482}
+      rotation: {x: -0.1647702, y: 0.060123604, z: -0.1801472, w: 0.9678755}
+      scale: {x: 1.0000007, y: 1.0000006, z: 1.0000004}
+    - name: HoodGuy_LeftHandThumb2
+      parentName: HoodGuy_LeftHandThumb1
+      position: {x: -0.031089209, y: -0.02005779, z: 0.023042897}
+      rotation: {x: -0.033140223, y: 0.16398603, z: 0.12598939, w: 0.97782254}
+      scale: {x: 0.9999998, y: 0.9999998, z: 0.99999994}
+    - name: HoodGuy_LeftHandThumb3
+      parentName: HoodGuy_LeftHandThumb2
+      position: {x: -0.04106912, y: -0.010626882, z: 0.0073955217}
+      rotation: {x: -0.000000009880778, y: -0.000000057333217, z: -0.13020213, w: 0.9914875}
+      scale: {x: 1.0000002, y: 1.0000005, z: 1.0000001}
+    - name: HoodGuy_LeftHandMiddle1
+      parentName: HoodGuy_LeftHand
+      position: {x: -0.10513294, y: 0.023353323, z: 0.0005576152}
+      rotation: {x: -0.0045646625, y: -0.015215039, z: -0.25776622, w: 0.96607673}
+      scale: {x: 1.0000006, y: 1.0000006, z: 1.0000002}
+    - name: HoodGuy_LeftHandMiddle2
+      parentName: HoodGuy_LeftHandMiddle1
+      position: {x: -0.054106474, y: -0.025816603, z: 0.0025398927}
+      rotation: {x: 0.000000010292072, y: -0.00000001207991, z: 0.038393606, w: 0.99926275}
+      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+    - name: HoodGuy_LeftHandMiddle3
+      parentName: HoodGuy_LeftHandMiddle2
+      position: {x: -0.059177455, y: -0.023183841, z: 0.0058615524}
+      rotation: {x: 0.00000003614304, y: -0.000000016089606, z: -0.13019963, w: 0.99148786}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+    - name: HoodGuy_RightShoulder
+      parentName: HoodGuy_Spine2
+      position: {x: 0.13380732, y: 0.10564033, z: -0.030154591}
+      rotation: {x: -0, y: -0, z: -4.1443628e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_RightArm
+      parentName: HoodGuy_RightShoulder
+      position: {x: 0.13783397, y: 0.00029438143, z: -0.013115123}
+      rotation: {x: 0.000000034924362, y: 0.000000011641297, z: -0.000020238806, w: 1}
+      scale: {x: 1, y: 1.0000001, z: 1.0000002}
+    - name: HoodGuy_RightForeArm
+      parentName: HoodGuy_RightArm
+      position: {x: 0.29750103, y: 0.0024162023, z: -0.008877204}
+      rotation: {x: -0.000000046563656, y: -0.000000005820767, z: 0.00042492195, w: 0.99999994}
+      scale: {x: 1.0000002, y: 1, z: 1}
+    - name: HoodGuy_RightHand
+      parentName: HoodGuy_RightForeArm
+      position: {x: 0.32753652, y: -0.0019413969, z: -0.005788049}
+      rotation: {x: -0.00051569316, y: -0.00000040798562, z: -0.03343119, w: 0.99944097}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
+    - name: shotgun:mesh_Shotgun
+      parentName: HoodGuy_RightHand
+      position: {x: 0.011367283, y: -0.028234204, z: 0.098436736}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_RightHandThumb1
+      parentName: HoodGuy_RightHand
+      position: {x: 0.056190472, y: -0.011405551, z: 0.07261481}
+      rotation: {x: -0.16720538, y: -0.05742538, z: 0.19940662, w: 0.963837}
+      scale: {x: 1.0000002, y: 1, z: 1.0000001}
+    - name: HoodGuy_RightHandThumb2
+      parentName: HoodGuy_RightHandThumb1
+      position: {x: 0.030331304, y: -0.021186411, z: 0.023042912}
+      rotation: {x: -0.017580923, y: -0.16909806, z: -0.22015971, w: 0.9605345}
+      scale: {x: 1.0000005, y: 1.0000001, z: 1.0000002}
+    - name: HoodGuy_RightHandThumb3
+      parentName: HoodGuy_RightHandThumb2
+      position: {x: 0.042258166, y: -0.0037214304, z: 0.007395422}
+      rotation: {x: 0.000000016083584, y: 0.000000011762757, z: 0.40015492, w: 0.91644746}
+      scale: {x: 0.9999998, y: 1.0000004, z: 1}
+    - name: HoodGuy_RightHandMiddle1
+      parentName: HoodGuy_RightHand
+      position: {x: 0.10499564, y: 0.023962945, z: 0.00055763224}
+      rotation: {x: -0.0044022594, y: 0.015339182, z: 0.27839342, w: 0.9603346}
+      scale: {x: 1, y: 1.0000006, z: 1.0000004}
+    - name: HoodGuy_RightHandMiddle2
+      parentName: HoodGuy_RightHandMiddle1
+      position: {x: 0.053121507, y: -0.027786996, z: 0.0025399148}
+      rotation: {x: -0.000000014192883, y: 0.00000002307424, z: -0.12078996, w: 0.9926781}
+      scale: {x: 1.0000005, y: 1.0000002, z: 1.0000004}
+    - name: HoodGuy_RightHandMiddle3
+      parentName: HoodGuy_RightHandMiddle2
+      position: {x: 0.062186603, y: -0.013126255, z: 0.0058615953}
+      rotation: {x: 0.000000012660091, y: -0.000000016491924, z: 0.40015975, w: 0.9164454}
+      scale: {x: 1.0000004, y: 1, z: 1.0000002}
+    - name: HoodGuy_Neck
+      parentName: HoodGuy_Spine2
+      position: {x: -0.00000036602725, y: 0.1885505, z: 0.017478384}
+      rotation: {x: 0.000000023283064, y: 0.000000011641532, z: 5.0821977e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Head
+      parentName: HoodGuy_Neck
+      position: {x: -0.000000019703254, y: 0.16210991, z: 0.019305369}
+      rotation: {x: -0.000000011641532, y: -0, z: -3.6379802e-10, w: 1}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: hoodguy
+      parentName: blockout(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_Reference
+      parentName: blockout(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_HipsEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.000004749298, y: 0.8627972, z: -0.058890235}
+      rotation: {x: 0.05259595, y: -0.082766585, z: 0.0010289451, w: 0.99517953}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftAnkleEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.29654643, y: 0.09816494, z: -0.17634544}
+      rotation: {x: 0.00000004469293, y: -0.050829247, z: -0.011309651, w: 0.99864334}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightAnkleEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.2764491, y: 0.09815429, z: 0.043306615}
+      rotation: {x: 0.00000007824903, y: 0.023054535, z: 0.005129773, w: 0.99972105}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftWristEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.23820253, y: 1.2060552, z: 0.36895403}
+      rotation: {x: -0.5392773, y: -0.009775028, z: 0.8390749, w: 0.07097672}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightWristEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.20981868, y: 1.2865901, z: 0.21077362}
+      rotation: {x: 0.11366301, y: 0.6919734, z: 0.6337996, w: -0.32642245}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftKneeEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.2222406, y: 0.50676763, z: 0.029452171}
+      rotation: {x: 0.1564538, y: -0.03753824, z: -0.07463008, w: 0.98414606}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightKneeEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.21495655, y: 0.54171664, z: 0.16289543}
+      rotation: {x: 0.058814604, y: 0.024415595, z: 0.052087262, w: 0.9966101}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftElbowEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.3228133, y: 1.2272489, z: 0.053186223}
+      rotation: {x: -0.40463182, y: 0.5669705, z: 0.55306643, w: 0.45709416}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightElbowEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.40178302, y: 1.3949351, z: -0.03156604}
+      rotation: {x: 0.07873242, y: 0.74837, z: 0.48660037, w: -0.44380584}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_ChestOriginEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.0036788778, y: 1.097258, z: -0.0714598}
+      rotation: {x: 0.05640139, y: -0.07164455, z: 0.0046130675, w: 0.9958236}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_ChestEndEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.03652376, y: 1.5726602, z: 0.011295229}
+      rotation: {x: 0.11640378, y: 0.12827954, z: 0.08202917, w: 0.98146105}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftFootEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.32419136, y: 0.040747676, z: 0.081709825}
+      rotation: {x: 0.000000044722604, y: -0.050829254, z: -0.011309652, w: 0.99864334}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightFootEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.28900155, y: 0.04048833, z: 0.30247962}
+      rotation: {x: 0.00000007826954, y: 0.023054535, z: 0.0051297736, w: 0.99972105}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftShoulderEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.29916087, y: 1.5238119, z: 0.06225309}
+      rotation: {x: 0.09727717, y: 0.08867549, z: 0.6783521, w: 0.7228501}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightShoulderEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.21893042, y: 1.6275145, z: -0.06417186}
+      rotation: {x: 0.2921138, y: -0.21279196, z: -0.39804843, w: 0.8431765}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_HeadEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.043641023, y: 1.7955884, z: 0.13225572}
+      rotation: {x: 0.10565971, y: -0.010985088, z: 0.00460835, w: 0.994331}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHipEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.14798018, y: 0.86379623, z: -0.08362191}
+      rotation: {x: -0.09587567, y: -0.0026157694, z: -0.075606644, w: 0.9925143}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHipEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.14797069, y: 0.8617982, z: -0.03415856}
+      rotation: {x: -0.21751852, y: 0.0150032155, z: 0.06340944, w: 0.9738788}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandThumbEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.2748613, y: 1.2882973, z: 0.4925518}
+      rotation: {x: -0.52813476, y: 0.31489575, z: 0.78154, w: -0.10540222}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandMiddleEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.21656701, y: 1.2660457, z: 0.52969986}
+      rotation: {x: -0.5254886, y: 0.08099143, z: 0.70398474, w: -0.4708584}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandThumbEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.05587444, y: 1.3507991, z: 0.23014604}
+      rotation: {x: 0.062201332, y: 0.7334883, z: 0.6447553, w: -0.20595263}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandMiddleEffector
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: 0.13221322, y: 1.2585647, z: 0.187578}
+      rotation: {x: 0.5614655, y: -0.47634122, z: -0.52484286, w: -0.42707792}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_Hips
+      parentName: HoodGuy_Ctrl_Reference
+      position: {x: -0.00069483084, y: 0.92660975, z: -0.05218378}
+      rotation: {x: 0.05259595, y: -0.082766585, z: 0.0010289445, w: 0.99517953}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftUpLeg
+      parentName: HoodGuy_Ctrl_Hips
+      position: {x: -0.15003128, y: -0.06416771, z: 0}
+      rotation: {x: -0.15387614, y: 0.07566591, z: -0.06819056, w: 0.982826}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftLeg
+      parentName: HoodGuy_Ctrl_LeftUpLeg
+      position: {x: -0.017779732, y: -0.37904024, z: 0.042209033}
+      rotation: {x: 0.25228125, y: -0.015698783, z: -0.0036716934, w: 0.96751964}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftFoot
+      parentName: HoodGuy_Ctrl_LeftLeg
+      position: {x: -0.018847695, y: -0.45861784, z: -0.06437854}
+      rotation: {x: -0.15287267, y: -0.014305526, z: 0.07135091, w: 0.985563}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftToeBase
+      parentName: HoodGuy_Ctrl_LeftFoot
+      position: {x: -0.000000095367426, y: -0.057730276, z: 0.25946212}
+      rotation: {x: 2.2365468e-32, y: -0, z: -1.2246467e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightUpLeg
+      parentName: HoodGuy_Ctrl_Hips
+      position: {x: 0.15003128, y: -0.06416771, z: 0}
+      rotation: {x: -0.2624284, y: 0.0990944, z: 0.079315856, w: 0.9565671}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightLeg
+      parentName: HoodGuy_Ctrl_RightUpLeg
+      position: {x: 0.017779732, y: -0.37904024, z: 0.042209033}
+      rotation: {x: 0.27482614, y: -0.0062338673, z: -0.006274557, w: 0.96145326}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightFoot
+      parentName: HoodGuy_Ctrl_RightLeg
+      position: {x: 0.018847695, y: -0.45861784, z: -0.06437854}
+      rotation: {x: -0.057722516, y: -0.0011307014, z: -0.048316278, w: 0.99716216}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightToeBase
+      parentName: HoodGuy_Ctrl_RightFoot
+      position: {x: 0.000000095367426, y: -0.057730276, z: 0.25946212}
+      rotation: {x: 2.2365468e-32, y: -0, z: -1.2246467e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_Spine
+      parentName: HoodGuy_Ctrl_Hips
+      position: {x: -0, y: 0.16764206, z: -0.037518587}
+      rotation: {x: 0.0040613096, y: 0.011306324, z: 0.0026662454, w: 0.9999243}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_Spine1
+      parentName: HoodGuy_Ctrl_Spine
+      position: {x: -0, y: 0.1885501, z: 0.0129846}
+      rotation: {x: 0.03531347, y: 0.10228317, z: 0.02774826, w: 0.99374104}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_Spine2
+      parentName: HoodGuy_Ctrl_Spine1
+      position: {x: -0, y: 0.1885501, z: 0.017477626}
+      rotation: {x: 0.031486608, y: 0.101461336, z: 0.033858493, w: 0.99376446}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftShoulder
+      parentName: HoodGuy_Ctrl_Spine2
+      position: {x: -0.13380727, y: 0.105640255, z: -0.030154571}
+      rotation: {x: -0.000000067311085, y: 0.0000000457399, z: 0.00000010879689, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftArm
+      parentName: HoodGuy_Ctrl_LeftShoulder
+      position: {x: -0.13783392, y: 0.00029434203, z: -0.013115119}
+      rotation: {x: -0.0684134, y: 0.06528776, z: 0.6086378, w: 0.78779256}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftForeArm
+      parentName: HoodGuy_Ctrl_LeftArm
+      position: {x: -0.2975006, y: 0.002405548, z: -0.008877926}
+      rotation: {x: -0.0013907831, y: 0.6975852, z: -0.0013207837, w: 0.71649927}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHand
+      parentName: HoodGuy_Ctrl_LeftForeArm
+      position: {x: -0.327538, y: -0.001663208, z: -0.005788202}
+      rotation: {x: -0.69891804, y: -0.08597004, z: 0.03457175, w: 0.7091739}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandThumb1
+      parentName: HoodGuy_Ctrl_LeftHand
+      position: {x: -0.056091536, y: -0.011882629, z: 0.07261475}
+      rotation: {x: 0.16345839, y: 0.06358497, z: 0.32460788, w: 0.929445}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandThumb2
+      parentName: HoodGuy_Ctrl_LeftHandThumb1
+      position: {x: -0.031427, y: -0.01952423, z: 0.023042897}
+      rotation: {x: 0.002785158, y: -0.008406507, z: -0.00051319366, w: 0.99996066}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandThumb3
+      parentName: HoodGuy_Ctrl_LeftHandThumb2
+      position: {x: -0.040132597, y: -0.013746795, z: 0.007395487}
+      rotation: {x: 0.003887032, y: -0.016270442, z: -0.0007158356, w: 0.99985987}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandMiddle1
+      parentName: HoodGuy_Ctrl_LeftHand
+      position: {x: -0.10519546, y: 0.023069914, z: 0.0005575943}
+      rotation: {x: -0.23802684, y: -0.015090373, z: 0.2630117, w: 0.9348478}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandMiddle2
+      parentName: HoodGuy_Ctrl_LeftHandMiddle1
+      position: {x: -0.05453926, y: -0.024889374, z: 0.0025399209}
+      rotation: {x: 0.021499429, y: 0.010391135, z: 0.2589186, w: 0.96560395}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_LeftHandMiddle3
+      parentName: HoodGuy_Ctrl_LeftHandMiddle2
+      position: {x: -0.05722412, y: -0.02765625, z: 0.005861549}
+      rotation: {x: -0.00000010205745, y: 0.00000031605006, z: -0.00000013707634,
+        w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightShoulder
+      parentName: HoodGuy_Ctrl_Spine2
+      position: {x: 0.13380727, y: 0.105640255, z: -0.030154571}
+      rotation: {x: -0.00000004843492, y: -0.00000009417707, z: 0.00000025025545,
+        w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightArm
+      parentName: HoodGuy_Ctrl_RightShoulder
+      position: {x: 0.13783392, y: 0.00029434203, z: -0.013115119}
+      rotation: {x: 0.2221556, y: -0.38730544, z: -0.3975923, w: 0.8015995}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightForeArm
+      parentName: HoodGuy_Ctrl_RightArm
+      position: {x: 0.2975006, y: 0.002405548, z: -0.008877926}
+      rotation: {x: -0.0016842907, y: -0.7100516, z: 0.0017291089, w: 0.7041455}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHand
+      parentName: HoodGuy_Ctrl_RightForeArm
+      position: {x: 0.327538, y: -0.001663208, z: -0.005788202}
+      rotation: {x: -0.16234638, y: -0.06822494, z: -0.09186554, w: 0.9800764}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandThumb1
+      parentName: HoodGuy_Ctrl_RightHand
+      position: {x: 0.056091536, y: -0.011882629, z: 0.07261475}
+      rotation: {x: 0.0039865957, y: -0.09363922, z: -0.12414887, w: 0.98782736}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandThumb2
+      parentName: HoodGuy_Ctrl_RightHandThumb1
+      position: {x: 0.031427, y: -0.01952423, z: 0.023042897}
+      rotation: {x: 0.022471493, y: 0.067830846, z: 0.004140881, w: 0.99743515}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandThumb3
+      parentName: HoodGuy_Ctrl_RightHandThumb2
+      position: {x: 0.040132597, y: -0.013746795, z: 0.007395487}
+      rotation: {x: -0.008330881, y: -0.03517983, z: -0.0015356343, w: 0.9993451}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandMiddle1
+      parentName: HoodGuy_Ctrl_RightHand
+      position: {x: 0.10519546, y: 0.023069914, z: 0.0005575943}
+      rotation: {x: 0.043041788, y: -0.020802313, z: -0.51834065, w: 0.853837}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandMiddle2
+      parentName: HoodGuy_Ctrl_RightHandMiddle1
+      position: {x: 0.05453926, y: -0.024889374, z: 0.0025399209}
+      rotation: {x: 0.042965326, y: -0.020765167, z: -0.5174218, w: 0.8543989}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_RightHandMiddle3
+      parentName: HoodGuy_Ctrl_RightHandMiddle2
+      position: {x: 0.05722412, y: -0.02765625, z: 0.005861549}
+      rotation: {x: -0.00000059825703, y: -0.0000006220988, z: -0.00000041857865,
+        w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_Neck
+      parentName: HoodGuy_Ctrl_Spine2
+      position: {x: -0, y: 0.18855026, z: 0.017477617}
+      rotation: {x: -0.006056605, y: -0.07327814, z: -0.031828605, w: 0.99678516}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HoodGuy_Ctrl_Head
+      parentName: HoodGuy_Ctrl_Neck
+      position: {x: -0, y: 0.16210906, z: 0.019305138}
+      rotation: {x: -0.0074096364, y: -0.07371005, z: -0.03048371, w: 0.9967862}
+      scale: {x: 1, y: 1, z: 1}
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 1
+    hasExtraRoot: 1
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 3
+  humanoidOversampling: 1
+  avatarSetup: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
