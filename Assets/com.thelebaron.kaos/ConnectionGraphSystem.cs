@@ -26,7 +26,7 @@ namespace Destructibles
             {
                 for (int i = 0; i < graph.Length; i++)
                 {
-                    if(UnanchoredNode.Exists(graph[i].Node))
+                    if(UnanchoredNode.HasComponent(graph[i].Node))
                         graph.RemoveAt(i);
                 }
             }
@@ -35,14 +35,14 @@ namespace Destructibles
         //[BurstCompile]
         private struct DestroyLinkJob : IJobForEachWithEntity_EBCC<GraphLink, GraphAnchor, GraphNode>
         {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
             [NativeDisableParallelForRestriction] public BufferFromEntity<NodeAnchorBuffer> NodeAnchorBuffer;
             [ReadOnly]public ComponentDataFromEntity<PhysicsVelocity> PhysicsVelocity;
             public void Execute(Entity entity, int index, DynamicBuffer<GraphLink> linkBuffer, ref GraphAnchor anchorNode, ref GraphNode graphNode)
             {
                 for (int i = 0; i < linkBuffer.Length; i++)
                 {
-                    if (PhysicsVelocity.Exists(linkBuffer[i].Node))
+                    if (PhysicsVelocity.HasComponent(linkBuffer[i].Node))
                     {
                         EntityCommandBuffer.DestroyEntity(index, entity);
 
@@ -53,7 +53,7 @@ namespace Destructibles
                         });
                         
 
-                        if (NodeAnchorBuffer.Exists(graphNode.Node))
+                        if (NodeAnchorBuffer.HasComponent(graphNode.Node))
                         {
                             var nodeAnchorBuffer = NodeAnchorBuffer[graphNode.Node];
                             
@@ -80,7 +80,7 @@ namespace Destructibles
 
         private struct CheckConnectivityMap : IJobForEachWithEntity_EB<ConnectionGraph>
         {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
             [ReadOnly] public BufferFromEntity<NodeNeighbor> Connection;
             [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
 
@@ -94,7 +94,7 @@ namespace Destructibles
                     var node = graph[i].Node;
                     if (!TryFindDisconnectedNodes(node, index, depth, ref count))
                     {
-                        if (Connection.Exists(node))
+                        if (Connection.HasComponent(node))
                             EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, node);
                         Debug.Log(node + "is disconnected");
                         //Disconnect(node, index, EntityCommandBuffer);
@@ -114,12 +114,12 @@ namespace Destructibles
                 
                 Debug.Log(node);
                 
-                if (StaticAnchor.Exists(node))
+                if (StaticAnchor.HasComponent(node))
                     return true;
-                if (!Connection.Exists(node))
+                if (!Connection.HasComponent(node))
                     return false;
 
-                if (Connection.Exists(node))
+                if (Connection.HasComponent(node))
                 {
                     for (var i = 0; i < Connection[node].Length; i++)
                     {
@@ -132,20 +132,20 @@ namespace Destructibles
 
             private bool FindAnchorNode2(Entity node, int index, int depth, ref int count)
             {
-                if (StaticAnchor.Exists(node))
+                if (StaticAnchor.HasComponent(node))
                     return true;
-                if (!Connection.Exists(node))
+                if (!Connection.HasComponent(node))
                     return false;
 
                 
-                if (Connection.Exists(node))
+                if (Connection.HasComponent(node))
                 {
                     for (var i = 0; i < Connection[node].Length; i++)
                     {
                         var subnode = Connection[node][i].Node;
-                        if (StaticAnchor.Exists(subnode))
+                        if (StaticAnchor.HasComponent(subnode))
                             return true;
-                        if (!Connection.Exists(subnode))
+                        if (!Connection.HasComponent(subnode))
                             return false;
                     }
                 }
@@ -153,16 +153,16 @@ namespace Destructibles
                 return false;
             }
             
-            private void Disconnect(Entity node, int index, EntityCommandBuffer.Concurrent EntityCommandBuffer, int depth, ref int count)
+            private void Disconnect(Entity node, int index, EntityCommandBuffer.ParallelWriter EntityCommandBuffer, int depth, ref int count)
             {
                 count++;
                 if (count > depth)
                     return;
                 
-                if (!Connection.Exists(node))
+                if (!Connection.HasComponent(node))
                     return;
                 
-                if (Connection.Exists(node))
+                if (Connection.HasComponent(node))
                 {
                     EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, node);
 
@@ -184,7 +184,7 @@ namespace Destructibles
 
             var deleteJob = new DestroyLinkJob
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
                 NodeAnchorBuffer = GetBufferFromEntity<NodeAnchorBuffer>(),
                 PhysicsVelocity = GetComponentDataFromEntity<PhysicsVelocity>(true)
             };

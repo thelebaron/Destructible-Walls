@@ -1,156 +1,242 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace thelebaron.damage
 {
+    /// <summary>
+    /// See TRSToLocalToWorldSystem / TRSToLocalToParentSystem
+    /// </summary>
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class HealthSystem : SystemBase
     {
         private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;
-        //private EntityQuery                            damageEventsQuery;
-        private EntityQuery                            historyQuery;
+        private EntityQuery                            damageEventsQuery;
+        private EntityQuery healthQuery;
+        //private EntityQuery                            historyQuery;
 
         protected override void OnCreate()
         {
             endSimulationEntityCommandBufferSystem            = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-            //damageEventsQuery = GetEntityQuery(typeof(DamageEvent));
-            //historyQuery      = GetEntityQuery(typeof(DamageHistory));
-        }
-
-        /*
-        /// <summary>
-        /// Record a history of all damage events that occured.
-        /// </summary>
-        [BurstCompile]
-        private struct HistoryJob : IJobChunk
-        {
-            [ReadOnly] public float                    Time;
-            [ReadOnly][DeallocateOnJobCompletion] public NativeArray<DamageEvent> DamageEvents;
-            [ReadOnly] public ArchetypeChunkEntityType EntityType;
-
-            public ArchetypeChunkBufferType<DamageHistory> DamageHistoryType;
-
-            public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
+            damageEventsQuery = GetEntityQuery(ComponentType.ReadOnly<DamageInstance>());
+            
+            healthQuery = GetEntityQuery(new EntityQueryDesc()
             {
-                var chunkEntity    = chunk.GetNativeArray(EntityType);
-                var chunkHistories = chunk.GetBufferAccessor(DamageHistoryType);
-
-                for (int index = 0; index < chunkEntity.Length; index++)
+                All = new ComponentType[]
                 {
-                    var entity  = chunkEntity[index];
-                    var history = chunkHistories[index];
-
-                    for (var i = 0; i < DamageEvents.Length; i++)
-                    {
-                        if (entity.Equals(DamageEvents[i].Receiver))
-                        {
-                            var de = DamageEvents[i];
-
-                            var dh = new DamageHistory
-                            {
-                                TimeOccured     = Time,
-                                TookDamage      = true,
-                                Damage          = de.Amount,
-                                Instigator      = de.Sender,
-                                LastDamageEvent = de
-                            };
-
-                            history.Add(dh);
-                        }
-                    }
-                }
-            }
+                    ComponentType.ReadWrite<HealthFrameBuffer>(),
+                },
+                Any = new ComponentType[]
+                {
+                    ComponentType.ReadWrite<Health>(),
+                    ComponentType.ReadWrite<HealthState>(),
+                    ComponentType.ReadWrite<HealthLink>(),
+                    ComponentType.ReadWrite<CompositeHealth>(),
+                },
+                None = new ComponentType[]
+                {
+                    ComponentType.ReadOnly<Dead>()
+                },
+                Options = EntityQueryOptions.FilterWriteGroup
+            });
+            //healthQuery = GetEntityQuery(ComponentType.ReadWrite<Health>(), ComponentType.ReadWrite<HealthBuffer>(), ComponentType.Exclude<Dead>());
         }
-        */
-        
+
+
         /// <summary>
         /// Adds the damage events to a buffer, and then destroys them. They get processed in the following job.
         /// </summary>
         [BurstCompile]
-        [ExcludeComponent(typeof(Dead))]
-        private struct AddDamageStackJob : IJobForEachWithEntity<DamageEvent>
+        private struct AddToBufferJob : IJobChunk
         {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
-            [NativeDisableParallelForRestriction] public BufferFromEntity<DamageStack> DamageStackBuffer;
+            public EntityCommandBuffer.ParallelWriter CommandBuffer;
+            [ReadOnly] public EntityTypeHandle EntityType;
+            [ReadOnly] public ComponentTypeHandle<DamageInstance> DamageEventType;
+            [NativeDisableParallelForRestriction] public BufferFromEntity<HealthFrameBuffer> HealthFrameBufferBfe;
             
-            public void Execute(Entity entity, int index, ref  DamageEvent damageEvent)
+            public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
             {
-                if (DamageStackBuffer.Exists(damageEvent.Receiver))
+                var entities = chunk.GetNativeArray(EntityType);
+                var damageEvents = chunk.GetNativeArray(DamageEventType);
+                
+                for (int i = 0; i < entities.Length; i++)
                 {
-                    DamageStackBuffer[damageEvent.Receiver].Add(damageEvent);
+                    var entity = entities[i];
+                    var damageEvent = damageEvents[i];
+                    
+                    if (HealthFrameBufferBfe.HasComponent(damageEvent.Receiver))
+                        HealthFrameBufferBfe[damageEvent.Receiver].Add(damageEvent);
+                    
+                    // Destroy damage event entity
+                    CommandBuffer.DestroyEntity(chunkIndex, entity);
                 }
-                // Destroy damage event entity
-                EntityCommandBuffer.DestroyEntity(index, entity);
             }
         }
 
+        
         /// <summary>
         /// Applies the damage to the health component. Todo: merge damage and apply in one go? so can be gibbed?
         /// </summary>
         [BurstCompile]
-        [ExcludeComponent(typeof(Dead))]
-        private struct ApplyDamageJob : IJobForEachWithEntity_EBC<DamageStack, Health>
+        private struct ApplyHealthJob : IJobChunk
         {
-            public void Execute(Entity entity, int index, DynamicBuffer<DamageStack> stacks, ref Health health)
+            public EntityCommandBuffer.ParallelWriter CommandBuffer;
+            public float ElapsedTime;
+            public ComponentTypeHandle<Health> HealthTypeHandle;
+            [ReadOnly] public ComponentTypeHandle<HealthLink> HealthLinkTypeHandle;
+            public BufferTypeHandle<HealthFrameBuffer> HealthBufferTypeHandle;
+            public ComponentTypeHandle<HealthState> HealthStateTypeHandle;
+            public uint LastSystemVersion;
+            
+            public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
             {
-                if(stacks.Length<1)
-                    return;
-                
-                var damagetotal = new DamageEvent();
-                var sender = Entity.Null;
-                
-                // Apply damage
-                for (var de = 0; de < stacks.Length; de++)
+                var changed = chunk.DidOrderChange(LastSystemVersion) || chunk.DidChange(HealthBufferTypeHandle, LastSystemVersion);
+                if (!changed)
                 {
-                    sender = stacks[de].Value.Sender;
-                    damagetotal.Amount += stacks[de].Value.Amount;
+                    return;
                 }
                 
-                health.ApplyDamage(damagetotal);
-                health.Damager = sender;
-                health.DamageTaken = damagetotal.Amount;
-                stacks.Clear();
+                var chunkHealths = chunk.GetNativeArray(HealthTypeHandle);
+                var chunkHealthLinks = chunk.GetNativeArray(HealthLinkTypeHandle);
+                var chunkHealthFrameBuffers = chunk.GetBufferAccessor(HealthBufferTypeHandle);
+                var chunkHealthStates = chunk.GetNativeArray(HealthStateTypeHandle);
+                var hasHealth = chunk.Has(HealthTypeHandle);
+                var hasLinkedHealth = chunk.Has(HealthLinkTypeHandle);
+                var hasState = chunk.Has(HealthStateTypeHandle);
+                var count = chunk.Count;
                 
+                if (hasHealth)
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        var health = chunkHealths[i];
+                        var frameBuffer = chunkHealthFrameBuffers[i];
+                        
+                        // Skip if dead or no events in buffer
+                        if(health.Value <= 0 || frameBuffer.Length < 1)
+                            continue;
+                        
+                        var senderEntity = Entity.Null;
+                        var totalDamage = 0;
+                        var lastDamage = 0;
+                        
+                        // Get sum total of all the damage in the buffer
+                        for (var j = 0; j < frameBuffer.Length; j++)
+                        {
+                            senderEntity =  frameBuffer[j].Value.Sender;
+                            lastDamage   =  frameBuffer[j].Value.Value;
+                            totalDamage  += frameBuffer[j].Value.Value;
+                        }
+                        
+                        // Clear the damage buffer
+                        frameBuffer.Clear();
+                        
+                        // Update info(deprecated for below)
+                        health.LastDamageValue   = lastDamage;
+                        health.LastDamagerEntity = senderEntity;
+                        
+                        
+                        if (hasState)
+                        {
+                            // Update per frame changes from damage events
+                            var state = chunkHealthStates[i];
+                            state.LastDamagerEntity = senderEntity;
+                            state.LastDamageValue   = lastDamage;
+                            state.TimeLastHurt      = ElapsedTime;
+                            // Zero out damage, a bit hacky but should work without needing complexity
+                            if (state.Invulnerable)
+                                totalDamage = 0;
+                            
+                            chunkHealthStates[i] = state;
+                        }
+                        
+                        // Subtract total damage from health
+                        health.Value -= totalDamage;
+                        chunkHealths[i] = health;
+                    }
+                }
+                
+                if (hasLinkedHealth)
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        var link = chunkHealthLinks[i];
+                        var frameBuffer = chunkHealthFrameBuffers[i];
+                        
+                        // If no damage events in the buffer, skip
+                        if(frameBuffer.Length < 1)
+                            continue;
+                        
+                        var senderEntity = Entity.Null;
+                        var totalDamage = 0;
+                        var lastDamage = 0;
+                        
+                        // Get sum total of all the damage in the buffer
+                        for (var j = 0; j < frameBuffer.Length; j++)
+                        {
+                            var damageInstance = frameBuffer[j].Value;
+                            damageInstance.Value = (int)link.Multiplier * damageInstance.Value;
+                            damageInstance.Receiver = link.Value;
+
+                            var damageEntity = CommandBuffer.CreateEntity(chunkIndex);
+                            CommandBuffer.AddComponent(chunkIndex, damageEntity, damageInstance);
+
+                            senderEntity =  frameBuffer[j].Value.Sender;
+                            lastDamage   =  frameBuffer[j].Value.Value;
+                            totalDamage  += frameBuffer[j].Value.Value;
+                        }
+                        
+                        // Clear the damage buffer
+                        frameBuffer.Clear();
+                        
+                        if (hasState)
+                        {
+                            // Update per frame changes from damage events
+                            var state = chunkHealthStates[i];
+                            state.LastDamagerEntity = senderEntity;
+                            state.LastDamageValue   = lastDamage;
+                            state.TimeLastHurt      = ElapsedTime;
+                            // Zero out damage, a bit hacky but should work without needing complexity
+                            if (state.Invulnerable)
+                                totalDamage = 0;
+                            
+                            chunkHealthStates[i] = state;
+                        }
+                        
+                        // Subtract total damage from health
+                        //health.Value -= totalDamage;
+                        //chunkHealths[i] = health;
+                    }
+                }
                 
             }
         }
+ 
         
         protected override void OnUpdate()
         {
-            /*
-            Profiler.BeginSample("Health History");
-            var entityType        = GetArchetypeChunkEntityType();
-            var damagehistoryType = GetArchetypeChunkBufferType<DamageHistory>();
-            
-            var historyJob = new HistoryJob
+            Dependency = new AddToBufferJob
             {
-                Time              = (float)Time.ElapsedTime,
-                DamageEvents      = damageEventsQuery.ToComponentDataArray<DamageEvent>(Allocator.TempJob),
-                EntityType        = entityType,
-                DamageHistoryType = damagehistoryType
-            };
-            var historyHandle = historyJob.Schedule(historyQuery, inputDeps);
-            Profiler.EndSample();*/
-
-            Profiler.BeginSample("Health AddDamageStack");
-            Dependency = new AddDamageStackJob
-            {
-                EntityCommandBuffer               = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
-                DamageStackBuffer = GetBufferFromEntity<DamageStack>()
-            }.Schedule(this, Dependency);
+                CommandBuffer      = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
+                EntityType         = GetEntityTypeHandle(),
+                DamageEventType    = GetComponentTypeHandle<DamageInstance>(true),
+                HealthFrameBufferBfe = GetBufferFromEntity<HealthFrameBuffer>()
+            }.ScheduleSingle(damageEventsQuery, Dependency);
             endSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
-            Profiler.EndSample();
-            
-            Profiler.BeginSample("Health ApplyDamageJob");
-            Dependency = new ApplyDamageJob().Schedule(this, Dependency);
-            Profiler.EndSample();
-            
-            //var tagDeadJob = new TagDeadJob{ EntityCommandBuffer = m_EndSim.CreateCommandBuffer().ToConcurrent()};
-            //var tagDeadHandle = tagDeadJob.Schedule(this, processDamageStackHandle);
-            //m_EndSim.AddJobHandleForProducer(tagDeadHandle);
-            //return tagDeadHandle;
-            //return processDamageStackHandle;
+
+            Dependency = new ApplyHealthJob
+            {
+                CommandBuffer           = endSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
+                ElapsedTime             = (float)Time.ElapsedTime,
+                HealthTypeHandle        = GetComponentTypeHandle<Health>(),
+                HealthLinkTypeHandle    = GetComponentTypeHandle<HealthLink>(true),
+                HealthBufferTypeHandle  = GetBufferTypeHandle<HealthFrameBuffer>(),
+                HealthStateTypeHandle   = GetComponentTypeHandle<HealthState>(),
+                LastSystemVersion = LastSystemVersion
+            }.ScheduleSingle(healthQuery, Dependency);
+            endSimulationEntityCommandBufferSystem.AddJobHandleForProducer(Dependency);
         }
     }
 }

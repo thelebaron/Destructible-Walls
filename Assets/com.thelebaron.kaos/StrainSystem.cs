@@ -23,7 +23,7 @@ namespace Destructibles
         [ExcludeComponent(typeof(PhysicsVelocity))]
         private struct FilterEventsJob : IJobForEachWithEntity_EBB<NodeLinkBuffer, NodeNeighbor>
         {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
             [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<Entity> DestroyLinkEventEntities;
             [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<DestroyLinkEvent> DestroyLinkEvents;
             [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
@@ -33,7 +33,7 @@ namespace Destructibles
                 
                 if (nodeLinkBuffer.Length.Equals(0) && neighbors.Length.Equals(0))
                 {
-                    if (!StaticAnchor.Exists(entity))
+                    if (!StaticAnchor.HasComponent(entity))
                         EntityCommandBuffer.AddComponent(index, entity, new PhysicsVelocity());
                     
                     return;
@@ -65,7 +65,7 @@ namespace Destructibles
         {
             var filtereventsjob = new FilterEventsJob
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
                 DestroyLinkEventEntities = m_DestroyLinkEventQuery.ToEntityArray(Allocator.TempJob),
                 DestroyLinkEvents = m_DestroyLinkEventQuery.ToComponentDataArray<DestroyLinkEvent>(Allocator.TempJob),
                 StaticAnchor = GetComponentDataFromEntity<AnchorNode>(true)
@@ -86,13 +86,13 @@ namespace Destructibles
         [ExcludeComponent(typeof(PhysicsVelocity))]
         private struct RemoveNodeNeighbor : IJobForEachWithEntity_EB<NodeNeighbor>
         {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
             [ReadOnly] public ComponentDataFromEntity<PhysicsVelocity> Velocity;
             [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
 
             public void Execute(Entity entity, int index, DynamicBuffer<NodeNeighbor> neighbors)
             {
-                if (neighbors.Length <= 0 && !StaticAnchor.Exists(entity))
+                if (neighbors.Length <= 0 && !StaticAnchor.HasComponent(entity))
                 {
                     EntityCommandBuffer.AddComponent<PhysicsVelocity>(index, entity);
                     EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, entity);
@@ -101,7 +101,7 @@ namespace Destructibles
 
                 for (var i = neighbors.Length - 1; i > -1; i--)
                 {
-                    if (Velocity.Exists(neighbors[i].Node)) //neighbors[i].Node.Equals(Entity.Null) && 
+                    if (Velocity.HasComponent(neighbors[i].Node)) //neighbors[i].Node.Equals(Entity.Null) && 
                     {
                         neighbors.RemoveAt(i);
                     }
@@ -112,7 +112,7 @@ namespace Destructibles
         [ExcludeComponent(typeof(PhysicsVelocity))]
         private struct UnanchorNodeJob : IJobForEachWithEntity_EB<NodeAnchorBuffer>
         {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
             [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
             [ReadOnly] public ComponentDataFromEntity<PhysicsVelocity> PhysicsVelocity;
 
@@ -126,7 +126,7 @@ namespace Destructibles
 
                 for (var i = b.Length - 1; i > -1; i--)
                 {
-                    if (StaticAnchor.Exists(b[i].Node) && PhysicsVelocity.Exists(b[i].Node)
+                    if (StaticAnchor.HasComponent(b[i].Node) && PhysicsVelocity.HasComponent(b[i].Node)
                     ) //neighbors[i].Node.Equals(Entity.Null) && 
                     {
                         b.RemoveAt(i);
@@ -139,7 +139,7 @@ namespace Destructibles
         [ExcludeComponent(typeof(PhysicsVelocity))]
         private struct CheckHealth : IJobForEachWithEntity<Health>
         {
-            public EntityCommandBuffer.Concurrent EntityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
 
             public void Execute(Entity entity, int index, ref Health health)
             {
@@ -157,7 +157,7 @@ namespace Destructibles
         {
             var removeNeighborsJob = new RemoveNodeNeighbor
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
                 Velocity = GetComponentDataFromEntity<PhysicsVelocity>(true),
                 StaticAnchor = GetComponentDataFromEntity<AnchorNode>(true)
             };
@@ -166,7 +166,7 @@ namespace Destructibles
 
             var unanchorJob = new UnanchorNodeJob
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
                 StaticAnchor = GetComponentDataFromEntity<AnchorNode>(true),
                 PhysicsVelocity = GetComponentDataFromEntity<PhysicsVelocity>(true),
             };
@@ -174,7 +174,7 @@ namespace Destructibles
             m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(unanchorJobHandle);
 
             var checkHealthJob = new CheckHealth
-                {EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()};
+                {EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter()};
             var checkHealthHandle = checkHealthJob.Schedule(this, unanchorJobHandle);
             m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(checkHealthHandle);
 

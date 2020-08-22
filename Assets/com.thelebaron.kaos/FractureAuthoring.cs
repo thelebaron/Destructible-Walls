@@ -37,7 +37,8 @@ namespace Destructibles
 
         public void Create()
         {
-            MakeFolders();
+            CreateMeshDirectories();
+            
             m_SystemRandom = new System.Random();
             seed = m_SystemRandom.Next();
             m_TotalMass = density * (mesh.bounds.extents.x * mesh.bounds.extents.y * mesh.bounds.extents.z);
@@ -72,10 +73,8 @@ namespace Destructibles
                 chunk.transform.SetParent(go.transform, false);
 
                 Setup(i, chunk, fractureTool);
-                //Joints(chunk, jointBreakForce);
-                //
+                
                 AddAuthoringComponents(chunk,jointBreakForce);
-                //SetupAuthoringComponents(chunk);
             }
 
             CreateNodeConnections();
@@ -84,21 +83,18 @@ namespace Destructibles
 
         private void AddAuthoringComponents(GameObject chunk, float breakForce)
         {
-            var connectednode = chunk.gameObject.GetComponent<NodeAuthoring>();
-            if (connectednode == null)
+            if (chunk.gameObject.GetComponent<NodeAuthoring>() == null)
             {
                 var node = chunk.gameObject.AddComponent<NodeAuthoring>();
                 node.dirty = true;
             }
-            var removeVelocity = chunk.gameObject.GetComponent<RemoveVelocity>();
-            if (removeVelocity == null)
+            
+            if (chunk.gameObject.GetComponent<RemoveVelocity>() == null)
             {
-                
-                removeVelocity = chunk.gameObject.AddComponent<RemoveVelocity>();
-                removeVelocity.gameObject.hideFlags = HideFlags.HideInInspector;
+                var removeVelocity = chunk.gameObject.AddComponent<RemoveVelocity>();
+                removeVelocity.hideFlags = HideFlags.HideInInspector;
             }
-                
-            chunk.gameObject.AddComponent<MeshRenderer>();;
+            
         }
 
         public void Cleanup()
@@ -368,22 +364,16 @@ namespace Destructibles
         }
         
         // extract to separate class
-        public void MakeFolders()
+        private void CreateMeshDirectories()
         {
+            //if it doesn't, create it
             if(!Directory.Exists(MainPath))
-            {    
-                //if it doesn't, create it
                 Directory.CreateDirectory(MainPath);
- 
-            }
-
+            
             var subPath = MainPath + "/" + name;
+            //if it doesn't, create it
             if(!Directory.Exists(subPath))
-            {    
-                //if it doesn't, create it
                 Directory.CreateDirectory(subPath);
- 
-            }
         }
 
         public void Reset()

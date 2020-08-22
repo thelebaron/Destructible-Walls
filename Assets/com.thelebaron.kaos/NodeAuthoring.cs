@@ -63,7 +63,7 @@ namespace Destructibles
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
             dstManager.AddComponentData(entity, new BreakableNode());
-            dstManager.AddComponentData(entity, new Health {Value = 10, Max = 10});
+            dstManager.AddComponentData(entity, new Health {Value = 10});
             dstManager.SetName(entity, "Breakable node " + name);
             
             {
@@ -171,16 +171,6 @@ namespace Destructibles
                     });
 
                     
-                    /*
-                    if (!dstManager.HasComponent(e, typeof(NodeAnchorBuffer)))
-                    {
-                        dstManager.AddBuffer<NodeAnchorBuffer>(e);
-                    }
-
-                    if (dstManager.HasComponent(e, typeof(NodeAnchorBuffer)))
-                    {
-                        var anchor = dstManager.GetBuffer<NodeAnchorBuffer>(e);
-                    }*/
                 }
 
             }

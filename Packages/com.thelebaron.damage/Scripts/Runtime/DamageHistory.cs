@@ -12,7 +12,7 @@ namespace thelebaron.damage
         public int Damage;
         public Entity Instigator;
         public Entity Target;
-        public DamageEvent LastDamageEvent;
+        public DamageInstance LastDamageInstance;
     
     }
 

@@ -1,4 +1,5 @@
 using thelebaron.damage;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -9,84 +10,87 @@ using UnityEngine;
 
 namespace Common.Scripts
 {
-    public class MouseDamageSystem : JobComponentSystem
+    [UpdateAfter(typeof(BuildPhysicsWorld)), UpdateBefore(typeof(EndFramePhysicsSystem))]
+    public class MouseDamageSystem : SystemBase
     {
-        private EntityQuery m_MouseGroup;
-        private BuildPhysicsWorld m_BuildPhysicsWorldSystem;
+        private EntityQuery healthQuery;
+        private BuildPhysicsWorld buildPhysicsWorldSystem;
         const float k_MaxDistance = 100.0f;
 
         protected override void OnCreate()
         {
-            m_BuildPhysicsWorldSystem = World.GetOrCreateSystem<BuildPhysicsWorld>();
-            m_MouseGroup = GetEntityQuery(new EntityQueryDesc
-            {
-                All = new ComponentType[] {typeof(MouseDamage)}
-            });
+            buildPhysicsWorldSystem = World.GetOrCreateSystem<BuildPhysicsWorld>();
+            healthQuery = GetEntityQuery(typeof(Health));
         }
 
-        private struct ClickJob : IJobForEach<MouseDamage>
+        struct MouseDamageJob : IJobChunk
         {
             [ReadOnly] public CollisionWorld CollisionWorld;
-            public RaycastInput RayInput;
-            public float3 Forward;
-            public bool Damage;
-            [NativeDisableParallelForRestriction] public ComponentDataFromEntity<Health> HealthDataFromEntity;
-
-            public void Execute(ref MouseDamage c0)
+            public float3 RayOrigin;
+            public float3 RayEnd;
+            [ReadOnly]public EntityTypeHandle EntityTypeHandle;
+            public ComponentTypeHandle<Health> HealthTypeHandle;
+            
+            public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
             {
-                if(!Damage)
-                    return;
+                var entities = chunk.GetNativeArray(EntityTypeHandle);
+                var healths = chunk.GetNativeArray(HealthTypeHandle);
                 
-                var hit = CollisionWorld.CastRay(RayInput, out var raycastHit);
 
-                if (hit)
+                for (int i = 0; i < chunk.Count; i++)
                 {
-                    if (raycastHit.RigidBodyIndex != -1)
-                    {
-                        
-                        var hitentity = CollisionWorld.Bodies[raycastHit.RigidBodyIndex].Entity;
+                    var entity = entities[i];
+                    var health = healths[i];
+                    
+                    var hit = CollisionWorld.CastRay(CameraRay(), out var raycastHit);
 
-                        if (hitentity.Equals(Entity.Null)) return;
+                    if (!hit)
+                        continue;
+                    if(raycastHit.RigidBodyIndex == -1)
+                        continue;
+                    
+                    var hitentity = CollisionWorld.Bodies[raycastHit.RigidBodyIndex].Entity;
+                    if (!hitentity.Equals(entity)) 
+                        return;
+                    
+                    health.Value -= 10;
 
-                        
-                        if (HealthDataFromEntity.Exists(hitentity))
-                        {
-                            Debug.Log("Damaged " + hitentity + "!");
-                            var health = HealthDataFromEntity[hitentity];
-                            health.Value -= 10;
-                            HealthDataFromEntity[hitentity] = health;
-                        }
-                    }
+                    healths[i] = health;
+
                 }
+            }
+
+            public RaycastInput CameraRay()
+            {
+                return new RaycastInput
+                {
+                    Start  = RayOrigin,
+                    End    = RayEnd,
+                    Filter = CollisionFilter.Default,
+                };
             }
         }
 
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        protected override void OnUpdate()
         {
-            if (Camera.main == null)
-                return inputDeps;
+            if(!Input.GetKey(KeyCode.Mouse0))
+                return;
             
-            var finalhandle = JobHandle.CombineDependencies(inputDeps, m_BuildPhysicsWorldSystem.FinalJobHandle);
+            Dependency = JobHandle.CombineDependencies(Dependency, buildPhysicsWorldSystem.GetOutputDependency());
             
-            var clickhandle = new ClickJob
+            Dependency = new MouseDamageJob
             {
-                CollisionWorld = m_BuildPhysicsWorldSystem.PhysicsWorld.CollisionWorld,
-                RayInput = new RaycastInput
-                {
-                    Start = Camera.main.ScreenPointToRay(Input.mousePosition).origin,
-                    End = Camera.main.ScreenPointToRay(Input.mousePosition).origin + Camera.main.ScreenPointToRay(Input.mousePosition).direction * k_MaxDistance,
-                    Filter = CollisionFilter.Default,
-                },
-                Forward = Camera.main.transform.forward,
-                Damage = Input.GetMouseButtonDown(0),
-                HealthDataFromEntity = GetComponentDataFromEntity<Health>(false)
-                
-            }.Schedule(this, finalhandle);
+                CollisionWorld   = buildPhysicsWorldSystem.PhysicsWorld.CollisionWorld,
+                RayOrigin        = Camera.main.ScreenPointToRay(Input.mousePosition).origin,
+                RayEnd           = Camera.main.ScreenPointToRay(Input.mousePosition).origin + Camera.main.ScreenPointToRay(Input.mousePosition).direction * k_MaxDistance,
+                EntityTypeHandle = GetEntityTypeHandle(),
+                HealthTypeHandle = GetComponentTypeHandle<Health>()
+            }.Schedule(healthQuery, Dependency);
 
-            clickhandle.Complete();
-            
-            return clickhandle;
+            // race condition without this, one of the physics systems does not wait for system to complete
+            // see https://github.com/Unity-Technologies/EntityComponentSystemSamples/blob/21e35e20075827d09f3b9f4b8da4613a345df18e/UnityPhysicsSamples/Assets/Common/Scripts/MousePick/MousePickBehaviour.cs
+            Dependency.Complete();
         }
     }
 }

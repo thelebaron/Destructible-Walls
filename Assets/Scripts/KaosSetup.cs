@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using kaos;
 using thelebaron.CustomEditor;
 using thelebaron.mathematics;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -120,8 +121,9 @@ public partial class KaosEditor
         var previewSlider = visualElement.Q<Slider>("preview-distance-slider");
         distancePreviewSlider = previewSlider;
         previewSlider.value = 1;
-        previewSlider.RegisterCallback<ChangeEvent<float>>(evt => {
-            label.text = maths.round(evt.newValue).ToString();
+        previewSlider.RegisterCallback<ChangeEvent<float>>(evt =>
+        {
+            label.text = math.round(evt.newValue).ToString(); //maths.round(evt.newValue).ToString();
             //Debug.Log(distancePreviewSlider.value);
         });
         

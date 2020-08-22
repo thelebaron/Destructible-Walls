@@ -4,7 +4,10 @@ using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Assertions;
+
 // ReSharper disable RedundantNameQualifier
 // ReSharper disable InconsistentNaming
 
@@ -29,17 +32,22 @@ namespace thelebaron.mathematics
         public static float3 up      => upVector;
         public static float3 down    => downVector;
         public static float3 left    => leftVector;
+        
+        /// <summary>
+        /// Shorthand for postive X
+        /// </summary>
         public static float3 right   => rightVector;
         public static float3 forward => forwardVector;
         public static float3 back    => backVector;
-        public static float  epsilon => 0.0001f;
+
+        public static float epsilon => math.EPSILON; //0.0001f;
 
         //public static readonly float Epsilon = !MathfInternal.IsFlushToZeroEnabled ? MathfInternal.FloatMinDenormal : MathfInternal.FloatMinNormal;
-        public const float pi               = 3.141593f;
-        public const float infinity         = float.PositiveInfinity;
-        public const float negativeInfinity = float.NegativeInfinity;
-        public const float deg2Rad          = 0.01745329f;
-        public const float rad2Deg          = 57.29578f;
+        public static float pi       => math.PI;// 3.141593f;
+        public static float infinity => math.INFINITY;        //= float.PositiveInfinity;
+        public const  float negativeInfinity = float.NegativeInfinity;
+        public const  float deg2Rad          = 0.01745329f;
+        public const  float rad2Deg          = 57.29578f;
 
         /*
         [StructLayout(LayoutKind.Sequential, Size = 1)]
@@ -54,15 +62,13 @@ namespace thelebaron.mathematics
         public static float round(float x, int decimals) {
             return math.round(x * math.pow(10, decimals));
         }*/
-       public static float round(float a)
-       {
-           return (float)System.Math.Round(a, 2);
-       }
        
-       public static float lerpSmooth(float x, float y, float t)
-       {
+        public static float lerpSmooth(float x, float y, float t)
+        {
            return (float)math.lerp(x, y, math.smoothstep(0.0, 1.0, math.smoothstep(0.0, 1.0, t)));
-       }
+        }
+        
+        
         public static bool approximately(float a, float b)
         {
             return math.abs(b - a) < (double) math.max(1E-06f * math.max(math.abs(a), math.abs(b)), epsilon * 8f);
@@ -72,17 +78,70 @@ namespace thelebaron.mathematics
         {
             return approximately(rhs.x, lhs.x) && approximately(rhs.y, lhs.y) && approximately(rhs.z, lhs.z);
         }
+                    // untested brunocoimbra
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public static bool Approximately(float a, float b)
+                    {
+                        return math.abs(b - a) < (double)math.max(1E-06f * math.max(math.abs(a), math.abs(b)), math.FLT_MIN_NORMAL * 8f);
+                    }
+
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public static bool Approximately(double a, double b)
+                    {
+                        return math.abs(b - a) < math.max(1E-06 * math.max(math.abs(a), math.abs(b)), math.DBL_MIN_NORMAL * 8);
+                    }
+
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public static bool Approximately(float a, float b, float tolerance)
+                    {
+                        return math.abs(a - b) <= tolerance;
+                    }
+
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public static bool Approximately(double a, double b, double tolerance)
+                    {
+                        return math.abs(a - b) <= tolerance;
+                    }
         
+        /// <summary>
+        /// equiv of Quaternion.Angle
+        /// </summary>
+        public static float angle(quaternion a, quaternion b)
+        {
+            float num = math.dot(a, b);
+            
+            return IsEqualUsingDot(num) ? 0.0f : (float) ((double) math.acos(math.min(math.abs(num), 1f)) * 2.0 * 57.2957801818848);
+        }
+        
+        /// <summary>
+        /// equiv of Quaternion.Angle
+        /// </summary>
+        private static bool IsEqualUsingDot(float dot)
+        {
+            return (double) dot > 0.999998986721039;
+        }
+        
+        /// <summary>
+        /// Returns the angle between two vectors, replacement for Vector3.Angle
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
         public static float angle(float3 lhs, float3 rhs)
         {
-            //a = Vector3.Angle(vectorA, vectorB);
-
-            var result = math.dot(math.normalizesafe(lhs), math.normalizesafe(rhs));
+            var result =
+            
+            // see https://answers.unity.com/questions/1294512/how-vectorangle-works-internally-in-unity.html
+            math.acos(math.clamp(math.dot(math.normalizesafe(lhs), math.normalizesafe(rhs)), -1f, 1f)) * 57.29578f;
+            
+            /*var result = math.dot(math.normalizesafe(lhs), math.normalizesafe(rhs));
             result = math.clamp(result, -1f, 1f);
             result = math.acos(result);
-            result = math.degrees(result);
+            result = math.degrees(result);*/
             
-            //Assert.AreEqual(a, result);
+            //var a = Vector3.Angle(lhs, rhs);
+            
+            //Assert.AreApproximatelyEqual(a,result);
 
             return result;
         }
@@ -121,8 +180,16 @@ namespace thelebaron.mathematics
             value = (math.abs(value) < epsilon) ? 0.0f : value;
             return value;
         }
+
+
+        /// <summary>Returns b if c is true, a otherwise.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool select(bool a, bool b, bool c)
+        {
+            return c ? b : a;
+        }
         
-        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 clampMagnitude(float3 vector, float maxLength)
         {
             float sqrMagnitude = math.lengthsq(vector); //vector.sqrMagnitude;
@@ -135,7 +202,8 @@ namespace thelebaron.mathematics
             return new float3(num2 * maxLength, num3 * maxLength, num4 * maxLength);
         }
 
-        [BurstCompile]
+        //[BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 scale(float3 lhs, float3 rhs)
         {
             return new float3(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
@@ -154,16 +222,18 @@ namespace thelebaron.mathematics
             return value;
         }
 
+
+        /// <summary>Snaps small numbers or nan to zero, to avoid floating point issues.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float notnan(float value, float newepsilon = 0.0001f)
         {
             value = (math.abs(value) < newepsilon) ? 0.0f : value;
             return value;
         }
 
-        /// <summary>
-        /// this can be used to snap individual super-small property
-        /// values to zero, for avoiding some floating point issues.
-        /// </summary>
+        
+        /// <summary>Snaps small numbers or nan to zero, to avoid floating point issues.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 snapToZero(float3 value)
         {
             value.x = maths.abs(value.x);
@@ -172,6 +242,27 @@ namespace thelebaron.mathematics
             return value;
         }
 
+        // should this be ref?
+        /// <summary>Subtract to zero but not less than.</summary>
+        /*[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void decrement(ref int x)
+        {
+            if (x > 0)
+                x--;
+        }*/
+
+        /// <summary>Subtract to zero but not less than.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int decrement(int x)
+        {
+            //var truth = x;
+            //decrement(ref truth);
+            //var val   = math.select(0, x - 1, x > 0);
+            //Assert.AreEqual(val, truth);
+            
+            return math.select(0, x - 1, x > 0);
+        }
+        
         /*
         public static float SnapToZeroA(float value, float epsilon = 0.0001f)
         {
@@ -194,13 +285,21 @@ namespace thelebaron.mathematics
         /// </summary>
         /// <param name="vector"></param>
         /// <param name="planeNormal"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 projectOnPlane(float3 vector, float3 planeNormal)
         {
-            float num1 = math.dot(planeNormal, planeNormal);
+            /*float num1 = math.dot(planeNormal, planeNormal);
             if ((double) num1 < (double) maths.epsilon)
                 return vector;
             float num2 = math.dot(vector, planeNormal);
-            return new float3(vector.x - planeNormal.x * num2 / num1, vector.y - planeNormal.y * num2 / num1, vector.z - planeNormal.z * num2 / num1);
+            var result = new float3(vector.x - planeNormal.x * num2 / num1, vector.y - planeNormal.y * num2 / num1, vector.z - planeNormal.z * num2 / num1);
+            */
+/*#if UNITY_EDITOR
+            float3 actual = Vector3.ProjectOnPlane(vector, planeNormal);
+            Assert.AreEqual(actual, result);
+#endif*/
+            //return result;
+            return math.project(vector, planeNormal);
         }
 
         [BurstCompile]
@@ -252,7 +351,38 @@ namespace thelebaron.mathematics
             return result;
         }
 
-        public static float3 getAngles(quaternion q1)
+        /// <summary>
+        /// https://forum.unity.com/threads/how-do-i-clamp-a-quaternion.370041/
+        /// Vector3 bounds = new Vector3(20, 30, 5); // ie: x axis has a range of -20 to 20 degrees
+        /// </summary>
+        public static quaternion clampQuaternionSafe(quaternion q, float x, float y, float z)
+        {
+            q.value.x /= q.value.w;
+            q.value.y /= q.value.w;
+            q.value.z /= q.value.w;
+            q.value.w =  1.0f;
+
+            var angleX = 2.0f * Mathf.Rad2Deg * math.atan(q.value.x);
+            angleX = math.clamp(angleX, -x, x);
+            q.value.x    = math.tan(0.5f * Mathf.Deg2Rad * angleX);
+ 
+            float angleY = 2.0f * Mathf.Rad2Deg * math.atan(q.value.y);
+            angleY = math.clamp(angleY, -y, y);
+            q.value.y    = math.tan(0.5f * Mathf.Deg2Rad * angleY);
+ 
+            float angleZ = 2.0f * Mathf.Rad2Deg * math.atan(q.value.z);
+            angleZ = math.clamp(angleZ, -z, z);
+            q.value.z    = math.tan(0.5f * Mathf.Deg2Rad * angleZ);
+            
+            return nanSafeQuaternion(q);
+        }
+        
+        /// <summary>
+        /// returns the euler angles of a quaternion(tested against UnityEngine.Quaternion.eulerAngles)
+        /// </summary>
+        /// <param name="q1"></param>
+        /// <returns></returns>
+        public static float3 eulerXYZ(quaternion q1)
         {
             float   sqw  = q1.value.w * q1.value.w;
             float   sqx  = q1.value.x * q1.value.x;
@@ -287,6 +417,11 @@ namespace thelebaron.mathematics
             return normalizeAngles(v * Mathf.Rad2Deg);
         }
 
+        public static float3 eulerXYZRadians(quaternion q1)
+        {
+            return math.radians(eulerXYZ(q1));
+        }
+
         static float3 normalizeAngles(float3 angles)
         {
             angles.x = normalizeAngle(angles.x);
@@ -304,39 +439,9 @@ namespace thelebaron.mathematics
             return angle;
         }
         
-        /// from unity forums https://forum.unity.com/threads/does-somebody-have-an-ecs-version-of-this.724358/#post-4836008
-        /// tertle
-        /// <summary>
-        /// Converts a quaternion to euler.
-        /// </summary>
-        /// <param name="quaternion">The quaternion.</param>
-        /// <returns>Euler angles.</returns>
-        public static float3 ToEuler(this quaternion quaternion)
-        {
-            var q = quaternion.value;
- 
-            var sinRCosP = 2 * ((q.w * q.x) + (q.y * q.z));
-            var cosRCosP = 1 - (2 * ((q.x * q.x) + (q.y * q.y)));
-            var roll     = math.atan2(sinRCosP, cosRCosP);
- 
-            // pitch (y-axis rotation)
-            var sinP  = 2 * ((q.w * q.y) - (q.z * q.x));
-            var pitch = math.abs(sinP) >= 1 ? math.sign(sinP) * math.PI / 2 : math.asin(sinP);
- 
-            // yaw (z-axis rotation)
-            var sinYCosP = 2 * ((q.w * q.z) + (q.x * q.y));
-            var cosYCosP = 1 - (2 * ((q.y * q.y) + (q.z * q.z)));
-            var yaw      = math.atan2(sinYCosP, cosYCosP);
- 
-            return new float3(roll, pitch, yaw);
-        }
-
         /// <summary>
         /// returns a quaternion rotated randomly around a specific axis, typically used for raycast surface normal calculations
         /// </summary>
-        /// <param name="surfaceNormal"></param>
-        /// <param name="random"></param>
-        /// <returns></returns>
         public static quaternion randomAroundAxis(float3 surfaceNormal, Unity.Mathematics.Random random)
         {
             // from https://answers.unity.com/questions/1232279/more-specific-quaternionlookrotation.html
@@ -352,7 +457,7 @@ namespace thelebaron.mathematics
             return math.mul(quaternion.AxisAngle(surfaceNormal,random.NextFloat(0, 360f)) , quaternion.LookRotationSafe(normal, up));
         }
         
-         //Doesnt appear to work as a static method, need to put into each system
+         // Doesnt appear to work as a static method, need to put into each system
         public static NativeArray<Unity.Mathematics.Random> GetRandoms(Unity.Mathematics.Random random, int count)
         {
             var array = new NativeArray<Unity.Mathematics.Random>(count, Allocator.TempJob);
@@ -362,7 +467,14 @@ namespace thelebaron.mathematics
             return array;
         }
         
-        
+        public static float4x4 RotateAround(LocalToWorld localToWorld, float3 center, float3 axis, float angle) {
+            var initialRot = quaternion.LookRotationSafe(localToWorld.Forward, localToWorld.Up);
+            var rotAmount  = quaternion.AxisAngle(axis, angle);
+            var finalPos   = center + math.mul(rotAmount, localToWorld.Position - center);
+            var finalRot   = math.mul(math.mul(initialRot, math.mul(math.inverse(initialRot), rotAmount)), initialRot);
+            return new float4x4(finalRot, finalPos);
+        }
+
         
         public static bool IsPositive(this int number)
         {
@@ -461,6 +573,46 @@ namespace thelebaron.mathematics
 
             return vector;
         }
+
+        #region Transform
+
+        public static float3 RotateAroundPoint(float3 position, float3 pivot, float3 axis, float delta)
+        {
+            return math.mul(quaternion.AxisAngle(axis, delta), position - pivot) + pivot;
+        }
+
+        #endregion
+
+        #region Random
+        
+        /// <summary>
+        /// see https://forum.unity.com/threads/random-insideunitsphere-circle.920045/#post-6023861
+        /// </summary>
+        /// <param name="rand"></param>
+        /// <returns></returns>
+        public static float3 insideSphere(this ref Unity.Mathematics.Random rand)
+        {
+            var phi   = rand.NextFloat(2 * math.PI);
+            var theta = math.acos(rand.NextFloat(-1f, 1f));
+            var r     = math.pow(rand.NextFloat(), 1f / 3f);
+            var x     = math.sin(theta) * math.cos(phi);
+            var y     = math.sin(theta) * math.sin(phi);
+            var z     = math.cos(theta);
+            return r * new float3(x, y, z);
+        }
+ 
+        public static float3 onSphereSurfase(this ref Unity.Mathematics.Random rand)
+        {
+            var phi   = rand.NextFloat(2 * math.PI);
+            var theta = math.acos(rand.NextFloat(-1f, 1f));
+            var x     = math.sin(theta) * math.cos(phi);
+            var y     = math.sin(theta) * math.sin(phi);
+            var z     = math.cos(theta);
+            return new float3(x, y, z);
+        }
+
+        
+        #endregion
 
     }
 }

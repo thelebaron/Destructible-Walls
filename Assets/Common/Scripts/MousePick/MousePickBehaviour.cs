@@ -199,7 +199,7 @@ namespace Unity.Physics.Extensions
                 return inputDeps;
             }
 
-            var handle = JobHandle.CombineDependencies(inputDeps, m_BuildPhysicsWorldSystem.FinalJobHandle);
+            var handle = JobHandle.CombineDependencies(inputDeps, m_BuildPhysicsWorldSystem.GetOutputDependency());
 
             if (Input.GetMouseButtonDown(0) && (Camera.main != null))
             {
@@ -225,7 +225,7 @@ namespace Unity.Physics.Extensions
                     Near = Camera.main.nearClipPlane,
                     Forward = Camera.main.transform.forward,
                     IgnoreTriggers = IgnoreTriggers,
-                }.Schedule(JobHandle.CombineDependencies(handle, m_BuildPhysicsWorldSystem.FinalJobHandle));
+                }.Schedule(JobHandle.CombineDependencies(handle, m_BuildPhysicsWorldSystem.GetOutputDependency()));
 
                 PickJobHandle = handle;
 
