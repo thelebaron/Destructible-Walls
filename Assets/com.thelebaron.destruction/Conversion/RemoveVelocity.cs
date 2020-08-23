@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     [DisallowMultipleComponent]
     public class RemoveVelocity : MonoBehaviour

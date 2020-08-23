@@ -5,7 +5,7 @@ using Unity.Jobs;
 using Unity.Physics;
 using UnityEngine;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     public class ConnectionGraphSystem : JobComponentSystem
     {

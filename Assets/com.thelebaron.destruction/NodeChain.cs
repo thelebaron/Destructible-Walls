@@ -2,7 +2,7 @@
 using Unity.Entities;
 using UnityEngine;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     public class NodeChain : MonoBehaviour 
     {

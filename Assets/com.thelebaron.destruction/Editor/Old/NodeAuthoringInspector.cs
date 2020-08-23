@@ -6,9 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
-    [CustomEditor(typeof(NodeAuthoring))]
+    [UnityEditor.CustomEditor(typeof(NodeAuthoring))]
     public class NodeAuthoringInspector : Editor
     {
         private void OnSceneGUI()

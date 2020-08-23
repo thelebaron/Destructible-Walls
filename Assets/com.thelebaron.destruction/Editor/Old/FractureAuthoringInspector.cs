@@ -1,14 +1,11 @@
+using thelebaron.Destruction.Authoring;
 using UnityEngine;
 using UnityEditor;
-using System;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
 
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
-    [CustomEditor(typeof(FractureAuthoring))]
+    [UnityEditor.CustomEditor(typeof(FractureAuthoring))]
     public class FractureAuthoringInspector : Editor
     {
         private void OnSceneGUI()
@@ -53,37 +50,31 @@ namespace Destructibles
         public override void OnInspectorGUI()
         {
             var fracture = target as FractureAuthoring;
-            
-            if (GUILayout.Button("MUST CONTAIN MORE THAN 3 FRACTURES"))
+            if (fracture == null)
             {
+                DrawDefaultInspector();
             }
-            
-            if (GUILayout.Button("Fracture mesh"))
+            else
             {
-                if (fracture != null) 
-                    fracture.Create(); //Refresh in editor view
+                EditorGUILayout.HelpBox("MUST CONTAIN MORE THAN 3 FRACTURES", MessageType.Warning);
+                
+                if (GUILayout.Button("Fracture mesh"))
+                {
+                    BaseMeshConversion.Intialize(fracture.gameObject, fracture.seed, fracture.density, fracture.totalChunks, fracture.mesh, fracture.outsideMaterial, fracture.insideMaterial, fracture.breakForce);
+                    
+                    //fracture.Create(); //Refresh in editor view
+                }
+                
+                if (GUILayout.Button("Find Anchors"))
+                        fracture.FindAnchors();
+                
+                if (GUILayout.Button("Reset"))
+                        fracture.Reset();
+                
+                DrawDefaultInspector();
             }
-            /*
-            if (GUILayout.Button("Cleanup"))
-            {
-                if (fracture != null) 
-                    fracture.Cleanup();
-            }*/
-            //GUILayout.TextArea("Cleanup"))
-            if (GUILayout.Button("Find Anchors"))
-            {
-                if (fracture != null) 
-                    fracture.FindAnchors();
-            }
-            
-            
-            if (GUILayout.Button("Reset"))
-            {
-                if (fracture != null) 
-                    fracture.Reset();
-            }
-            
-            DrawDefaultInspector();
+
+
 
         }
         

@@ -1,6 +1,6 @@
 using Unity.Entities;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     /// <summary>
     /// Components for nodes

@@ -3,7 +3,7 @@ using Unity.Physics;
 using Unity.Physics.Authoring;
 using UnityEngine;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     /// <summary>
     /// This System tells the conversion system to remove any PhysicsVelocity during conversion.

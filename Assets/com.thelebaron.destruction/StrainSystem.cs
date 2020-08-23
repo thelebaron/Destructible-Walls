@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Physics;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     public class StrainEventSystem : JobComponentSystem
     {

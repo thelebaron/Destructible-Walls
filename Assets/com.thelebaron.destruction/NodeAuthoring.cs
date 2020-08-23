@@ -5,7 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     [System.Serializable]
     public class NestedNodeTrabsformList

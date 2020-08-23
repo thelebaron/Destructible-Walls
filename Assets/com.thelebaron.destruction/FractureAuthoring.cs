@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Project.Scripts.Utils;
+using thelebaron.Destruction.Authoring;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -13,33 +15,52 @@ using Joint = UnityEngine.Joint;
 using Material = UnityEngine.Material;
 using MeshCollider = UnityEngine.MeshCollider;
 
-namespace Destructibles
+namespace thelebaron.Destruction
 {
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
     [SelectionBase]
     public class FractureAuthoring : MonoBehaviour, IConvertGameObjectToEntity
     {
-        [SerializeField] private float density = 500;
-        [SerializeField] private int totalChunks = 20;
-        [SerializeField] private int seed;
-        [SerializeField] private Mesh mesh;
-        [SerializeField] private Material insideMaterial;
-        [SerializeField] private Material outsideMaterial;
-        [SerializeField] private float jointBreakForce = 100;
-        private float m_TotalMass;
+        public  float       density     = 500;
+        public  int         totalChunks = 20;
+        public  int         seed;
+        public  Mesh        mesh;
+        public  Material    insideMaterial;
+        public  Material    outsideMaterial;
+        public  float       breakForce = 100;
+        
+        [Obsolete]
+        private float       m_TotalMass;
+        
         private Transform[] m_Children;
-        private System.Random m_SystemRandom;
+
         private NodeAuthoring[] m_Nodes;
         public NodeAuthoring[] Nodes => m_Nodes;
 
         private const string MainPath = "Assets/GeometryCollection";
-
+        
+        private System.Random m_SystemRandom;
+        
+        // extract to separate class
+        private void CreateMeshDirectories()
+        {
+            //if it doesn't, create it
+            if(!Directory.Exists(MainPath))
+                Directory.CreateDirectory(MainPath);
+            
+            var subPath = MainPath + "/" + name;
+            //if it doesn't, create it
+            if(!Directory.Exists(subPath))
+                Directory.CreateDirectory(subPath);
+        }
+        
+        [Obsolete]
         public void Create()
         {
             CreateMeshDirectories();
-            
             m_SystemRandom = new System.Random();
+            
             seed = m_SystemRandom.Next();
             m_TotalMass = density * (mesh.bounds.extents.x * mesh.bounds.extents.y * mesh.bounds.extents.z);
             Bake(this.gameObject);
@@ -74,7 +95,7 @@ namespace Destructibles
 
                 Setup(i, chunk, fractureTool);
                 
-                AddAuthoringComponents(chunk,jointBreakForce);
+                AddAuthoringComponents(chunk,breakForce);
             }
 
             CreateNodeConnections();
@@ -168,62 +189,13 @@ namespace Destructibles
         }
 
 
-        public bool SameVector(Vector3 lhs, Vector3 rhs)
-        {
-            
-            var x = System.Math.Round(lhs.x, 2);
-            var y = System.Math.Round(lhs.y, 2);
-            var z = System.Math.Round(lhs.z, 2);
-            var xyz = new double3(x,y,z);
-            
-            var a = System.Math.Round(rhs.x, 2);
-            var b = System.Math.Round(rhs.y, 2);
-            var c = System.Math.Round(rhs.z, 2);
-            var abc = new double3(a,b,c);
-
-            return xyz.Equals(abc);
-
-        }
         private void CreateNodeConnections()
         {
-            /*m_Children = GetComponentsInChildren<Transform>();
-            
-            // Add node authoring components
-            foreach (var child in m_Children)
-            {
-                //if(child.transform==transform.root)
-                    //return;
-                
-                var connectednode = child.gameObject.GetComponent<NodeAuthoring>();
-                if (connectednode == null)
-                {
-                    var node = child.gameObject.AddComponent<NodeAuthoring>();
-                    node.dirty = true;
-                }
-                var removeVelocity = child.gameObject.GetComponent<RemoveVelocity>();
-                if(removeVelocity==null)
-                    child.gameObject.AddComponent<RemoveVelocity>();
-                
-                child.gameObject.AddComponent<MeshRenderer>();;
-            }*/
-
             // Go through, sort nodes by distance for each node and add connections. Must be at least one 
             // on every connection and connections cannot be double the distance of the shortest distance.
             var nodes = GetComponentsInChildren<NodeAuthoring>();
             m_Nodes = nodes;
             var meshReferences = new List<MeshReference>();
-            // blargh
-            /*
-            foreach (var node in nodes)
-            {
-                var meshRef = new MeshReference
-                {
-                    mesh = node.Mesh,
-                    meshObject = node.gameObject
-                };
-                meshReferences.Add(meshRef);
-            }*/
-
             
             // Loop work for all nodes
             for (int i = 0; i < nodes.Length; i++)
@@ -244,13 +216,10 @@ namespace Destructibles
                     //loop current nodes verts against other nodes verts
                     foreach (var vert in nodeVertices)
                     {
-                        //if (matchingConnection)
-                            //break;
-                        
                         foreach (var othervert in otherNodeVertices)
                         {
                             // compare vertices with rounded decimals
-                            if (SameVector(vert, othervert))
+                            if (MathUtility.SameVector(vert, othervert))
                             {
                                 // if same position, add it
                                 if (!node.connections.Contains(otherNode.transform))
@@ -264,53 +233,6 @@ namespace Destructibles
 
                 }
             }
-            
-            
-            
-            // OLD CODE
-            // Step 1 - iterate on every node.
-            /*
-            foreach (var node in nodes)
-            {
-                // Subtract self from list
-                var subtractedList = nodes.Where(x=>x != node).ToList();
-                
-                var distanceSortedList = subtractedList.OrderBy( x => Vector3.Distance(node.Position,x.Position)).ToList();
-                
-                // Step two, iterate on each sorted node
-                var maxDistance =  math.distance(node.Position, distanceSortedList[1].Position) * 1.3f;
-                
-                
-                foreach (var sortedNode in distanceSortedList)
-                {
-                    // must pass distance test to add
-                    if (!node.connections.Contains(sortedNode.transform) && node.transform!= sortedNode.transform &&
-                        math.distance(sortedNode.Position, node.Position) <= maxDistance)
-                    {
-                        node.connections.Add(sortedNode.transform);
-                    }
-                }
-
-                // If we couldnt add a node for some reason just grab the first one
-                if (node.connections.Count.Equals(0))
-                {
-                    foreach (var sortedNode in distanceSortedList)
-                    {
-                        if (node.transform!= sortedNode.transform)
-                        {
-                            node.connections.Add(sortedNode.transform);
-                            break;
-                        }
-                    }
-                }
-            }
-            */
-            
-
-            /*
-            var hits = new List<GameObject>();
-            hits = hits.OrderBy(x => Vector2.Distance(this.transform.position,x.transform.position)
-            ).ToList();*/
         }
         
         
@@ -362,19 +284,7 @@ namespace Destructibles
             }
             
         }
-        
-        // extract to separate class
-        private void CreateMeshDirectories()
-        {
-            //if it doesn't, create it
-            if(!Directory.Exists(MainPath))
-                Directory.CreateDirectory(MainPath);
-            
-            var subPath = MainPath + "/" + name;
-            //if it doesn't, create it
-            if(!Directory.Exists(subPath))
-                Directory.CreateDirectory(subPath);
-        }
+
 
         public void Reset()
         {
