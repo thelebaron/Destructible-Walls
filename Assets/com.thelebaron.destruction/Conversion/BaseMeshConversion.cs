@@ -33,6 +33,8 @@ namespace thelebaron.Destruction.Authoring
             DirectoriesUtility.CreateMeshDirectories(bake.name);
             
             ConvertMeshData(bake);
+
+            gameObject.GetComponent<FractureAuthoring>().BakeData = bake;
         }
         
         /// <summary> Convert mesh into fractured format, using nvidia blast </summary>

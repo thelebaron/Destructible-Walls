@@ -64,12 +64,15 @@ namespace thelebaron.Destruction
                     
                     //fracture.Create(); //Refresh in editor view
                 }
-                
+
                 if (GUILayout.Button("Find Anchors"))
-                        fracture.FindAnchors();
+                {
+                    AnchorConversion.FindAnchors(fracture.BakeData);
+                    //fracture.FindAnchors();
+                }
                 
                 if (GUILayout.Button("Reset"))
-                        fracture.Reset();
+                      ResetUtility.Reset(fracture.gameObject);  //fracture.Reset();
                 
                 DrawDefaultInspector();
             }

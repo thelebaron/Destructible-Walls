@@ -9,7 +9,6 @@ namespace thelebaron.damage
     /// <summary>
     /// See TRSToLocalToWorldSystem / TRSToLocalToParentSystem
     /// </summary>
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class HealthSystem : SystemBase
     {
         private EndSimulationEntityCommandBufferSystem endSimulationEntityCommandBufferSystem;

@@ -1,3 +1,4 @@
+using thelebaron.bee;
 using thelebaron.damage;
 using Unity.Burst;
 using Unity.Collections;
@@ -23,74 +24,38 @@ namespace Common.Scripts
             healthQuery = GetEntityQuery(typeof(Health));
         }
 
-        struct MouseDamageJob : IJobChunk
+        public RaycastInput CameraRay()
         {
-            [ReadOnly] public CollisionWorld CollisionWorld;
-            public float3 RayOrigin;
-            public float3 RayEnd;
-            [ReadOnly]public EntityTypeHandle EntityTypeHandle;
-            public ComponentTypeHandle<Health> HealthTypeHandle;
-            
-            public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
+            return new RaycastInput
             {
-                var entities = chunk.GetNativeArray(EntityTypeHandle);
-                var healths = chunk.GetNativeArray(HealthTypeHandle);
-                
-
-                for (int i = 0; i < chunk.Count; i++)
-                {
-                    var entity = entities[i];
-                    var health = healths[i];
-                    
-                    var hit = CollisionWorld.CastRay(CameraRay(), out var raycastHit);
-
-                    if (!hit)
-                        continue;
-                    if(raycastHit.RigidBodyIndex == -1)
-                        continue;
-                    
-                    var hitentity = CollisionWorld.Bodies[raycastHit.RigidBodyIndex].Entity;
-                    if (!hitentity.Equals(entity)) 
-                        return;
-                    
-                    health.Value -= 10;
-
-                    healths[i] = health;
-
-                }
-            }
-
-            public RaycastInput CameraRay()
-            {
-                return new RaycastInput
-                {
-                    Start  = RayOrigin,
-                    End    = RayEnd,
-                    Filter = CollisionFilter.Default,
-                };
-            }
+                Start  = Camera.main.ScreenPointToRay(Input.mousePosition).origin,
+                End    = Camera.main.ScreenPointToRay(Input.mousePosition).origin + Camera.main.ScreenPointToRay(Input.mousePosition).direction * k_MaxDistance,
+                Filter = CollisionFilter.Default,
+            };
         }
-
 
         protected override void OnUpdate()
         {
-            if(!Input.GetKey(KeyCode.Mouse0))
+            Dependency = buildPhysicsWorldSystem.GetOutputDependency();
+            Dependency.Complete();
+
+            if (!Input.GetKey(KeyCode.Mouse0)) 
                 return;
             
-            Dependency = JobHandle.CombineDependencies(Dependency, buildPhysicsWorldSystem.GetOutputDependency());
-            
-            Dependency = new MouseDamageJob
+            var collisionWorld = buildPhysicsWorldSystem.PhysicsWorld.CollisionWorld;
+                
+            collisionWorld.CastRay(CameraRay(), out var raycastHit);
+            if(raycastHit.RigidBodyIndex == -1)
+                return;
+                    
+            var entity = collisionWorld.Bodies[raycastHit.RigidBodyIndex].Entity;
+                
+            if (entity.HasComponent<Health>(this))
             {
-                CollisionWorld   = buildPhysicsWorldSystem.PhysicsWorld.CollisionWorld,
-                RayOrigin        = Camera.main.ScreenPointToRay(Input.mousePosition).origin,
-                RayEnd           = Camera.main.ScreenPointToRay(Input.mousePosition).origin + Camera.main.ScreenPointToRay(Input.mousePosition).direction * k_MaxDistance,
-                EntityTypeHandle = GetEntityTypeHandle(),
-                HealthTypeHandle = GetComponentTypeHandle<Health>()
-            }.Schedule(healthQuery, Dependency);
-
-            // race condition without this, one of the physics systems does not wait for system to complete
-            // see https://github.com/Unity-Technologies/EntityComponentSystemSamples/blob/21e35e20075827d09f3b9f4b8da4613a345df18e/UnityPhysicsSamples/Assets/Common/Scripts/MousePick/MousePickBehaviour.cs
-            Dependency.Complete();
+                var health = entity.GetComponent<Health>(this);
+                health.Value -= 10;
+                entity.SetComponent(health, this);
+            }
         }
     }
 }

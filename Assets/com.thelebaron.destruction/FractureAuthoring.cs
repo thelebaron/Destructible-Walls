@@ -29,6 +29,8 @@ namespace thelebaron.Destruction
         public  Material    insideMaterial;
         public  Material    outsideMaterial;
         public  float       breakForce = 100;
+
+        public BakeData BakeData;
         
         [Obsolete]
         private float       m_TotalMass;
@@ -41,6 +43,8 @@ namespace thelebaron.Destruction
         private const string MainPath = "Assets/GeometryCollection";
         
         private System.Random m_SystemRandom;
+        
+        
         
         // extract to separate class
         private void CreateMeshDirectories()
@@ -340,7 +344,6 @@ namespace thelebaron.Destruction
 
                 CreateAnchorConnectivityMap(node);
             }
-            
         }
 
         /// <summary>
