@@ -1,49 +1,42 @@
-using thelebaron.damage;
+
+using Junk.Hitpoints;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Physics;
 
 namespace thelebaron.Destruction
 {
-    public class StrainEventSystem : JobComponentSystem
+    public partial struct StrainEventSystem : ISystem
     {
-        private EntityQuery m_DestroyLinkEventQuery;
-        private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
+        private EntityQuery destroyLinkEventQuery;
 
-        protected override void OnCreate()
+        public void OnCreate(ref SystemState state)
         {
-            base.OnCreate();
-            m_EndSimulationEntityCommandBufferSystem =
-                World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-            m_DestroyLinkEventQuery = GetEntityQuery(typeof(DestroyLinkEvent));
+            destroyLinkEventQuery = state.GetEntityQuery(typeof(DestroyLinkEvent));
         }
 
-        [RequireComponentTag(typeof(BreakableNode))]
-        [ExcludeComponent(typeof(PhysicsVelocity))]
-        private struct FilterEventsJob : IJobForEachWithEntity_EBB<NodeLinkBuffer, NodeNeighbor>
+        [WithAll(typeof(BreakableNode))]
+        [WithNone(typeof(PhysicsVelocity))]
+        private partial struct FilterEventsJob : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
             [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<Entity> DestroyLinkEventEntities;
             [ReadOnly] [DeallocateOnJobCompletion] public NativeArray<DestroyLinkEvent> DestroyLinkEvents;
-            [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
+            [ReadOnly] public ComponentLookup<AnchorNode> StaticAnchor;
 
-            public void Execute(Entity entity, int index, DynamicBuffer<NodeLinkBuffer> nodeLinkBuffer, DynamicBuffer<NodeNeighbor> neighbors)
+            public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, DynamicBuffer<NodeLinkBuffer> nodeLinkBuffer, DynamicBuffer<NodeNeighbor> neighbors)
             {
-                
                 if (nodeLinkBuffer.Length.Equals(0) && neighbors.Length.Equals(0))
                 {
                     if (!StaticAnchor.HasComponent(entity))
-                        EntityCommandBuffer.AddComponent(index, entity, new PhysicsVelocity());
-                    
+                        EntityCommandBuffer.AddComponent(entityIndexInQuery, entity, new PhysicsVelocity());
                     return;
                 }
                 
                 // Go through all buffer entities for a match
                 if (nodeLinkBuffer.Length.Equals(0) || DestroyLinkEvents.Length.Equals(0))
                     return;
-                
-                
+
                 // Go through all buffer entities for a match
                 for (var i = nodeLinkBuffer.Length - 1; i > -1; i--)
                 {
@@ -52,50 +45,44 @@ namespace thelebaron.Destruction
                         if (DestroyLinkEvents[k].DestroyedLink.Equals(nodeLinkBuffer[i].Link))
                         {
                             // Destroy the event entity
-                            EntityCommandBuffer.DestroyEntity(index, DestroyLinkEventEntities[k]);
+                            EntityCommandBuffer.DestroyEntity(entityIndexInQuery, DestroyLinkEventEntities[k]);
                             nodeLinkBuffer.RemoveAt(i);
                         }
                     }
                 }
-
             }
         }
-
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        
+        public void OnUpdate(ref SystemState state)
         {
-            var filtereventsjob = new FilterEventsJob
+            state.Dependency = new FilterEventsJob
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
-                DestroyLinkEventEntities = m_DestroyLinkEventQuery.ToEntityArray(Allocator.TempJob),
-                DestroyLinkEvents = m_DestroyLinkEventQuery.ToComponentDataArray<DestroyLinkEvent>(Allocator.TempJob),
-                StaticAnchor = GetComponentDataFromEntity<AnchorNode>(true)
-            };
-            var filtereventsHandle = filtereventsjob.Schedule(this, inputDeps);
-            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(filtereventsHandle);
-
-            return filtereventsHandle;
+                EntityCommandBuffer = SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+                DestroyLinkEventEntities = destroyLinkEventQuery.ToEntityArray(Allocator.TempJob),
+                DestroyLinkEvents = destroyLinkEventQuery.ToComponentDataArray<DestroyLinkEvent>(Allocator.TempJob),
+                StaticAnchor = SystemAPI.GetComponentLookup<AnchorNode>(true)
+            }.Schedule(state.Dependency);
         }
     }
 
 
-    public class StrainSystem : JobComponentSystem
+    public partial struct StrainSystem : ISystem
     {
         private EntityQuery m_DestroyLinkEventQuery;
-
-
-        [ExcludeComponent(typeof(PhysicsVelocity))]
-        private struct RemoveNodeNeighbor : IJobForEachWithEntity_EB<NodeNeighbor>
+        
+        [WithNone(typeof(PhysicsVelocity))]
+        private partial struct RemoveNodeNeighbor : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
-            [ReadOnly] public ComponentDataFromEntity<PhysicsVelocity> Velocity;
-            [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
+            [ReadOnly] public ComponentLookup<PhysicsVelocity> Velocity;
+            [ReadOnly] public ComponentLookup<AnchorNode> StaticAnchor;
 
-            public void Execute(Entity entity, int index, DynamicBuffer<NodeNeighbor> neighbors)
+            public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, DynamicBuffer<NodeNeighbor> neighbors)
             {
                 if (neighbors.Length <= 0 && !StaticAnchor.HasComponent(entity))
                 {
-                    EntityCommandBuffer.AddComponent<PhysicsVelocity>(index, entity);
-                    EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, entity);
+                    EntityCommandBuffer.AddComponent<PhysicsVelocity>(entityIndexInQuery, entity);
+                    EntityCommandBuffer.RemoveComponent<NodeNeighbor>(entityIndexInQuery, entity);
                     return;
                 }
 
@@ -109,19 +96,19 @@ namespace thelebaron.Destruction
             }
         }
 
-        [ExcludeComponent(typeof(PhysicsVelocity))]
-        private struct UnanchorNodeJob : IJobForEachWithEntity_EB<NodeAnchorBuffer>
+        [WithNone(typeof(PhysicsVelocity))]
+        private partial struct UnanchorNodeJob : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
-            [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
-            [ReadOnly] public ComponentDataFromEntity<PhysicsVelocity> PhysicsVelocity;
+            [ReadOnly] public ComponentLookup<AnchorNode> StaticAnchor;
+            [ReadOnly] public ComponentLookup<PhysicsVelocity> PhysicsVelocity;
 
-            public void Execute(Entity entity, int index, DynamicBuffer<NodeAnchorBuffer> b)
+            public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, DynamicBuffer<NodeAnchorBuffer> b)
             {
                 if (b.Length.Equals(0))
                 {
-                    EntityCommandBuffer.AddComponent<PhysicsVelocity>(index, entity);
-                    EntityCommandBuffer.RemoveComponent<NodeAnchorBuffer>(index, entity);
+                    EntityCommandBuffer.AddComponent<PhysicsVelocity>(entityIndexInQuery, entity);
+                    EntityCommandBuffer.RemoveComponent<NodeAnchorBuffer>(entityIndexInQuery, entity);
                 }
 
                 for (var i = b.Length - 1; i > -1; i--)
@@ -135,60 +122,44 @@ namespace thelebaron.Destruction
             }
         }
 
-        [RequireComponentTag(typeof(BreakableNode))]
-        [ExcludeComponent(typeof(PhysicsVelocity))]
-        private struct CheckHealth : IJobForEachWithEntity<Health>
+        [WithAll(typeof(BreakableNode))]
+        [WithNone(typeof(PhysicsVelocity))]
+        private partial struct CheckHealth : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
 
-            public void Execute(Entity entity, int index, ref Health health)
+            public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, ref HealthData health)
             {
                 if (health.Value <= 0)
                 {
-                    EntityCommandBuffer.RemoveComponent(index, entity, typeof(BreakableNode));
-                    EntityCommandBuffer.AddComponent(index, entity, new PhysicsVelocity());
-                    EntityCommandBuffer.AddComponent(index, entity, new BrokenNode());
+                    EntityCommandBuffer.RemoveComponent(entityIndexInQuery, entity, typeof(BreakableNode));
+                    EntityCommandBuffer.AddComponent(entityIndexInQuery, entity, new PhysicsVelocity());
+                    EntityCommandBuffer.AddComponent(entityIndexInQuery, entity, new BrokenNode());
                 }
             }
         }
-
-
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        
+        public void OnUpdate(ref SystemState state)
         {
-            var removeNeighborsJob = new RemoveNodeNeighbor
+            state.Dependency = new RemoveNodeNeighbor
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
-                Velocity = GetComponentDataFromEntity<PhysicsVelocity>(true),
-                StaticAnchor = GetComponentDataFromEntity<AnchorNode>(true)
-            };
-            var removeNeighborsHandle = removeNeighborsJob.Schedule(this, inputDeps);
-            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(removeNeighborsHandle);
+                EntityCommandBuffer = SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+                Velocity = SystemAPI.GetComponentLookup<PhysicsVelocity>(true),
+                StaticAnchor = SystemAPI.GetComponentLookup<AnchorNode>(true)
+            }.Schedule(state.Dependency);
 
-            var unanchorJob = new UnanchorNodeJob
+            state.Dependency = new UnanchorNodeJob
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
-                StaticAnchor = GetComponentDataFromEntity<AnchorNode>(true),
-                PhysicsVelocity = GetComponentDataFromEntity<PhysicsVelocity>(true),
-            };
-            var unanchorJobHandle = unanchorJob.Schedule(this, removeNeighborsHandle);
-            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(unanchorJobHandle);
+                EntityCommandBuffer = SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+                StaticAnchor = SystemAPI.GetComponentLookup<AnchorNode>(true),
+                PhysicsVelocity = SystemAPI.GetComponentLookup<PhysicsVelocity>(true),
+            }.Schedule(state.Dependency);
 
-            var checkHealthJob = new CheckHealth
-                {EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter()};
-            var checkHealthHandle = checkHealthJob.Schedule(this, unanchorJobHandle);
-            m_EndSimulationEntityCommandBufferSystem.AddJobHandleForProducer(checkHealthHandle);
-
-            return checkHealthHandle;
+            state.Dependency = new CheckHealth 
+            {
+                EntityCommandBuffer = SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter()
+            }.Schedule(state.Dependency);
         }
-
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-            m_EndSimulationEntityCommandBufferSystem =
-                World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-        }
-
-        private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
     }
 }
 

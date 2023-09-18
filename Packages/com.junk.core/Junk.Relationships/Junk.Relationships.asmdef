@@ -1,0 +1,20 @@
+{
+    "name": "Junk.Relationships",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Transforms",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

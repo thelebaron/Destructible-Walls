@@ -60,19 +60,18 @@ namespace thelebaron.Destruction
                 
                 if (GUILayout.Button("Fracture mesh"))
                 {
-                    BaseMeshConversion.Intialize(fracture.gameObject, fracture.seed, fracture.density, fracture.totalChunks, fracture.mesh, fracture.outsideMaterial, fracture.insideMaterial, fracture.breakForce);
-                    
-                    //fracture.Create(); //Refresh in editor view
+                    BaseMeshConversion.Intialize(fracture.gameObject, fracture.seed, 
+                        fracture.density, fracture.totalChunks, fracture.outsideMaterial, 
+                        fracture.insideMaterial, fracture.breakForce);
                 }
 
                 if (GUILayout.Button("Find Anchors"))
                 {
                     AnchorConversion.FindAnchors(fracture.BakeData);
-                    //fracture.FindAnchors();
                 }
                 
                 if (GUILayout.Button("Reset"))
-                      ResetUtility.Reset(fracture.gameObject);  //fracture.Reset();
+                      ResetUtility.Reset(fracture.gameObject);
                 
                 DrawDefaultInspector();
             }

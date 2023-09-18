@@ -1,0 +1,2 @@
+﻿Note this is refactored from the original VisionPunk now Opsive UFPS.
+Code is copyright and cannot be shared.

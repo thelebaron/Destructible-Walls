@@ -1,0 +1,15 @@
+{
+  "name": "com.junk.springs",
+  "description": "springy stuff",
+  "version": "0.0.3",
+  "displayName": "Junk Springs",
+  "type": "tool",
+  "unity": "2022.3",
+  "author": {
+    "name": "thelebaron",
+    "url": "https://www.twitter.com/chrislebaron"
+  },
+  "dependencies": {
+    "com.unity.entities": "1.0.11"
+  }
+}

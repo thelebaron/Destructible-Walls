@@ -8,14 +8,18 @@ namespace Common.Scripts
     {
         public bool Damage;
     }
-    
-    public class MouseDamageAuthoring : MonoBehaviour, IConvertGameObjectToEntity
+
+    public class MouseDamageBaker : Baker<MouseDamageAuthoring>
+    {
+        public override void Bake(MouseDamageAuthoring authoring)
+        {
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
+            AddComponent(entity, new MouseDamage());
+        }
+    }
+
+    public class MouseDamageAuthoring : MonoBehaviour
     {
         
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
-        {
-            dstManager.AddComponentData(entity, new MouseDamage());
-            //dstManager.AddComponentData(entity, new MousePick());
-        }
     }
 }

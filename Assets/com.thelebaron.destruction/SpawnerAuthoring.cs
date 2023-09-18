@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Unity.Entities;
 using UnityEngine;
-
-public class SpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDeclareReferencedPrefabs
+//todo add baker
+public class SpawnerAuthoring : MonoBehaviour
 {
     public GameObject Prefab;
     private Entity m_Entity;
@@ -20,14 +20,19 @@ public class SpawnerAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDecl
         }
     }
 
-    public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+    public class SpawnerAuthoringBaker : Baker<SpawnerAuthoring>
     {
-        m_Entity = entity;
-        m_PrefabEntity = conversionSystem.GetPrimaryEntity(Prefab);
-    }
-
-    public void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs)
-    {
-        referencedPrefabs.Add(Prefab);
+        public override void Bake(SpawnerAuthoring authoring)
+        {
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
+            AddComponent(entity, new SpawnerComponentData { Prefab = GetEntity(authoring.Prefab, TransformUsageFlags.Dynamic) });
+        }
     }
 }
+
+public struct SpawnerComponentData : IComponentData
+{
+    public Entity Prefab;
+}
+
+

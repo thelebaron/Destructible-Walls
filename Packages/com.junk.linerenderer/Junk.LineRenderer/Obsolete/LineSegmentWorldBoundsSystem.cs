@@ -1,0 +1,34 @@
+using Unity.Entities;
+using Unity.Jobs;
+using Unity.Mathematics;
+using Unity.Transforms;
+using Unity.Rendering;
+
+namespace Junk.LineRenderer
+{
+	/// <summary>
+	/// Calculates <see cref="WorldRenderBounds" from <see cref="RenderBounds" and <see cref="LineSegment"/>.
+	/// NOTE: Start this system when you need <see cref="WorldRenderBounds"/> but no other system calculates it and you still want to do a culling pass etc.
+	///       world.GetOrCreateSystem<LineSegmentWorldRenderBoundsSystem>().Update();
+	/// </summary>
+	//[WorldSystemFilter(0)]
+	[DisableAutoCreation]
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
+    public partial class LineSegmentWorldRenderBoundsSystem : SystemBase
+    {
+        protected override void OnUpdate ()
+		{
+			Entities
+				.WithName("WorldRenderBounds_update_job")
+				.ForEach( ( ref WorldRenderBounds wrb , in RenderBounds bounds , in LineSegment segment ) =>
+				{
+					float3 lineVec = segment.to - segment.from;
+					var rot = quaternion.identity;
+					var pos = segment.from;
+					var scale = new float3{ x=segment.lineWidth , y=1f , z=math.length(lineVec) };
+					wrb.Value = AABB.Transform( float4x4.TRS(pos,rot,scale) , bounds.Value );
+				}).ScheduleParallel();
+		}
+
+	}
+}

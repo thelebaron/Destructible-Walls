@@ -1,0 +1,25 @@
+{
+    "name": "Junk.Core.Creation",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Burst",
+        "Unity.Entities",
+        "Unity.Mathematics",
+        "Unity.Transforms",
+        "Unity.Physics",
+        "Unity.Entities.Graphics",
+        "Unity.Mathematics.Extensions",
+        "Junk.Math",
+        "Unity.Collections",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

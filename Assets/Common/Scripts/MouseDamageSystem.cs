@@ -1,27 +1,19 @@
-using thelebaron.bee;
-using thelebaron.damage;
-using Unity.Burst;
-using Unity.Collections;
+using Junk.Entities;
+using Junk.Hitpoints;
 using Unity.Entities;
-using Unity.Jobs;
-using Unity.Mathematics;
 using Unity.Physics;
-using Unity.Physics.Systems;
 using UnityEngine;
 
 namespace Common.Scripts
 {
-    [UpdateAfter(typeof(BuildPhysicsWorld)), UpdateBefore(typeof(EndFramePhysicsSystem))]
-    public class MouseDamageSystem : SystemBase
+    public partial class MouseDamageSystem : SystemBase
     {
         private EntityQuery healthQuery;
-        private BuildPhysicsWorld buildPhysicsWorldSystem;
         const float k_MaxDistance = 100.0f;
 
         protected override void OnCreate()
         {
-            buildPhysicsWorldSystem = World.GetOrCreateSystem<BuildPhysicsWorld>();
-            healthQuery = GetEntityQuery(typeof(Health));
+            healthQuery = GetEntityQuery(typeof(HealthData));
         }
 
         public RaycastInput CameraRay()
@@ -36,13 +28,10 @@ namespace Common.Scripts
 
         protected override void OnUpdate()
         {
-            Dependency = buildPhysicsWorldSystem.GetOutputDependency();
-            Dependency.Complete();
-
             if (!Input.GetKey(KeyCode.Mouse0)) 
                 return;
-            
-            var collisionWorld = buildPhysicsWorldSystem.PhysicsWorld.CollisionWorld;
+
+            var collisionWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>().ValueRW.CollisionWorld;
                 
             collisionWorld.CastRay(CameraRay(), out var raycastHit);
             if(raycastHit.RigidBodyIndex == -1)
@@ -50,9 +39,9 @@ namespace Common.Scripts
                     
             var entity = collisionWorld.Bodies[raycastHit.RigidBodyIndex].Entity;
                 
-            if (entity.HasComponent<Health>(this))
+            if (entity.HasComponent<HealthData>(this))
             {
-                var health = entity.GetComponent<Health>(this);
+                var health = entity.GetComponent<HealthData>(this);
                 health.Value -= 10;
                 entity.SetComponent(health, this);
             }

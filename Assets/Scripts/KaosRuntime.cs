@@ -26,8 +26,8 @@ public partial class KaosEditor
             fractureObject = new GameObject();
             fractureObject.name = "Fracturable_"+fractureObject.name;
             
-            if(fractureObject.GetComponent<ConvertToEntity>()==null)
-                fractureObject.AddComponent<ConvertToEntity>();
+            //if(fractureObject.GetComponent<ConvertToEntity>()==null)
+                //fractureObject.AddComponent<ConvertToEntity>();
             //prefab.hideFlags = HideFlags.DontSaveInEditor;
             //prefabField.value = prefab;
         }

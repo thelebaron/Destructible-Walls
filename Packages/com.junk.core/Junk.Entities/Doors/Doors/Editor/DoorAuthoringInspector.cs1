@@ -1,0 +1,30 @@
+
+using UnityEngine;
+using UnityEngine.Assertions;
+using Unity.Physics.Authoring;
+#if UNITY_EDITOR
+using UnityEditor;
+
+namespace CyberJunk.Entities.Hybrid
+{
+    [CustomEditor(typeof(DoorAuthoring))]
+    public class DoorAuthoringInspector : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            var doorAuthoring = target as DoorAuthoring;
+            
+            if (GUILayout.Button("Fit collider"))
+            {
+                var physicsShape = doorAuthoring.GetComponent<PhysicsShapeAuthoring>();
+                Assert.IsNull(physicsShape);
+                var physicsBody = doorAuthoring.GetComponent<PhysicsBodyAuthoring>();
+                Assert.IsNull(physicsBody);
+                doorAuthoring.FitColliderShape();
+            }
+
+            DrawDefaultInspector();
+        }
+    }
+}
+#endif

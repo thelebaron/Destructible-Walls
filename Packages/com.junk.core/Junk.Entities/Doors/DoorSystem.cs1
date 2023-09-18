@@ -1,0 +1,242 @@
+
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
+using Unity.Physics;
+using Unity.Physics.Systems;
+using Unity.Transforms;
+
+namespace Junk.Entities
+{
+
+    [UpdateAfter(typeof(EndFramePhysicsSystem))]
+    [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+    public partial class DoorSystem : SystemBase
+    {
+        private StepPhysicsWorld  m_StepPhysicsWorldSystem;
+        protected override void OnCreate()
+        {
+            m_StepPhysicsWorldSystem  = World.GetOrCreateSystem<StepPhysicsWorld>();
+        }
+    
+        [BurstCompile]
+        private struct TriggerJob: ITriggerEventsJob
+        {
+            [ReadOnly] public ComponentDataFromEntity<Player> Player;
+            [ReadOnly] public ComponentDataFromEntity<Interact> PlayerInput;
+            [NativeDisableParallelForRestriction] public ComponentDataFromEntity<DoorTrigger> DoorTrigger;
+        
+            public void Execute(TriggerEvent triggerEvent)
+            {
+                var otherEntity = triggerEvent.EntityA;
+                var triggerEntity = triggerEvent.EntityB;
+
+                if(!DoorTrigger.HasComponent(triggerEntity))
+                    return;
+            
+                var trigger = DoorTrigger[triggerEntity];
+                var isBodyATrigger = Player.HasComponent(otherEntity);
+
+                if (isBodyATrigger && PlayerInput.HasComponent(otherEntity))
+                {
+                    if (PlayerInput[otherEntity].Value)
+                    {
+                        trigger.Use = true;
+                        DoorTrigger[triggerEntity] = trigger;
+                    }
+                }
+            }
+        }
+
+        /*
+        [BurstCompile]
+        private struct DoorJob : IJobForEachWithEntity<Door, RotationEulerXYZ>
+        {
+            public float FixedTime;
+            [NativeDisableParallelForRestriction] public ComponentDataFromEntity<DoorTrigger> DoorTrigger;
+            [NativeDisableParallelForRestriction] public ComponentDataFromEntity<Translation> Translation;
+            [NativeDisableParallelForRestriction] public ComponentDataFromEntity<Rotation> Rotation;
+            [NativeDisableParallelForRestriction] public ComponentDataFromEntity<LocalToWorld> LocalToWorld;
+            public void Execute(Entity entity, int index, ref Door door, ref RotationEulerXYZ rotationEulerXYZ)
+            {
+                if(!DoorTrigger.Exists(door.Trigger))
+                    return;
+                var trigger = DoorTrigger[door.Trigger];
+                // State behaviour setup
+                // If door is not moving and received use command
+                if (trigger.Use)
+                {
+                    //door.State = default; //?what
+                    switch (door.State)
+                    {
+                        case DoorState.Closed:
+                            door.State = DoorState.Opening;
+                            break;
+                        case DoorState.Opened:
+                            door.State = DoorState.Closing;
+                            break;
+                        case DoorState.Opening:
+                            break;
+                        case DoorState.Closing:
+                            break;
+                        default:
+                            break;
+                    }
+                    // Clear use command
+                    trigger.Use = false;
+                    DoorTrigger[door.Trigger] = trigger;
+                }
+            
+                // Movement behaviour
+                if (door.State == DoorState.Opening)
+                {
+                    // Tick the movement
+                    if (door.CurrentMoveTime < door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime += FixedTime;
+
+                        //translation.Value += maths.up * FixedTime * door.Speed;
+                        rotationEulerXYZ.Value.y += FixedTime * door.Speed / 1;
+                    }
+                    // If finished, set state and reset timers
+                    if (door.CurrentMoveTime > door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime = 0;
+                        door.State               = DoorState.Opened;
+                    }
+                }
+
+                if (door.State == DoorState.Closing)
+                {
+                    // Tick the movement
+                    if (door.CurrentMoveTime < door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime += FixedTime;
+
+                        //translation.Value -= maths.up * FixedTime * door.Speed/3;
+                        rotationEulerXYZ.Value.y -= FixedTime * door.Speed / 1;
+                    }
+                    // If finished, set state and reset timers
+                    if (door.CurrentMoveTime > door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime = 0;
+                        door.State               = DoorState.Closed;
+                    }
+                }
+
+                var translationCollider = Translation[door.Collider];
+                translationCollider.Value = LocalToWorld[entity].Position;
+                Translation[door.Collider] = translationCollider;
+
+                var rotationCollider = Rotation[door.Collider];
+                rotationCollider.Value  = new quaternion(LocalToWorld[entity].Value);
+                Rotation[door.Collider] = rotationCollider;
+            }
+        }*/
+    
+        protected override void OnUpdate()
+        {
+            var fixedDeltaTime = Time.fixedDeltaTime;
+            
+            Dependency = new TriggerJob
+            {
+                Player  = GetComponentLookup<Player>(true),
+                PlayerInput = GetComponentLookup<Interact>(true),
+                DoorTrigger = GetComponentLookup<DoorTrigger>(),
+            }.Schedule( m_StepPhysicsWorldSystem.Simulation, Dependency);
+
+            Dependency = Entities.ForEach((Entity entity, int entityInQueryIndex, ref Door door, ref RotationEulerXYZ rotationEulerXYZ) =>
+            {
+                if(!SystemAPI.HasComponent<DoorTrigger>(door.Trigger))
+                    return;
+                var trigger = GetComponent<DoorTrigger>(door.Trigger);
+                // State behaviour setup
+                // If door is not moving and received use command
+                if (trigger.Use)
+                {
+                    //door.State = default; //?what
+                    switch (door.State)
+                    {
+                        case DoorState.Closed:
+                            door.State = DoorState.Opening;
+                            break;
+                        case DoorState.Opened:
+                            door.State = DoorState.Closing;
+                            break;
+                        case DoorState.Opening:
+                            break;
+                        case DoorState.Closing:
+                            break;
+                        default:
+                            break;
+                    }
+                    // Clear use command
+                    trigger.Use = false;
+                    //DoorTrigger[door.Trigger] = trigger;
+                    SetComponent(door.Trigger, trigger);
+                }
+            
+                // Movement behaviour
+                if (door.State == DoorState.Opening)
+                {
+                    // Tick the movement
+                    if (door.CurrentMoveTime < door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime += fixedDeltaTime;
+
+                        //translation.Value += maths.up * FixedTime * door.Speed;
+                        rotationEulerXYZ.Value.y += fixedDeltaTime * door.Speed / 1;
+                    }
+                    // If finished, set state and reset timers
+                    if (door.CurrentMoveTime > door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime = 0;
+                        door.State               = DoorState.Opened;
+                    }
+                }
+
+                if (door.State == DoorState.Closing)
+                {
+                    // Tick the movement
+                    if (door.CurrentMoveTime < door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime += fixedDeltaTime;
+
+                        //translation.Value -= maths.up * FixedTime * door.Speed/3;
+                        rotationEulerXYZ.Value.y -= fixedDeltaTime * door.Speed / 1;
+                    }
+                    // If finished, set state and reset timers
+                    if (door.CurrentMoveTime > door.MovementDuraction)
+                    {
+                        door.CurrentMoveTime = 0;
+                        door.State               = DoorState.Closed;
+                    }
+                }
+
+                var localToWorld = GetComponent<LocalToWorld>(entity);
+                
+                var translationCollider = GetComponent<Translation>(door.Collider);
+                translationCollider.Value = localToWorld.Position;
+                SetComponent(door.Collider, translationCollider);
+
+                var rotationCollider = GetComponent<Rotation>(door.Collider);
+                rotationCollider.Value  = new quaternion(localToWorld.Value);
+                SetComponent(door.Collider, rotationCollider);
+                
+            }).WithBurst().Schedule(Dependency);
+            
+            /*
+            var doorJobHandle = new DoorJob
+            {
+                FixedTime = Time.fixedDeltaTime,
+                DoorTrigger = GetComponentLookup<DoorTrigger>(),
+                Translation = GetComponentLookup<Translation>(),
+                LocalToWorld = GetComponentLookup<LocalToWorld>(),
+                Rotation = GetComponentLookup<Rotation>()
+            }.Schedule(this, triggerHandle);
+        
+            return doorJobHandle;*/
+        }
+    }
+}

@@ -1,0 +1,315 @@
+using System;
+using System.IO;
+using Junk.Core.Creation;
+using Unity.Entities;
+using Unity.Entities.Serialization;
+using Unity.Mathematics;
+using Unity.Rendering;
+using Unity.Transforms;
+using UnityEngine;
+using UnityEngine.Rendering;
+using Object = UnityEngine.Object;
+/// <summary>
+/// test notes:
+/// add to monobehaviour
+/// right click component and start or play scene
+/// 
+/// </summary>
+namespace Junk.Core.Creation
+{
+    public class StreamingMapLoader : MonoBehaviour
+    {
+        public  Entity        thisEntity;
+        public  string        pathToMaps = "/Maps/E1M1/";
+        private EntityManager entityManager => World.DefaultGameObjectInjectionWorld.EntityManager;
+
+        private void Start()
+        {
+            var p = Application.streamingAssetsPath + pathToMaps;
+
+
+            var array = Directory.GetFiles(p);
+            for (int i = 0; i < array.Length; i++)
+            {
+                var s = array[i];
+                if (s.Contains(".meta"))
+                    continue;
+
+                Read(s);
+
+            }
+
+        }
+
+        void Read(string path)
+        {
+
+            //string text = System.IO.File.ReadAllText(path);
+            string[] lines = System.IO.File.ReadAllLines(path);
+            ParseEntity(lines);
+
+
+            var reader = new StreamReader(path);
+
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                //Debug.Log(line);
+                string[] items = line.Split('\t');
+                //int      myInteger = int.Parse(items[1]);   // Here's your integer.
+                //ParseEntity(items);
+                // Now let's find the path.
+                //string path = null;
+
+
+                // At this point, `myInteger` and `path` contain the values we want
+                // for the current line. We can then store those values or print them,
+                // or anything else we like.
+            }
+        }
+
+        void ParseEntity(string[] items)
+        {
+            var entity = Entity.Null;
+            for (var i = 0; i < items.Length; i++)
+            {
+                string item = items[i];
+
+                // skip comments
+                if (item.Contains("//"))
+                    continue;
+
+                //item = item.RemoveTabs();
+                //Debug.Log(item);
+                //if (item.StartsWith("item\\") && item.EndsWith(".ddj"))
+                //path = item;
+
+                if (item.StartsWith("Entity:"))
+                {
+                    entity     = CreateEntity(item);
+                    thisEntity = entity;
+                    continue;
+                }
+
+                if (items[i].Contains("Translation:"))
+                {
+                    var str          = items[i + 1];
+                    var parsedFloat3 = str.ParseFloat3();
+                    if (entity != Entity.Null)
+                        entityManager.AddComponentData(entity, new Translation {Value = parsedFloat3});
+                    continue;
+                }
+
+                if (items[i].Contains("Scale:"))
+                {
+                    var str         = items[i + 1];
+                    var parsedFloat = str.ParseFloat();
+                    if (entity != Entity.Null)
+                        entityManager.AddComponentData(entity, new Scale() {Value = parsedFloat});
+                    continue;
+                }
+
+                if (items[i].Contains("Rotation:"))
+                {
+                    var str          = items[i + 1];
+                    var parsedFloat4 = str.ParseFloat4();
+                    if (entity != Entity.Null)
+                        entityManager.AddComponentData(entity, new Rotation() {Value = parsedFloat4});
+
+
+                    var temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+                    var mesh     = temp.GetComponent<MeshFilter>().sharedMesh;
+                    var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                    // Create a RenderMeshDescription using the convenience constructor
+                    // with named parameters.
+                    var desc = new RenderMeshDescription(
+                        mesh,
+                        material,
+                        shadowCastingMode: ShadowCastingMode.Off,
+                        receiveShadows: false);
+
+                    if (entity != Entity.Null)
+                        RenderMeshUtility.AddComponents(entity, entityManager, desc);
+
+                    temp.SetActive(false);
+                    Object.Destroy(temp);
+
+                    continue;
+                }
+
+                if (items[i].Contains("LocalToWorld:"))
+                {
+                    var array = new string[4];
+                    array[0] = items[i + 1];
+                    array[1] = items[i + 2];
+                    array[2] = items[i + 3];
+                    array[3] = items[i + 4];
+
+                    var parsedFloat4x4 = array.ParseFloat4X4();
+
+                    if (entity != Entity.Null)
+                        entityManager.AddComponentData(entity, new LocalToWorld());
+                    continue;
+                }
+
+                if (items[i].Contains("BlobRenderMesh:"))
+                {
+                    var blobPath = items[i + 1];
+                    blobPath = blobPath.RemoveTabs();
+                    blobPath = blobPath.RemoveWhitespace();
+                    var castShadows    = items[i + 3];
+                    var receiveShadows = items[i + 4];
+                    var path           = Application.streamingAssetsPath + blobPath;
+                    if (entity != Entity.Null)
+                    {
+                        /*var reader = new StreamBinaryReader(path);
+                        var clone  = reader.Read<BlobMesh>();
+                        reader.Dispose();
+
+                        var mesh = clone.Value.ToMesh();
+
+                        var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                        // Create a RenderMeshDescription using the convenience constructor
+                        // with named parameters.
+                        var desc = new RenderMeshDescription(
+                            mesh,
+                            material,
+                            shadowCastingMode: ShadowCastingMode.Off,
+                            receiveShadows: false);
+
+                        if (entity != Entity.Null)
+                            RenderMeshUtility.AddComponents(entity, entityManager, desc);*/
+
+                    }
+
+
+                    continue;
+                }
+
+            }
+
+            //if(item.Contains("#"))
+            //return;
+
+        }
+
+        private float3 time = Vector3.forward;
+
+        private void Update()
+        {
+            time += Time.deltaTime * 0.1f;
+            entityManager.SetComponentData(thisEntity, new Translation {Value = time});
+            //enabled = false;
+        }
+
+        Entity CreateEntity(string item)
+        {
+            var entity = entityManager.CreateEntity();
+            var n      = item.Replace("Entity:", "");
+            if (n.Length > 0)
+            {
+#if UNITY_EDITOR
+                entityManager.SetName(entity, n);
+#endif
+            }
+
+            return entity;
+        }
+
+
+    }
+
+    public static class Helper
+    {
+
+        public static float ParseFloat(this string value)
+        {
+            value = value.RemoveTabs();
+            value = value.RemoveWhitespace();
+
+            if (String.IsNullOrWhiteSpace(value))
+                return 0;
+
+            return float.Parse(value);
+        }
+
+        public static float3 ParseFloat3(this string value)
+        {
+            value = value.RemoveTabs();
+            value = value.RemoveWhitespace();
+
+            if (String.IsNullOrWhiteSpace(value))
+                return float3.zero;
+
+            var stringValues = value.Split(","[0]);
+            var x            = float.Parse(stringValues[0]);
+            var y            = float.Parse(stringValues[1]);
+            var z            = float.Parse(stringValues[2]);
+
+            //int charLocation = value.IndexOf(",", StringComparison.Ordinal);
+
+            /*if (charLocation > 0)
+            {
+                {
+                    var f1 = value.Substring(0, charLocation);
+                    floatValue.x = float.Parse(f1);
+    
+                }
+                return value.Substring(0, charLocation);
+            }*/
+
+            return new float3(x, y, z);
+        }
+
+        public static float4 ParseFloat4(this string value)
+        {
+            value = value.RemoveTabs();
+            value = value.RemoveWhitespace();
+            //Debug.Log(value);
+            if (String.IsNullOrWhiteSpace(value))
+                return float4.zero;
+
+            var stringValues = value.Split(","[0]);
+            var x            = float.Parse(stringValues[0]);
+            var y            = float.Parse(stringValues[1]);
+            var z            = float.Parse(stringValues[2]);
+            var w            = float.Parse(stringValues[3]);
+
+            return new float4(x, y, z, w);
+        }
+
+        public static float4x4 ParseFloat4X4(this string[] arrayStrings)
+        {
+            var matrix = float4x4.identity;
+
+            var rows = new float4[4];
+            for (int i = 0; i < arrayStrings.Length; i++)
+            {
+                rows[i] = arrayStrings[i].ParseFloat4();
+            }
+
+            matrix.c0.x = rows[0].x;
+            matrix.c1.x = rows[1].x;
+            matrix.c2.x = rows[2].x;
+            matrix.c3.x = rows[3].x;
+
+            matrix.c0.y = rows[0].y;
+            matrix.c1.y = rows[1].y;
+            matrix.c2.y = rows[2].y;
+            matrix.c3.y = rows[3].y;
+
+            matrix.c0.z = rows[0].z;
+            matrix.c1.z = rows[1].z;
+            matrix.c2.z = rows[2].z;
+            matrix.c3.z = rows[3].z;
+
+            matrix.c0.w = rows[0].w;
+            matrix.c1.w = rows[1].w;
+            matrix.c2.w = rows[2].w;
+            matrix.c3.w = rows[3].w;
+
+            return matrix;
+        }
+    }
+}

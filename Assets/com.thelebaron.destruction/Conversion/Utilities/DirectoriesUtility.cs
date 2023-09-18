@@ -5,7 +5,7 @@ namespace thelebaron.Destruction.Authoring
     public static class DirectoriesUtility
     {
         /// <summary> Path to Geometry Collection </summary>
-        private const string MainPath = "Assets/GeometryCollection";
+        public const string MainPath = "Assets/GeometryCollection";
         
         /// <summary> Create main directory if doesnt exist </summary>
         public static void CreateMeshDirectories(string name)

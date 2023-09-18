@@ -1,0 +1,12 @@
+{
+  "name": "com.junk.math",
+  "description": "Stupid math stuff",
+  "version": "0.1.1",
+  "displayName": "Junk Math",
+  "type": "tool",
+  "unity": "2020.1",
+  "author": {
+    "name": "thelebaron",
+    "url": "https://www.twitter.com/chrislebaron"
+  }
+}

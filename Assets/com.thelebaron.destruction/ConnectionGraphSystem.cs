@@ -7,22 +7,14 @@ using UnityEngine;
 
 namespace thelebaron.Destruction
 {
-    public class ConnectionGraphSystem : JobComponentSystem
+    public partial struct ConnectionGraphSystem : ISystem
     {
-        private EndSimulationEntityCommandBufferSystem m_EndSimulationEntityCommandBufferSystem;
-
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-            m_EndSimulationEntityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-        }
-
         [BurstCompile]
-        private struct ClearDetachedNodes : IJobForEachWithEntity_EB<ConnectionGraph>
+        private partial struct ClearDetachedNodes : IJobEntity
         {
-            [ReadOnly]public ComponentDataFromEntity<BrokenNode> UnanchoredNode;
+            [ReadOnly]public ComponentLookup<BrokenNode> UnanchoredNode;
             
-            public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
+            public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, DynamicBuffer<ConnectionGraph> graph)
             {
                 for (int i = 0; i < graph.Length; i++)
                 {
@@ -33,27 +25,27 @@ namespace thelebaron.Destruction
         }
         
         //[BurstCompile]
-        private struct DestroyLinkJob : IJobForEachWithEntity_EBCC<GraphLink, GraphAnchor, GraphNode>
+        private partial struct DestroyLinkJob : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
-            [NativeDisableParallelForRestriction] public BufferFromEntity<NodeAnchorBuffer> NodeAnchorBuffer;
-            [ReadOnly]public ComponentDataFromEntity<PhysicsVelocity> PhysicsVelocity;
-            public void Execute(Entity entity, int index, DynamicBuffer<GraphLink> linkBuffer, ref GraphAnchor anchorNode, ref GraphNode graphNode)
+            [NativeDisableParallelForRestriction] public BufferLookup<NodeAnchorBuffer> NodeAnchorBuffer;
+            [ReadOnly]public ComponentLookup<PhysicsVelocity> PhysicsVelocity;
+            public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, DynamicBuffer<GraphLink> linkBuffer, ref GraphAnchor anchorNode, ref GraphNode graphNode)
             {
                 for (int i = 0; i < linkBuffer.Length; i++)
                 {
                     if (PhysicsVelocity.HasComponent(linkBuffer[i].Node))
                     {
-                        EntityCommandBuffer.DestroyEntity(index, entity);
+                        EntityCommandBuffer.DestroyEntity(entityIndexInQuery, entity);
 
-                        var evententity = EntityCommandBuffer.CreateEntity(index);
-                        EntityCommandBuffer.AddComponent(index, evententity, new DestroyLinkEvent
+                        var evententity = EntityCommandBuffer.CreateEntity(entityIndexInQuery);
+                        EntityCommandBuffer.AddComponent(entityIndexInQuery, evententity, new DestroyLinkEvent
                         {
                             DestroyedLink = entity
                         });
                         
 
-                        if (NodeAnchorBuffer.HasComponent(graphNode.Node))
+                        if (NodeAnchorBuffer.HasBuffer(graphNode.Node))
                         {
                             var nodeAnchorBuffer = NodeAnchorBuffer[graphNode.Node];
                             
@@ -78,13 +70,13 @@ namespace thelebaron.Destruction
             }
         }
 
-        private struct CheckConnectivityMap : IJobForEachWithEntity_EB<ConnectionGraph>
+        private partial struct CheckConnectivityMap : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
-            [ReadOnly] public BufferFromEntity<NodeNeighbor> Connection;
-            [ReadOnly] public ComponentDataFromEntity<AnchorNode> StaticAnchor;
+            [ReadOnly] public BufferLookup<NodeNeighbor> Connection;
+            [ReadOnly] public ComponentLookup<AnchorNode> StaticAnchor;
 
-            public void Execute(Entity entity, int index, DynamicBuffer<ConnectionGraph> graph)
+            public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, DynamicBuffer<ConnectionGraph> graph)
             {
                 var count = 0;
                 var depth = graph.Length;
@@ -92,10 +84,10 @@ namespace thelebaron.Destruction
                 for (var i = 0; i < graph.Length; i++)
                 {
                     var node = graph[i].Node;
-                    if (!TryFindDisconnectedNodes(node, index, depth, ref count))
+                    if (!TryFindDisconnectedNodes(node, entityIndexInQuery, depth, ref count))
                     {
-                        if (Connection.HasComponent(node))
-                            EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, node);
+                        if (Connection.HasBuffer(node))
+                            EntityCommandBuffer.RemoveComponent<NodeNeighbor>(entityIndexInQuery, node);
                         Debug.Log(node + "is disconnected");
                         //Disconnect(node, index, EntityCommandBuffer);
                     }
@@ -103,7 +95,7 @@ namespace thelebaron.Destruction
 
                 // Destroy if no more connections exist
                 if (graph.Length.Equals(0))
-                    EntityCommandBuffer.DestroyEntity(index, entity);
+                    EntityCommandBuffer.DestroyEntity(entityIndexInQuery, entity);
             }
 
             private bool TryFindDisconnectedNodes(Entity node, int index, int depth, ref int count)
@@ -116,10 +108,10 @@ namespace thelebaron.Destruction
                 
                 if (StaticAnchor.HasComponent(node))
                     return true;
-                if (!Connection.HasComponent(node))
+                if (!Connection.HasBuffer(node))
                     return false;
 
-                if (Connection.HasComponent(node))
+                if (Connection.HasBuffer(node))
                 {
                     for (var i = 0; i < Connection[node].Length; i++)
                     {
@@ -134,11 +126,11 @@ namespace thelebaron.Destruction
             {
                 if (StaticAnchor.HasComponent(node))
                     return true;
-                if (!Connection.HasComponent(node))
+                if (!Connection.HasBuffer(node))
                     return false;
 
                 
-                if (Connection.HasComponent(node))
+                if (Connection.HasBuffer(node))
                 {
                     for (var i = 0; i < Connection[node].Length; i++)
                     {
@@ -159,10 +151,10 @@ namespace thelebaron.Destruction
                 if (count > depth)
                     return;
                 
-                if (!Connection.HasComponent(node))
+                if (!Connection.HasBuffer(node))
                     return;
                 
-                if (Connection.HasComponent(node))
+                if (Connection.HasBuffer(node))
                 {
                     EntityCommandBuffer.RemoveComponent<NodeNeighbor>(index, node);
 
@@ -174,25 +166,20 @@ namespace thelebaron.Destruction
             }
         }
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        public void OnUpdate(ref SystemState state)
         {
-            var clearJob = new ClearDetachedNodes
+            state.Dependency = new ClearDetachedNodes
             {
-                UnanchoredNode = GetComponentDataFromEntity<BrokenNode>(true)
-            };
-            var clearJobHandle = clearJob.Schedule(this, inputDeps);
+                UnanchoredNode = SystemAPI.GetComponentLookup<BrokenNode>(true)
+            }.Schedule(state.Dependency);
 
-            var deleteJob = new DestroyLinkJob
+            state.Dependency = new DestroyLinkJob
             {
-                EntityCommandBuffer = m_EndSimulationEntityCommandBufferSystem.CreateCommandBuffer().AsParallelWriter(),
-                NodeAnchorBuffer = GetBufferFromEntity<NodeAnchorBuffer>(),
-                PhysicsVelocity = GetComponentDataFromEntity<PhysicsVelocity>(true)
-            };
-            var deleteJobHandle = deleteJob.Schedule(this, clearJobHandle);
-            deleteJobHandle.Complete();
-            
-
-            return deleteJobHandle;
+                EntityCommandBuffer = SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+                NodeAnchorBuffer    = SystemAPI.GetBufferLookup<NodeAnchorBuffer>(),
+                PhysicsVelocity     = SystemAPI.GetComponentLookup<PhysicsVelocity>(true)
+            }.Schedule(state.Dependency);
+            state.Dependency.Complete();
         }
     }
 }

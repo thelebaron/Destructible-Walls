@@ -1,0 +1,24 @@
+{
+    "name": "Junk.Physics",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Burst",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Physics",
+        "Unity.Transforms",
+        "Junk.Cameras",
+        "UnityEngine.UI",
+        "Unity.Mathematics.Extensions"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using kaos;
-using thelebaron.CustomEditor;
-using thelebaron.mathematics;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEditor.UIElements;

@@ -1,0 +1,17 @@
+{
+  "name": "com.junk.cameras",
+  "description": "Hybrid Camera functionality",
+  "version": "0.1.0",
+  "displayName": "Junk Cameras",
+  "dependencies": {
+    "com.junk.core": "0.0.1",
+    "com.junk.math": "0.0.6",
+    "com.junk.transforms": "0.5.0"
+  },
+  "type": "tool",
+  "unity": "2022.3",
+  "author": {
+    "name": "thelebaron",
+    "url": "https://www.twitter.com/chrislebaron"
+  }
+}

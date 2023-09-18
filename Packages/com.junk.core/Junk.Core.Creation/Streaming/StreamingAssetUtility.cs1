@@ -1,0 +1,20 @@
+﻿using System.IO;
+using UnityEngine;
+
+
+namespace Junk.Core.Creation
+{
+    public static class StreamingAssetUtility
+    {
+        /// <summary>
+        /// notes: path must be backslash ie "/Maps/E1M1/";
+        /// why add file:// ??
+        /// </summary>
+        /// <param name="relativePath"></param>
+        /// <returns></returns>
+        public static string GetFileLocation(string relativePath)
+        {
+            return "file://" + Path.Combine(Application.streamingAssetsPath, relativePath);
+        }
+    }
+}

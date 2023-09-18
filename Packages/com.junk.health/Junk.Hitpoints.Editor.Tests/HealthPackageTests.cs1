@@ -1,0 +1,106 @@
+
+using NUnit.Framework;
+using Unity.Entities;
+using Unity.Jobs.LowLevel.Unsafe;
+using Unity.Transforms;
+
+namespace Junk.Hitpoints.Editor.Tests
+{
+    public class HealthPackageTests : EcsTestsBase
+    {
+
+        private EntityQuery                      healthQuery;
+        private HealthSystem                     healthSystem;
+        //private HealthBufferInitializationSystem healthBufferInitializationSystem;
+        private Entity                           entity;
+        private Entity                           damageEntity;
+        private EventSystem                      eventSystem;
+        private EventProducer<DamageMessage>       damageEventProducer;
+
+        [SetUp]
+        protected override void Setup()
+        {
+            base.Setup();
+            
+            healthQuery         = entityManager.CreateEntityQuery(typeof(Health));
+            entity              = entityManager.CreateEntity();
+            HealthConversionUtility.AddComponents(entity, entityManager);
+
+            var writer = damageEventProducer.CreateWriter();
+            writer.Write(new DamageMessage {Amount = 10, Receiver = entity});
+            eventSystem.Update();
+            
+            world.Update();
+            
+            healthSystem                     = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<HealthSystem>();
+            //healthBufferInitializationSystem = World.GetOrCreateSystemManaged<HealthBufferInitializationSystem>();
+            eventSystem         = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<EventSystem>();
+            damageEventProducer = eventSystem.RegisterProducer<DamageMessage>();
+            
+            
+        }
+
+        [Test]
+        public void Tests_SystemsExistInWorld()
+        {
+            Assert.IsNotNull(healthSystem);
+            //Assert.IsNotNull(healthBufferInitializationSystem);
+        }
+        
+        [Test]
+        public void Tests_CalculateChunk()
+        {
+            world.Update();
+            Assert.IsTrue(healthQuery.CalculateChunkCount() > 0, "healthQuery.CalculateChunkCount()>0");
+            
+        }
+        /*
+        [Test]
+        public void Tests_ShouldRunSystems()
+        {
+
+            entity = entityManager.CreateEntity();
+            
+            HealthConversionUtility.AddComponents(entity, entityManager);
+            entityManager.AddComponentData(entity, new Translation());
+            
+            
+            var writer = damageEventProducer.CreateWriter();
+            writer.Write(new DamageMessage {Amount = 35, Receiver = entity});
+            eventSystem.Update();
+            
+            
+            world.Update();
+            
+            Assert.IsTrue(healthSystem.ShouldRunSystem());
+        }
+        */
+    }
+
+    
+    public abstract class EcsTestsBase
+    {
+        protected World         world;
+        protected EntityManager entityManager;
+        
+        [SetUp]
+        protected virtual void Setup()
+        {
+            world         = World.DefaultGameObjectInjectionWorld = new World("Test World");
+            entityManager = world.EntityManager;
+            
+            // Many ECS tests will only pass if the Jobs Debugger enabled;
+            // force it enabled for all tests, and restore the original value at teardown.
+            JobsUtility.JobDebuggerEnabled = true;
+        }
+        
+        
+        [Test]
+        public virtual void Tests_ECSWorld()
+        {
+            Assert.IsTrue(JobsUtility.JobDebuggerEnabled);
+            Assert.IsNotNull(World.DefaultGameObjectInjectionWorld);
+            Assert.IsNotNull(entityManager);
+        }
+    }
+}

@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; background-color: rgba(156, 72, 142, 0.53);">
+        <ui:Label tabindex="-1" text="Game Menu Placeholder" display-tooltip-when-elided="true" name="Label" />
+    </ui:VisualElement>
+</ui:UXML>
