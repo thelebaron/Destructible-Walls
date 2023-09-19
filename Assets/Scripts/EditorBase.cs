@@ -4,7 +4,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace thelebaron.CustomEditor
+namespace Junk.CustomEditor
 {
     public class EditorBase : EditorWindow
     {
@@ -32,7 +32,7 @@ namespace thelebaron.CustomEditor
             dir = dir.normalized * 100;
 
             var pos = tr.position;
-            Physics.Raycast(pos, dir, out var raycastHit, 100);
+            UnityEngine.Physics.Raycast(pos, dir, out var raycastHit, 100);
         
         
             SceneCameraHitPosition = raycastHit.point;
