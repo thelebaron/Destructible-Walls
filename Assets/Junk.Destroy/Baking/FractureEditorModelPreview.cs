@@ -12,6 +12,7 @@ namespace Junk.Destroy.Baking
 
         private void InitializePreview()
         {
+            /*
             if (fractureCache == null || fractureCache.Mesh == null)
             {
                 return;
@@ -28,7 +29,7 @@ namespace Junk.Destroy.Baking
             targetObject.AddComponent<MeshRenderer>().sharedMaterial = fractureCache.Fractures[0].OutsideMaterial;
             
             
-            SetupPreviewScene();
+            SetupPreviewScene();*/
             /*
             var previewRenderUtility = new PreviewRenderUtility();
             previewRenderUtility.cameraFieldOfView = 30f;
@@ -70,6 +71,7 @@ namespace Junk.Destroy.Baking
         
         private void DrawPreviewGui()
         {
+            /*
             Debug.Log(targetObject);
             // Render the preview scene into a texture and stick it
             // onto the current editor window. It'll behave like a custom game view.
@@ -77,7 +79,7 @@ namespace Junk.Destroy.Baking
             previewUtility.BeginPreview(rect, previewBackground: GUIStyle.none);
             previewUtility.Render();
             var texture = previewUtility.EndPreview();
-            GUI.DrawTexture(rect, texture);
+            GUI.DrawTexture(rect, texture);*/
         }
     }
 }

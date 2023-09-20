@@ -8,7 +8,7 @@ namespace Junk.Destroy.Authoring
     [Serializable]
     public class FractureWorkingData
     {
-        public FractureCache Cache;
+        public FractureNodeAsset  RootNodeAsset;
         public GameObject         gameObject;
         public string             name = "new Destructible";
         public int                seed = 3;

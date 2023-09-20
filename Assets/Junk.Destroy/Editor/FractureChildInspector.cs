@@ -12,6 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Junk.Destroy.Editor
 {
+    /*
     [UnityEditor.CustomEditor(typeof(FractureChild))]
     public class FractureChildInspector : UnityEditor.Editor
     {
@@ -70,6 +71,6 @@ namespace Junk.Destroy.Editor
 
         }
         
-    }
+    }*/
 
 }

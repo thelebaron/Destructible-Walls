@@ -6628,7 +6628,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ded9764efc8d452fa675bfe123dd8d2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Cache: {fileID: 0}
+  FractureNodeAsset: {fileID: 0}
   density: 500
   totalChunks: 20
   seed: 0
@@ -6636,7 +6636,7 @@ MonoBehaviour:
   outsideMaterial: {fileID: 2100000, guid: 9988494c9a17fa947ae65a28abcfe080, type: 2}
   breakForce: 100
   FractureWorkingData:
-    Cache: {fileID: 0}
+    RootNodeAsset: {fileID: 0}
     gameObject: {fileID: 0}
     name: new Destructible
     seed: 3
@@ -7782,7 +7782,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ded9764efc8d452fa675bfe123dd8d2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Cache: {fileID: 0}
+  FractureNodeAsset: {fileID: 0}
   density: 125
   totalChunks: 25
   seed: 319095583
@@ -7790,7 +7790,7 @@ MonoBehaviour:
   outsideMaterial: {fileID: 2100000, guid: 9988494c9a17fa947ae65a28abcfe080, type: 2}
   breakForce: 100
   FractureWorkingData:
-    Cache: {fileID: 0}
+    RootNodeAsset: {fileID: 0}
     gameObject: {fileID: 0}
     name: new Destructible
     seed: 3

@@ -15,7 +15,7 @@ namespace Junk.Destroy.Authoring
     public static class EditorFracturing
     {
         /// <summary> Fill out data format with all baking parameters </summary>
-        public static void Intialize(FractureCache cache, GameObject gameObject, int seed,
+        public static void Intialize(FractureNodeAsset cache, GameObject gameObject, int seed,
             float                                       density,            int totalChunks,
             Material                                    insideMaterial,     Material outsideMaterial, float breakForce)
         {
@@ -28,7 +28,7 @@ namespace Junk.Destroy.Authoring
             // We create a working data type and store its data and pass it through the helper methods
             var workingData = new FractureWorkingData
             {
-                Cache      = cache,
+                RootNodeAsset      = cache,
                 gameObject      = gameObject,
                 name            = gameObject.name,
                 seed            = seed,
@@ -49,15 +49,15 @@ namespace Junk.Destroy.Authoring
             gameObject.GetComponent<FractureAuthoring>().FractureWorkingData = workingData;
         }
         
-        public static void Intialize(FractureCache cache, int seed, float density, int totalChunks, Material inside, Material   outside, float breakForce)
+        public static void Intialize(FractureNodeAsset nodeAsset, int seed, float density, int totalChunks, Material inside, Material   outside, float breakForce)
         {
-            var mesh         = cache.Mesh;
+            var mesh         = nodeAsset.Mesh;
             var meshBounds = mesh.bounds;
             
             // We create a working data type and store its data and pass it through the helper methods
             var workingData = new FractureWorkingData
             {
-                Cache      = cache,
+                RootNodeAsset           = nodeAsset,
                 seed            = seed,
                 random          = new System.Random(),
                 density         = density,
@@ -132,16 +132,15 @@ namespace Junk.Destroy.Authoring
             var outsideChunkMesh         = fractureTool.getChunkMesh(index, false);
             var insideChunkMesh          = fractureTool.getChunkMesh(index, true);
             
-            var cacheAsset = fractureWorking.Cache;
-            
             var mesh  = outsideChunkMesh.toUnityMesh();
             mesh.subMeshCount = 2;
             mesh.SetIndices(insideChunkMesh.getIndexes(), MeshTopology.Triangles, 1);
             mesh.name = fractureWorking.mesh.name + "_Chunk_" + index;
-            cacheAsset.Add(new Shape(mesh), insideMaterial, outsideMaterial);
+            fractureWorking.RootNodeAsset.Add(mesh, insideMaterial, outsideMaterial);
+            AssetDatabase.AddObjectToAsset(mesh, fractureWorking.RootNodeAsset);
             
             // Save cacheAsset
-            EditorUtility.SetDirty(cacheAsset);
+            EditorUtility.SetDirty(fractureWorking.RootNodeAsset);
             AssetDatabase.SaveAssets();
         }
         

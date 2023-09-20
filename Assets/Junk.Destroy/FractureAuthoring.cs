@@ -13,7 +13,7 @@ namespace Junk.Destroy
     [RequireComponent(typeof(MeshRenderer))]
     public class FractureAuthoring : MonoBehaviour
     {
-        public FractureCache Cache;
+        public FractureNodeAsset FractureNodeAsset;
         
         public float              density     = 500;
         public int                totalChunks = 20;
