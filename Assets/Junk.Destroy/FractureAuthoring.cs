@@ -24,7 +24,6 @@ namespace Junk.Destroy
 
         public FractureWorkingData FractureWorkingData;
         
-        
         private void Joints(GameObject child, float breakForce)
         {
             var rb = child.GetComponent<Rigidbody>();

@@ -19,10 +19,12 @@ namespace Junk.Destroy.Editor
         {
             var fracture = target as FractureChild;
 
-
-            if (GUILayout.Button("Up)"))
+            if (fracture.Parent != null)
             {
-                Selection.activeObject = fracture.Parent;
+                if (GUILayout.Button("^", GUILayout.Width(25), GUILayout.Height(25)))
+                {
+                    Selection.activeObject = fracture.Parent;
+                }
             }
 
             if (GUILayout.Button("Create new fracture cache from this fracture)"))

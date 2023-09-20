@@ -8,7 +8,6 @@ namespace Junk.Destroy.Hybrid
     /// <summary>
     /// An asset that stores a list of fractures
     /// </summary>
-    /// 
     [CreateAssetMenu(fileName = "Fracture Cache", menuName = "Fracturing", order = 0)]
     public class FractureCache : ScriptableObject
     {
@@ -39,5 +38,17 @@ namespace Junk.Destroy.Hybrid
             Fractures.Clear();
             AssetDatabase.SaveAssets();
         }
+    }
+    
+    /// <summary>
+    /// An asset that stores a list of fractures
+    /// </summary>
+    public class FractureNode : ScriptableObject
+    {
+        public Mesh               Mesh;
+        public Material           InsideMaterial;
+        public Material           OutsideMaterial;
+        public FractureNode       Parent;
+        public List<FractureNode> Children = new();
     }
 }

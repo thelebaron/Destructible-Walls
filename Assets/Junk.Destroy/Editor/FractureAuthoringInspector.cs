@@ -1,4 +1,5 @@
 using Junk.Destroy.Authoring;
+using Junk.Destroy.Baking;
 using Junk.Destroy.Hybrid;
 using UnityEngine;
 using UnityEditor;
@@ -6,6 +7,7 @@ using UnityEditor;
 
 namespace Junk.Destroy
 {
+    [CanEditMultipleObjects]
     [UnityEditor.CustomEditor(typeof(FractureAuthoring))]
     public class FractureAuthoringInspector : UnityEditor.Editor
     {
@@ -51,42 +53,36 @@ namespace Junk.Destroy
         public override void OnInspectorGUI()
         {
             var fracture = target as FractureAuthoring;
-            if (fracture == null)
+            
+            if (GUILayout.Button("Open Fracture Editor"))
             {
-                DrawDefaultInspector();
+                FractureEditorWindow.Open(fracture);
             }
-            else
+                
+            /*
+            EditorGUILayout.HelpBox("MUST CONTAIN MORE THAN 3 FRACTURES", MessageType.Warning);
+            if (GUILayout.Button("Fracture mesh"))
             {
-                EditorGUILayout.HelpBox("MUST CONTAIN MORE THAN 3 FRACTURES", MessageType.Warning);
-                
-                if (GUILayout.Button("Fracture mesh"))
+                if (fracture.Cache == null)
                 {
-                    if (fracture.Cache == null)
-                    {
-                        fracture.Cache = ScriptableObject.CreateInstance<FractureCache>();
-                        AssetDatabase.CreateAsset(fracture.Cache, DirectoriesUtility.MainPath +"/" + fracture.gameObject.name + "Cache.asset");
-                    }
-                    
-                    
-                    EditorFracturing.Intialize(fracture.Cache, fracture.gameObject, fracture.seed, 
-                        fracture.density, fracture.totalChunks, fracture.outsideMaterial, 
-                        fracture.insideMaterial, fracture.breakForce);
+                    fracture.Cache = ScriptableObject.CreateInstance<FractureCache>();
+                    AssetDatabase.CreateAsset(fracture.Cache, DirectoriesUtility.MainPath +"/" + fracture.gameObject.name + "Cache.asset");
                 }
-
-                if (GUILayout.Button("Find Anchors"))
-                {
-                    AnchorConversion.FindAnchors(fracture.FractureWorkingData);
-                }
-                
-                if (GUILayout.Button("Reset"))
-                      ResetUtility.Reset(fracture.gameObject);
-                
-                DrawDefaultInspector();
+                    
+                EditorFracturing.Intialize(fracture.Cache, fracture.gameObject, fracture.seed, 
+                    fracture.density, fracture.totalChunks, fracture.outsideMaterial, 
+                    fracture.insideMaterial, fracture.breakForce);
             }
 
-
-
+            if (GUILayout.Button("Find Anchors"))
+            {
+                AnchorConversion.FindAnchors(fracture.FractureWorkingData);
+            }
+                
+            if (GUILayout.Button("Reset"))
+                ResetUtility.Reset(fracture.gameObject);
+            */
+            DrawDefaultInspector();
         }
-        
     }
 }

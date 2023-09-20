@@ -66,10 +66,12 @@ namespace Junk.Destroy
                 nodeLinks.Add(list);
         }
 
+        
         public void OnDrawGizmosSelected()
         {
             //draw for connections
-
+            return;
+            
             if (isAnchor)
             {
                 var anchorpos = GetComponent<Renderer>().bounds.center;
