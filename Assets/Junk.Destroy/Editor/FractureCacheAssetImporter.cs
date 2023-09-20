@@ -10,10 +10,27 @@ namespace Junk.Destroy.Editor
         [OnOpenAsset(1)]
         public static bool OpenAsset(int instanceID, int line) 
         {
-            FractureCache myScriptableObject = EditorUtility.InstanceIDToObject(instanceID) as FractureCache;
-            if(myScriptableObject != null) 
+            var target = EditorUtility.InstanceIDToObject(instanceID) as FractureCache;
+            if(target != null) 
             {
-                FractureEditorWindow.Open(myScriptableObject);
+                FractureEditorWindow.Open(target);
+                Selection.activeObject = target;
+                return true;
+            }
+            return false;
+        }
+    }
+    
+    public class FractureChildImporter : AssetImporter
+    {
+        [OnOpenAsset(1)]
+        public static bool OpenAsset(int instanceID, int line) 
+        {
+            var target = EditorUtility.InstanceIDToObject(instanceID) as FractureChild;
+            if(target != null) 
+            {
+                FractureEditorWindow.Open(target);
+                Selection.activeObject = target;
                 return true;
             }
             return false;

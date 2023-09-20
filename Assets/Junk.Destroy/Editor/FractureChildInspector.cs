@@ -46,6 +46,7 @@ namespace Junk.Destroy.Editor
                 Selection.activeObject = newCacheAsset;
                 
                 FractureEditorWindow.Open(newCacheAsset);
+                AssetDatabase.Refresh();
             }
             
             DrawDefaultInspector();

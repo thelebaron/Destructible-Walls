@@ -16,18 +16,47 @@ namespace Junk.Destroy.Baking
         private Material outsideMaterial;
         private float    breakForce = 100;
 
-        private FractureCache  cache;
-        private Mesh                meshObject;
+        private FractureCache fractureCache;
+        private FractureChild fractureChild;
+        private Mesh          meshObject;
+        private EditorMode    editorMode;
         
         private FractureWorkingData fractureWorkingData;
         
-        public static void Open(FractureCache target)
+        public static void Open(ScriptableObject target)
         {
-            FractureEditorWindow window = (FractureEditorWindow)GetWindow(typeof(FractureEditorWindow));
-            window.cache = target;
-            window.Show();
+            if(target is FractureCache fractureCache)
+            {
+                var window = (FractureEditorWindow)GetWindow(typeof(FractureEditorWindow));
+                window.Clear();
+                window.editorMode = EditorMode.FractureWorkshop;
+                window.fractureCache = fractureCache;
+                window.Show();
+            }
+            else if (target is FractureChild fractureChild)
+            {
+                var window = (FractureEditorWindow)GetWindow(typeof(FractureEditorWindow));
+                window.Clear();
+                
+                if(fractureChild.FractureCache != null)
+                {
+                    window.editorMode = EditorMode.FractureWorkshop;
+                    window.fractureCache = fractureChild.FractureCache;
+                    window.Show();
+                    return;
+                }
+                window.editorMode = EditorMode.FractureChild;
+                window.fractureChild = fractureChild;
+                window.Show();
+            }
         }
 
+        private void Clear()
+        {
+            fractureCache = null;
+            fractureChild = null;
+        }
+        
         [MenuItem("Tools/Fracture Editor")]
         public static void ShowWindow()
         {
@@ -39,10 +68,17 @@ namespace Junk.Destroy.Baking
             GUILayout.Label("Welcome !");
             labelText = Selection.activeObject == null ? labelText : Selection.activeObject.name;
             labelText = EditorGUILayout.TextField(labelText);
+            // editorMode enum field grayed out
+            EditorGUI.BeginDisabledGroup(true);
+            editorMode = (EditorMode)EditorGUILayout.EnumPopup(editorMode);
+            EditorGUI.EndDisabledGroup();
+            // disable editorMode enum field
+            //
+            
             
             GUILayout.Space(10);
 
-            if (cache == null)
+            if (fractureCache == null && editorMode == EditorMode.FractureCache)
             {
                 GUILayout.Label("Target Mesh:");
                 meshObject = (Mesh)EditorGUILayout.ObjectField(meshObject, typeof(Mesh), true);
@@ -65,20 +101,55 @@ namespace Junk.Destroy.Baking
                         // Save the mesh asset to the specified path
                         DirectoriesUtility.Truncate(ref path);
                         AssetDatabase.CreateAsset(asset, path);
+                        
+                        fractureCache          = asset;
+                        Selection.activeObject = fractureCache;
+                        
+                        editorMode             = EditorMode.FractureWorkshop;
+                        // set dirty
                         AssetDatabase.SaveAssets();
+                        EditorUtility.SetDirty(asset);
                         AssetDatabase.Refresh();
-                        
-                        cache = asset;
-                        Selection.activeObject = cache;
-                        
                     }
                 }
                 
             }
-            else
+            if (editorMode == EditorMode.FractureChild)
+            {
+                /*if(fractureChild.FractureCache != null)
+                {
+                    editorMode = EditorMode.FractureWorkshop;
+                    fractureCache = fractureChild.FractureCache;
+                    return;
+                }*/
+                
+                if (GUILayout.Button("New fracture cache"))
+                {
+                    var newCacheAsset = ScriptableObject.CreateInstance<FractureCache>();
+                
+                    newCacheAsset.name   = fractureChild.Shape.name + "_Cache";
+                    newCacheAsset.Parent = fractureChild;
+                
+                    AssetDatabase.AddObjectToAsset(newCacheAsset, fractureChild);
+                    
+                    newCacheAsset.Mesh = fractureChild.Shape.GetMesh();
+                    AssetDatabase.AddObjectToAsset(newCacheAsset.Mesh, fractureChild);
+                
+                    fractureChild.FractureCache = newCacheAsset;
+                
+                    Selection.activeObject = newCacheAsset;
+                
+                    FractureEditorWindow.Open(newCacheAsset);
+                    AssetDatabase.Refresh();
+                }
+                
+            }
+
+            
+            if(editorMode == EditorMode.FractureWorkshop)
             {
                 GUILayout.Label("Fracture Cache:");
-                cache = (FractureCache)EditorGUILayout.ObjectField(cache, typeof(FractureCache), true);
+                fractureCache = (FractureCache)EditorGUILayout.ObjectField(fractureCache, typeof(FractureCache), true);
                 GUILayout.Label("Density:");
                 density = EditorGUILayout.FloatField(density);
                 GUILayout.Label("Total Chunks:");
@@ -96,15 +167,21 @@ namespace Junk.Destroy.Baking
                 {
                     if (seed == -1)
                         seed = new System.Random().Next();
-                    cache.Clear();
-                    EditorFracturing.Intialize(cache, seed, density, totalChunks, outsideMaterial, insideMaterial, breakForce);
+                    fractureCache.Clear();
+                    EditorFracturing.Intialize(fractureCache, seed, density, totalChunks, outsideMaterial, insideMaterial, breakForce);
                     
                     AssetDatabase.Refresh();
                     // refresh inspector
-                    EditorUtility.SetDirty(cache);
+                    EditorUtility.SetDirty(fractureCache);
                 }
             }
-
+        }
+        
+        public enum EditorMode
+        {
+            FractureCache,
+            FractureChild,
+            FractureWorkshop
         }
     }
 }
