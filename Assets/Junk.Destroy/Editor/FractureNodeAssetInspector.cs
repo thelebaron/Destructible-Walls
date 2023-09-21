@@ -37,6 +37,9 @@ namespace Junk.Destroy.Editor
             
             DrawDefaultInspector();
             
+            // draw label for total children on this node
+            EditorGUILayout.LabelField("Total Children: " + GetTotalChildrenCount(nodeAsset));
+            
             if(nodeAsset.Children.Count > 0)
             {
                 // space
@@ -46,23 +49,52 @@ namespace Junk.Destroy.Editor
                 for (var index = 0; index < list.Count; index++)
                 {
                     var childAsset = list[index];
+                    EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.ObjectField(childAsset, typeof(FractureNodeAsset), false);
+                    // labelfield containing child count
+                    EditorGUILayout.LabelField(" Children: " + GetTotalChildrenCount(childAsset));
+                    // flexible space
+                    GUILayout.FlexibleSpace();
+                    EditorGUILayout.EndHorizontal();
                 }
             }
+            
         }
 
         private static void DrawHierarchyTree(FractureNodeAsset nodeAsset)
         {
+            EditorGUI.indentLevel++;
+            HandleNode(nodeAsset);
+            if (nodeAsset.Parent != null)
+            {
+                DrawHierarchyTree(nodeAsset.Parent);
+            }
+            EditorGUI.indentLevel--;
+        }
+
+        private static void HandleNode(FractureNodeAsset nodeAsset)
+        {
             // Indent
             EditorGUI.indentLevel++;
-            
-            EditorGUILayout.LabelField("Parent Node: " + nodeAsset.Parent.name);
-            EditorGUILayout.ObjectField(nodeAsset.Parent, typeof(FractureNodeAsset), false);
-            if(nodeAsset.Parent.Parent != null)
-                DrawHierarchyTree(nodeAsset.Parent);
-            
+
+            EditorGUILayout.LabelField("Node: " + nodeAsset.name);
+            EditorGUILayout.ObjectField(nodeAsset, typeof(FractureNodeAsset), false);
+
+            // Un-indent
             EditorGUI.indentLevel--;
-            
+        }
+        public int GetTotalChildrenCount(FractureNodeAsset nodeAsset)
+        {
+            int count = 0;
+            if (nodeAsset.Children.Count > 0)
+            {
+                count += nodeAsset.Children.Count;
+                foreach (var child in nodeAsset.Children)
+                {
+                    count += GetTotalChildrenCount(child);
+                }
+            }
+            return count;
         }
     }
 
