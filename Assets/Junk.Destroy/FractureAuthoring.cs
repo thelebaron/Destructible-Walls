@@ -2,6 +2,7 @@
 using System.Linq;
 using Junk.Destroy.Authoring;
 using Junk.Destroy.Hybrid;
+using Junk.Math;
 using Project.Scripts.Utils;
 using Unity.Burst;
 using Unity.Collections;
@@ -115,7 +116,8 @@ namespace Junk.Destroy
         
         public override void Bake(FractureAuthoring authoring)
         {
-            var entity = GetEntity(TransformUsageFlags.Dynamic);
+            var transform        = LocalTransform.FromPositionRotationScale(authoring.transform.position, authoring.transform.rotation, authoring.transform.localScale.x);
+            var entity           = GetEntity(TransformUsageFlags.Dynamic);
             var fractureChildren = AddBuffer<FractureChild>(entity);
             //AddBuffer<ConnectionGraph>(GetEntity(TransformUsageFlags.Dynamic));
             AddComponent<FractureRoot>(entity);
@@ -125,17 +127,18 @@ namespace Junk.Destroy
             var assetData = authoring.FractureNodeAsset;
 
             var children = assetData.Children;
-            BakeChildren(entity, fractureChildren, children);
+            BakeChildren(entity, transform, fractureChildren, children);
         }
 
-        public void BakeChildren(Entity parent, DynamicBuffer<FractureChild> children, List<FractureNodeAsset> nodes)
+        public void BakeChildren(Entity parent, LocalTransform tr, DynamicBuffer<FractureChild> children,
+            List<FractureNodeAsset>     nodes)
         {
             foreach (var node in nodes)
             {
                 var child = CreateAdditionalEntity(TransformUsageFlags.ManualOverride, false, node.name);
                 
                 AddComponent(child, LocalTransform.Identity);
-                AddComponent(child, new LocalToWorld{Value = float4x4.identity});
+                AddComponent(child, new LocalToWorld{Value = float4x4.TRS(tr.Position, tr.Rotation, tr.Scale)});
                 AddComponent<LocalTransform>(child);
                 AddComponent<Fracture>(child);
                 AddComponent<Fractured>(child);
@@ -214,12 +217,10 @@ namespace Junk.Destroy
                 AddComponent(child, new PhysicsDamping{Linear = 0.05f, Angular = 0.05f});;
                 AddSharedComponent(child, new PhysicsWorldIndex());
                 
-                
-                
                 if (node.Children.Count > 0)
                 {
                     var childChildren = AddBuffer<FractureChild>(child);
-                    BakeChildren(child, childChildren, node.Children);
+                    BakeChildren(child, tr, childChildren, node.Children);
                 }
             }
         }
@@ -272,14 +273,18 @@ namespace Junk.Destroy
         {
             var ecb = SystemAPI.GetSingletonRW<BeginInitializationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged);
             
-            foreach (var (fractureChildren, localTransform, entity) in SystemAPI.Query<DynamicBuffer<FractureBaker.FractureChild>, RefRO<LocalTransform>>().WithAll<FractureBaker.Fractured>().WithEntityAccess())
+            foreach (var (fractureChildren, localToWorld, localTransform, entity) in SystemAPI.Query<DynamicBuffer<FractureBaker.FractureChild>, RefRO<LocalToWorld>, RefRO<LocalTransform>>().WithAll<FractureBaker.Fractured>().WithEntityAccess())
             {
                 foreach (var fractureChild in fractureChildren)
                 {
                     var child = fractureChild.Child;
                     
                     var fractureEntity = ecb.Instantiate(child);
-                    ecb.SetComponent(fractureEntity, LocalTransform.FromPositionRotation(localTransform.ValueRO.Position, localTransform.ValueRO.Rotation));
+                    // get scale from 4x4
+                    var scale = localToWorld.ValueRO.Value.GetScale();
+                    var tr = LocalTransform.FromPositionRotationScale(localTransform.ValueRO.Position, localTransform.ValueRO.Rotation, scale);
+                    
+                    ecb.SetComponent(fractureEntity, tr);
                     
                 }
                 ecb.DestroyEntity(entity);

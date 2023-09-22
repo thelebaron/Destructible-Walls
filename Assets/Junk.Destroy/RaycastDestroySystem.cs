@@ -70,7 +70,7 @@ namespace Junk.Destroy
         }
         public const float k_MaxDistance = 100.0f;
         
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             if(Mouse.current == null)
