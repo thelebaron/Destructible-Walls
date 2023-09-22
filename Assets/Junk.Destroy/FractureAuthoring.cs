@@ -2,12 +2,12 @@
 using System.Linq;
 using Junk.Destroy.Authoring;
 using Junk.Destroy.Hybrid;
-using Junk.Math;
 using Project.Scripts.Utils;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Physics;
 using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
@@ -98,12 +98,19 @@ namespace Junk.Destroy
             
         }
         
+        public struct Fractured : IComponentData, IEnableableComponent
+        {
+            
+        }
+        
         [TemporaryBakingType]
         public class FractureRenderData : IComponentData
         {
-            public Mesh Mesh;
+            public Mesh     Mesh;
             public Material InsideMaterial;
             public Material OutsideMaterial;
+            public sbyte    SubMeshIndex;
+            public int      MaterialIndex;
         }
         
         public override void Bake(FractureAuthoring authoring)
@@ -112,6 +119,8 @@ namespace Junk.Destroy
             var fractureChildren = AddBuffer<FractureChild>(entity);
             //AddBuffer<ConnectionGraph>(GetEntity(TransformUsageFlags.Dynamic));
             AddComponent<FractureRoot>(entity);
+            AddComponent<Fractured>(entity);
+            SetComponentEnabled<Fractured>(entity, false);
             //AddComponent(entity, LocalTransform.Identity);
             var assetData = authoring.FractureNodeAsset;
 
@@ -129,15 +138,83 @@ namespace Junk.Destroy
                 AddComponent(child, new LocalToWorld{Value = float4x4.identity});
                 AddComponent<LocalTransform>(child);
                 AddComponent<Fracture>(child);
+                AddComponent<Fractured>(child);
+                SetComponentEnabled<Fractured>(child, false);
                 AddComponent<Prefab>(child);
-                AddComponentObject(child, new FractureRenderData
+                
+                // Render Entities
+                var submeshCount = node.Mesh.subMeshCount;
+                if (submeshCount > 1)
                 {
-                    Mesh            = node.Mesh,
-                    InsideMaterial  = node.InsideMaterial,
-                    OutsideMaterial = node.OutsideMaterial
-                });
+                    var linkedEntities = AddBuffer<LinkedEntityGroup>(child);
+                    linkedEntities.Add(new LinkedEntityGroup {Value = child});
+                    for (int i = 0; i < node.Mesh.subMeshCount; i++)
+                    {
+                        var renderEntity = CreateAdditionalEntity(TransformUsageFlags.ManualOverride, false, node.name + " Render " + i);
+                        AddComponent<Prefab>(renderEntity);
+                        AddComponent(renderEntity, LocalTransform.Identity);
+                        AddComponent(renderEntity, new LocalToWorld{Value = float4x4.identity});
+                        AddComponentObject(renderEntity, new FractureRenderData
+                        {
+                            Mesh            = node.Mesh,
+                            SubMeshIndex    = (sbyte)i,
+                            MaterialIndex   = i,
+                            InsideMaterial  = node.InsideMaterial,
+                            OutsideMaterial = node.OutsideMaterial
+                        });
+                        AddComponent(renderEntity, new Parent{ Value = child });
+                        linkedEntities.Add(new LinkedEntityGroup {Value = renderEntity});
+                    }
+                }
+                else
+                {
+                    AddComponentObject(child, new FractureRenderData
+                    {
+                        Mesh            = node.Mesh,
+                        InsideMaterial  = node.InsideMaterial,
+                        OutsideMaterial = node.OutsideMaterial
+                    });
+                }
+                
                 
                 children.Add(new FractureChild {Child = child});
+                
+                // Physics Entities
+                var filter       = CollisionFilter.Default;
+                var material     = Unity.Physics.Material.Default;
+                
+                // create nativearrays of vertices and triangles
+                var vertices  = new NativeArray<float3>(node.Mesh.vertices.Length, Allocator.TempJob);
+                var triangles = new NativeArray<int>(node.Mesh.triangles.Length, Allocator.TempJob);
+                // copy vertices and triangles to nativearrays
+                for (var index = 0; index < node.Mesh.vertices.Length; index++)
+                    vertices[index] = node.Mesh.vertices[index];
+                for (var index = 0; index < node.Mesh.triangles.Length; index++)
+                    triangles[index] = node.Mesh.triangles[index];
+
+                //var colliderBlob = Unity.Physics.MeshCollider.Create(vertices, triangles), filter, material);
+                var colliderBlob = ConvexCollider.Create(vertices, ConvexHullGenerationParameters.Default, CollisionFilter.Default);
+                
+                AddBlobAsset(ref colliderBlob, out var blobhash);
+                AddComponent(child, new PhysicsCollider { Value = colliderBlob });
+                var massdist = new MassDistribution
+                {
+                    Transform     = new RigidTransform(quaternion.identity, float3.zero),
+                    InertiaTensor = new float3(2f / 5f)
+                };
+                var massProperties = new MassProperties
+                {
+                    AngularExpansionFactor = 0,
+                    MassDistribution       = massdist,
+                    Volume                 = 1
+                };
+
+                AddComponent(child, PhysicsMass.CreateDynamic(colliderBlob.Value.MassProperties, 12));
+                AddComponent(child, new PhysicsVelocity());
+                AddComponent(child, new PhysicsDamping{Linear = 0.05f, Angular = 0.05f});;
+                AddSharedComponent(child, new PhysicsWorldIndex());
+                
+                
                 
                 if (node.Children.Count > 0)
                 {
@@ -161,7 +238,7 @@ namespace Junk.Destroy
         {
             var builder = new EntityQueryBuilder(Allocator.Temp);
             //builder.WithAll<FractureBaker.FractureChild>();
-            builder.WithAll<FractureBaker.Fracture>();
+            //builder.WithAll<FractureBaker.Fracture>();
             builder.WithAll<FractureBaker.FractureRenderData>();
             builder.WithOptions(EntityQueryOptions.IncludeDisabledEntities | EntityQueryOptions.IncludePrefab);
             query = builder.Build(ref state);
@@ -179,43 +256,23 @@ namespace Junk.Destroy
                 // Rendering
                 var desc            = new RenderMeshDescription(ShadowCastingMode.On, true, MotionVectorGenerationMode.Object, 0);
                 var renderMeshArray = new RenderMeshArray(new Material[2] { renderData.InsideMaterial, renderData.OutsideMaterial }, new Mesh[1]{ renderData.Mesh }); 
-                var materialMeshInfo = MaterialMeshInfo.FromRenderMeshArrayIndices(0, 0);
+                var materialIndex = renderData.MaterialIndex;
+                var materialMeshInfo = MaterialMeshInfo.FromRenderMeshArrayIndices(materialIndex, 0, renderData.SubMeshIndex);
                 RenderMeshUtility.AddComponents(entity, state.EntityManager, desc, renderMeshArray, materialMeshInfo);
             }
             
             entities.Dispose();
         }
     }
-
-    public struct Bullshit : IComponentData
-    {
-        
-    }
+    
     public partial struct TestFractureSystem : ISystem
     {
-        private EntityQuery query;
-        
-        //[BurstCompile]
-        public void OnCreate(ref SystemState state)
-        {
-            var builder = new EntityQueryBuilder(Allocator.Temp);
-            builder.WithAll<FractureBaker.Fracture>();
-            query = builder.Build(ref state);
-        }
-        
-        //[BurstCompile]
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            if(Keyboard.current == null)
-                return;
-            
-            var spaceKey = Keyboard.current.spaceKey;
-            if(!spaceKey.isPressed)
-                return;
-
             var ecb = SystemAPI.GetSingletonRW<BeginInitializationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged);
-            //var ecb = new EntityCommandBuffer(Allocator.TempJob);
-            foreach (var (fractureChildren, localTransform, entity) in SystemAPI.Query<DynamicBuffer<FractureBaker.FractureChild>, RefRO<LocalTransform>>().WithAll<FractureRoot>().WithEntityAccess())
+            
+            foreach (var (fractureChildren, localTransform, entity) in SystemAPI.Query<DynamicBuffer<FractureBaker.FractureChild>, RefRO<LocalTransform>>().WithAll<FractureBaker.Fractured>().WithEntityAccess())
             {
                 foreach (var fractureChild in fractureChildren)
                 {
@@ -227,8 +284,6 @@ namespace Junk.Destroy
                 }
                 ecb.DestroyEntity(entity);
             }
-            //ecb.Playback(state.EntityManager);
-            //ecb.Dispose();
         }
     }
 }

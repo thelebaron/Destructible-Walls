@@ -9,8 +9,34 @@ namespace Junk.Destroy.Baking
     public partial class FractureEditorWindow : EditorWindow
     {
         private string   labelText   = "";
-        private float    density     = 500;
-        private int      totalChunks = 20;
+        
+        // voronoi settings
+        private float density         = 500;
+        private int   totalChunks     = 20;
+        
+        // clustered settings
+        public  int   clusters        = 5;
+        public  int   sitesPerCluster = 5;
+        public  float clusterRadius   = 1;
+        
+        // slicing settings
+        private Vector3Int slices            = Vector3Int.one;
+        private float      offset_variations = 0;
+        private float      angle_variations  = 0;
+        private float      amplitude         = 0;
+        private float      frequency         = 1;
+        private int        octaveNumber      = 1;
+        private int        surfaceResolution = 2;
+        
+        public enum FractureType
+        {
+            Voronoi,
+            Clustered,
+            Slicing
+        }
+        
+        private FractureType fractureType = FractureType.Voronoi;
+        
         private int      seed = -1;
         private Material insideMaterial;
         private Material outsideMaterial;
@@ -38,6 +64,9 @@ namespace Junk.Destroy.Baking
             if (target is FractureNodeAsset node)
             {
                 window.nodeAsset = node;
+                
+                window.insideMaterial  = node.InsideMaterial;
+                window.outsideMaterial = node.OutsideMaterial;
             }
             window.Setup();
             window.Show();
@@ -149,22 +178,6 @@ namespace Junk.Destroy.Baking
                 GUILayout.Label("Fracture Cache:");
                 nodeAsset = (FractureNodeAsset)EditorGUILayout.ObjectField(nodeAsset, typeof(FractureNodeAsset), true);
                 
-                EditorGUI.indentLevel++;
-
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(20);  
-                GUILayout.Label("Density:");
-                density = EditorGUILayout.FloatField(density);
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-                
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(20);
-                GUILayout.Label("Total Chunks:");
-                totalChunks = EditorGUILayout.IntField(totalChunks);
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-                
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(20);
                 GUILayout.Label("Seed:");
@@ -185,28 +198,80 @@ namespace Junk.Destroy.Baking
                 outsideMaterial = (Material)EditorGUILayout.ObjectField(outsideMaterial, typeof(Material), true);
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
-                //GUILayout.Label("Break Force:");
-                //breakForce = EditorGUILayout.FloatField(breakForce);
                 
-                GUILayout.BeginHorizontal();
                 EditorGUI.indentLevel++;
-                GUILayout.Space(20);
-
-                if (GUILayout.Button("Fracture node"))
+                EditorGUI.indentLevel++;
+                //fractureType
+                fractureType = (FractureType)EditorGUILayout.EnumPopup(fractureType);
+                // switch
+                switch (fractureType)
                 {
-                    if (seed == -1)
-                        seed = new System.Random().Next();
-                    nodeAsset.Clear();
-                    EditorFracturing.Intialize(nodeAsset, seed, density, totalChunks, outsideMaterial, insideMaterial, breakForce);
-                    
-                    AssetDatabase.Refresh();
-                    // refresh inspector
-                    EditorUtility.SetDirty(nodeAsset);
+                    case FractureType.Voronoi:
+
+                        
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Space(20);
+                        GUILayout.Label("Density:");
+                        density = EditorGUILayout.FloatField(density);
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Space(20);
+                        GUILayout.Label("Total Chunks:");
+                        totalChunks = EditorGUILayout.IntField(totalChunks);
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+
+
+                        GUILayout.BeginHorizontal();
+                        EditorGUI.indentLevel++;
+                        GUILayout.Space(20);
+
+                        if (GUILayout.Button("Fracture node"))
+                        {
+                            if (seed == -1)
+                                seed = new System.Random().Next();
+                            nodeAsset.Clear();
+                            EditorFracturing.Intialize(nodeAsset, seed, density, totalChunks, outsideMaterial,
+                                insideMaterial, breakForce);
+
+                            AssetDatabase.Refresh();
+                            // refresh inspector
+                            EditorUtility.SetDirty(nodeAsset);
+                        }
+
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+                        
+                        break;
+                    case FractureType.Clustered:
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Space(20);
+                        GUILayout.Label("Clusters:");
+                        clusters = EditorGUILayout.IntField(clusters);
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Space(20);
+                        GUILayout.Label("Sites Per Cluster:");
+                        sitesPerCluster = EditorGUILayout.IntField(sitesPerCluster);
+                        GUILayout.FlexibleSpace();
+                        GUILayout.EndHorizontal();
+
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Space(20);
+                        GUILayout.Label("Cluster Radius:");
+                        clusterRadius = EditorGUILayout.FloatField(clusterRadius);
+                        break;
                 }
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-                 
+
+                EditorGUI.indentLevel--;
+                EditorGUI.indentLevel--;
                 
+                EditorGUI.indentLevel++;
+                        
                 if (nodeAsset.Children.Count > 0)
                 {
                     GUILayout.BeginHorizontal();
@@ -216,11 +281,14 @@ namespace Junk.Destroy.Baking
                     {
                         if (seed == -1)
                             seed = new System.Random().Next();
-                        foreach (var child in nodeAsset.Children)
+                        for (var index = 0; index < nodeAsset.Children.Count; index++)
                         {
+                            var child = nodeAsset.Children[index];
                             child.Clear();
-                            EditorFracturing.Intialize(child, seed, density, totalChunks, outsideMaterial, insideMaterial, breakForce);
+                            EditorFracturing.Intialize(child, seed, density, totalChunks, outsideMaterial,
+                                insideMaterial, breakForce);
                         }
+
                         AssetDatabase.Refresh();
                         // refresh inspector
                         EditorUtility.SetDirty(nodeAsset);
