@@ -25,9 +25,6 @@ namespace Junk.Destroy
     {
         public FractureNodeAsset FractureNodeAsset;
         
-        public float              density     = 500;
-        public int                totalChunks = 20;
-        public int                seed;
         public Material           insideMaterial;
         public Material           outsideMaterial;
         public float              breakForce = 100;
@@ -110,7 +107,7 @@ namespace Junk.Destroy
             public Mesh     Mesh;
             public Material InsideMaterial;
             public Material OutsideMaterial;
-            public sbyte    SubMeshIndex;
+            public ushort    SubMeshIndex;
             public int      MaterialIndex;
         }
         
@@ -160,7 +157,7 @@ namespace Junk.Destroy
                         AddComponentObject(renderEntity, new FractureRenderData
                         {
                             Mesh            = node.Mesh,
-                            SubMeshIndex    = (sbyte)i,
+                            SubMeshIndex    = (ushort)i,
                             MaterialIndex   = i,
                             InsideMaterial  = node.InsideMaterial,
                             OutsideMaterial = node.OutsideMaterial

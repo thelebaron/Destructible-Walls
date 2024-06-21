@@ -13,7 +13,7 @@ namespace Junk.Destroy
     public partial struct RaycastDestroySystem : ISystem
     {
         // A mouse pick collector which stores every hit. Based off the ClosestHitCollector
-        [BurstCompile]
+        //[BurstCompile]
         public struct MousePickCollector : ICollector<RaycastHit>
         {
             public bool                   IgnoreTriggers;
@@ -90,11 +90,12 @@ namespace Junk.Destroy
                 Filter = CollisionFilter.Default,
             };
 
+            Debug.DrawRay(ray.origin, ray.direction * k_MaxDistance, Color.red, 1.0f);
             
             if (!collisionWorld.CastRay(rayInput, out var hit))
                 return;
             
-            //Debug.Log($"Hit {hit.Entity} at {hit.Position}");
+            Debug.Log($"Hit {hit.Entity} at {hit.Position}");
             if (state.EntityManager.HasComponent<FractureBaker.Fractured>(hit.Entity))
             {
                 // enable

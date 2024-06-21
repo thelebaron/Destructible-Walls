@@ -41,7 +41,12 @@ namespace Junk.Cameras
                     Debug.Log("No cameras found.");
                     return;
                 }
-                
+
+                var transformOptions = TransformType.CopyToGameObject;
+                if (mainCamera.gameObject.GetComponent<CameraOptions>() != null)
+                {
+                    transformOptions = mainCamera.gameObject.GetComponent<CameraOptions>().transformType;
+                }
                 var entity = EntityManager.CreateEntity();
                 EntityManager.AddComponent<MainCamera>(entity);
                 //EntityManager.AddComponentData<LocalToWorld>(entity, new LocalToWorld{Value = float4x4.TRS(Vector3.up * 10, quaternion.identity, Vector3.one)});
@@ -61,7 +66,7 @@ namespace Junk.Cameras
                 });
                 EntityManager.AddComponentData(entity, new HybridTransform
                 {
-                    Options = TransformType.CopyToGameObject
+                    Options = transformOptions
                 });
                 
                 //mainCamera.name = "Converted Main Camera";

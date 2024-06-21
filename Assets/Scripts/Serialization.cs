@@ -17,12 +17,12 @@ namespace kaos
             return path;
         }
         
-        public static void Save(Preferences prefs)
+        public static void Save(MeshDataPreferences prefs)
         {
             if (prefs == null) 
                 return;
             
-            XmlSerializer serializer = new XmlSerializer(typeof(Preferences));
+            XmlSerializer serializer = new XmlSerializer(typeof(MeshDataPreferences));
             TextWriter    textWriter = new StreamWriter(DefaultPath());
             serializer.Serialize(textWriter, prefs);
             textWriter.Close(); 
@@ -30,20 +30,20 @@ namespace kaos
             File.WriteAllText(DefaultPath(), jsondata);
         }
 
-        public static Preferences Load()
+        public static MeshDataPreferences Load()
         {
-            Preferences data = null;
+            MeshDataPreferences data = null;
             
             if (!File.Exists(DefaultPath()))
             {
-                data = Preferences.Default();
+                data = MeshDataPreferences.Default();
             }
             
             if (File.Exists(DefaultPath()))
             {
                 var x = File.ReadAllText(DefaultPath());
             
-                data = (Preferences) JsonUtility.FromJson(x, typeof(Preferences));
+                data = (MeshDataPreferences) JsonUtility.FromJson(x, typeof(MeshDataPreferences));
             }
 
             return data;
@@ -60,7 +60,7 @@ namespace kaos
     }
   
     [Serializable]
-    public class Preferences
+    public class MeshDataPreferences
     {
         public string Mesh;
         public string MaterialInside;
@@ -69,9 +69,9 @@ namespace kaos
         public string MeshDirectory;
         public string PrefabDirectory;
 
-        public static Preferences Default()
+        public static MeshDataPreferences Default()
         {
-            var prefs = new Preferences();
+            var prefs = new MeshDataPreferences();
             prefs.Mesh = null;
             prefs.MaterialOutside = "";
             prefs.MaterialInside = "";

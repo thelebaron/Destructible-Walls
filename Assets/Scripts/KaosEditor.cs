@@ -53,7 +53,7 @@ public partial class KaosEditor : EditorBase
     private IntegerField slicesSurfaceResolution;
     
     private List<List<NodeInfoBehaviour>> nestedNodes;
-    private Preferences preferences;
+    private MeshDataPreferences preferences;
 
     #endregion
     
@@ -111,7 +111,7 @@ public partial class KaosEditor : EditorBase
         RegisterCallbacks(rootVisualElement);
 
         // Load saved settings
-        preferences = Preferences.Default();
+        preferences = MeshDataPreferences.Default();
         preferences = kaos.Serialization.Load();
         kaos.Serialization.Save(preferences);
         OnRandomSeed();
