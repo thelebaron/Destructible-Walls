@@ -32,7 +32,7 @@ namespace Junk.Entities
     /// <summary>
     /// Simple component that counts down to 0 using delta time, when zero the entity will be destroyed.
     /// </summary>
-    public struct TimeDestroy : IComponentData
+    public struct TimeDestroy : IComponentData, IEnableableComponent
     {
         public float Value;
         

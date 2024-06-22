@@ -1,0 +1,34 @@
+{
+    "name": "Junk.Break.Hybrid",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Entities.Graphics",
+        "Unity.Burst",
+        "Unity.Mathematics",
+        "Unity.Deformations",
+        "Unity.Collections",
+        "Unity.Transforms",
+        "Unity.Physics",
+        "Unity.Physics.Hybrid",
+        "Junk.Math",
+        "Junk.Collections",
+        "Junk.Entities",
+        "Junk.Health",
+        "Junk.Physics.Hybrid",
+        "Unity.Physics.Custom",
+        "Junk.Break"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        ""
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

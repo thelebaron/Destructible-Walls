@@ -1,13 +1,16 @@
-﻿using Junk.Fracture.Hybrid;
+﻿using Junk.Break.Hybrid;
 using Unity.Assertions;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Physics;
+using Unity.Transforms;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using RaycastHit = Unity.Physics.RaycastHit;
 
-namespace Junk.Fracture
+namespace Junk.Break
 {
     public partial struct RaycastDestroySystem : ISystem
     {
@@ -95,10 +98,23 @@ namespace Junk.Fracture
                 return;
             
             //Debug.Log($"Hit {hit.Entity} at {hit.Position}");
-            if (state.EntityManager.HasComponent<FractureBaker.Fractured>(hit.Entity))
+            if (state.EntityManager.HasComponent<Fractured>(hit.Entity))
             {
                 // enable
-                state.EntityManager.SetComponentEnabled<FractureBaker.Fractured>(hit.Entity, true);
+                state.EntityManager.SetComponentEnabled<Fractured>(hit.Entity, true);
+            }
+            
+            if (state.EntityManager.HasComponent<FracturePrefabComponentData>(hit.Entity))
+            {
+                var prefab = state.EntityManager.GetComponentData<FracturePrefabComponentData>(hit.Entity).Prefab;
+                var localTransform = state.EntityManager.GetComponentData<LocalTransform>(hit.Entity);
+                // enable
+                var entity = state.EntityManager.Instantiate(prefab);
+                state.EntityManager.SetComponentData(entity, new LocalToWorld{Value = float4x4.TRS(localTransform.Position, localTransform.Rotation, new float3(1.0f))});
+                state.EntityManager.SetComponentData(entity, LocalTransform.FromPositionRotation(localTransform.Position, localTransform.Rotation));
+                var buffer = state.EntityManager.GetBuffer<FractureChild>(entity);
+                state.EntityManager.DestroyEntity(hit.Entity);
+                EditorApplication.isPaused = true;
             }
         }
     }
