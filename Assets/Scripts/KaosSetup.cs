@@ -1,7 +1,9 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using kaos;
+using Project.Scripts.Utils;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -21,7 +23,7 @@ public partial class KaosEditor
     }
     private void Setup_IntFields(IntegerField obj)
     {
-        
+
     }
     
     private void Setup_ObjectField(ObjectField field)

@@ -10,7 +10,9 @@
         "Unity.Transforms",
         "Junk.Cameras",
         "UnityEngine.UI",
-        "Unity.Mathematics.Extensions"
+        "Unity.Mathematics.Extensions",
+        "Junk.Entities",
+        "Junk.Math"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

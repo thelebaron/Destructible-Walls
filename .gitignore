@@ -40,3 +40,4 @@ sysinfo.txt
 *.apk
 *.unitypackage
 Packages/com.junk.animation
+Assets/Caches

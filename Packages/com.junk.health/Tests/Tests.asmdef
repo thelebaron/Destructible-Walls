@@ -8,10 +8,10 @@
         "Unity.Collections",
         "Unity.Mathematics",
         "Unity.Transforms",
-        "CyberJunk.Entities",
         "Unity.Scenes",
+        "UnityEngine.UI",
         "Junk.Health",
-        "UnityEngine.UI"
+        "Junk.Health.Hybrid"
     ],
     "includePlatforms": [
         "Editor"

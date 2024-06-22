@@ -1,4 +1,3 @@
-using System;
 using Junk.Math;
 using Unity.Collections;
 using Unity.Entities;

@@ -2,6 +2,7 @@
     "name": "Junk.Physics.Hybrid",
     "rootNamespace": "",
     "references": [
+        "UnityEngine.UI",
         "Unity.Burst",
         "Unity.Mathematics",
         "Unity.Collections",
@@ -10,9 +11,12 @@
         "Unity.Physics.Custom",
         "Unity.Physics",
         "Unity.Physics.Hybrid",
+        "Unity.Transforms",
+        "Unity.CharacterController",
+        "Junk.Math",
         "Junk.Entities",
-        "Junk.Physics",
-        "UnityEngine.UI"
+        "Junk.Transforms",
+        "Junk.Physics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

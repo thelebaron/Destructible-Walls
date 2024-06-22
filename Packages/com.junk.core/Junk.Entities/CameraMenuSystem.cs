@@ -1,20 +1,23 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
-using UnityEngine;
 
 namespace Junk.Entities
 {
-    [BurstCompile]
+    /// <summary>
+    /// todo use changefilter so we arent running this every frame
+    /// </summary>
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial struct PlayerMenuSystem : ISystem
     {
         private float inputBlockTime;
         
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<Game>();
         }
         
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             foreach (var (game, entity) in SystemAPI.Query<RefRO<Game>>().WithEntityAccess())
@@ -24,9 +27,9 @@ namespace Junk.Entities
                     // if the menu is enabled, disable the first person camera
                     var menuIsActive = state.EntityManager.IsComponentEnabled<GameMenu>(entity);
                     
-                    foreach (var (playerControl, e) in SystemAPI.Query<RefRO<PlayerControl>>().WithEntityAccess().WithOptions(EntityQueryOptions.IgnoreComponentEnabledState))
+                    foreach (var (playerControl, e) in SystemAPI.Query<RefRO<PlayerMenuControl>>().WithEntityAccess().WithOptions(EntityQueryOptions.IgnoreComponentEnabledState))
                     {
-                        state.EntityManager.SetComponentEnabled<PlayerControl>(e, !menuIsActive);
+                        state.EntityManager.SetComponentEnabled<PlayerMenuControl>(e, !menuIsActive);
                     }
                 }
 

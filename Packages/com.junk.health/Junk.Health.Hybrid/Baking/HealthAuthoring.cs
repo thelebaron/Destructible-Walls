@@ -15,18 +15,9 @@ public class HealthBaker : Baker<HealthAuthoring>
     public override void Bake(HealthAuthoring authoring)
     {
         var entity = GetEntity(TransformUsageFlags.Dynamic);
-        AddComponent(entity, new HealthData { Value = authoring.Health });
-
-        if (!authoring.MaxHealth.Equals(0))
-            AddComponent(entity, new HealthMaximum { Value = authoring.MaxHealth });
-
+        AddComponent(entity, new HealthData { Value = new float3(authoring.Health, authoring.MaxHealth, 0f) });
         AddBuffer<HealthDamageBuffer>(entity);
-        AddComponent<HealthState>(entity);
-        AddComponent<HealthFeedback>(entity);
-        //if (feedback)
-        {
-            AddComponent<HealthFeedback>(entity);
-        }
+        //AddComponent<HealthState>(entity);
         
     }
 }

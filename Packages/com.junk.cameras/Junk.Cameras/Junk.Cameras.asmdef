@@ -2,6 +2,8 @@
     "name": "Junk.Cameras",
     "rootNamespace": "",
     "references": [
+        "Unity.InputSystem",
+        "UnityEngine.UI",
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
@@ -15,7 +17,8 @@
         "Junk.Transforms",
         "Junk.Transforms.Hybrid",
         "Junk.Entities",
-        "UnityEngine.UI"
+        "Junk.Springs",
+        "Junk.Entities.Editor"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -29,5 +29,13 @@ namespace Junk.Math
         {
             return ltw.Value.GetScale3();
         }
+        
+        
+        // Extension method to expand the extents of an AABB
+        public static void Expand(this ref AABB aabb, float3 expansion)
+        {
+            aabb.Center  -= expansion * 0.5f;
+            aabb.Extents += math.abs(expansion) * 0.5f;
+        }
     }
 }

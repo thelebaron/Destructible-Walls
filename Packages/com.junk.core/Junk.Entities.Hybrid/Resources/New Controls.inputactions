@@ -1,0 +1,66 @@
+{
+    "name": "New Controls",
+    "maps": [
+        {
+            "name": "ControllerMovement",
+            "id": "f1af2479-b190-4c41-9d8f-af6dd36ec2cc",
+            "actions": [
+                {
+                    "name": "Move",
+                    "type": "Button",
+                    "id": "5f40d480-9bd2-4e4c-853f-0a859de60a73",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "db16b907-8367-4a55-96fc-048f08f12847",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "585833d6-1855-4b10-a1a5-121f79ef3b65",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Windows",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "285aabd5-5c1d-4679-9381-2e996c958d69",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Windows",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Windows",
+            "bindingGroup": "Windows",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": true,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}

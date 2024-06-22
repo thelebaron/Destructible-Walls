@@ -4,13 +4,24 @@ using UnityEngine.Serialization;
 
 namespace Junk.Cameras
 {
-    public struct ThirdPersonCamera : IComponentData
+    /// <summary>
+    /// This is a singleton entity, cannot be made EnableableComponent.
+    /// </summary>
+    public struct PlayerCamera : IComponentData
     {
         public bool           Enabled;
+        public CameraViewMode CameraViewMode;
+    }
+    
+    /// <summary>
+    /// This should be auto added wherever a PlayerCamera is added.
+    /// </summary>
+    public struct ThirdPersonCamera : IComponentData, IEnableableComponent
+    {
+        public CameraSnapMode CameraSnapMode;
         public Entity         Target;
         public float3         Distance;
         public bool           SnapToLookAt;
-        public CameraSnapMode CameraSnapMode;
         public float          Angle;
         public float          YawUnclamped;
         public float          PreviousYaw;
@@ -28,12 +39,6 @@ namespace Junk.Cameras
         SnapThenLerp,
         AlwaysSnap,
         Lerp
-    }
-
-    public struct PlayerCamera : IComponentData
-    {
-        public                                      bool           Enabled;
-        [FormerlySerializedAs("CameraMode")] public CameraViewMode CameraViewMode;
     }
     
     public struct ThirdPersonCameraSprings : IComponentData

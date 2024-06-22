@@ -2,249 +2,268 @@ using Junk.Entities;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.Transforms;
 using UnityEngine;
-#pragma warning disable CS0282 // There is no defined ordering between fields in multiple declarations of partial struct
 
 namespace Junk.Hitpoints
 {
-    public class DamageData : IComponentData
+    public struct DamageWorldSingleton : IComponentData
     {
-        public NativeStream PendingStream;
+        public DamageWorld DamageWorld;
+
+        public NativeStream.Writer GetDamageStreamWriter()
+        {
+            return DamageWorld.GetDamageWriter();
+        }
+        public NativeStream.Reader GetDamageStreamReader()
+        {
+            return DamageWorld.GetDamageReader();
+        }
+        
+        public int Count => DamageWorld.DamageEventDataStream.Count();
+        public void Dispose()
+        {
+            DamageWorld.Dispose();
+        }
     }
     
-    /// <summary>
-    /// See TRSToLocalToWorldSystem / TRSToLocalToParentSystem
-    /// </summary>
-    [BurstCompile]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     public partial struct HealthSystem : ISystem
     {
-        private EntityQuery healthQuery;        
-        private EntityQuery destroyQuery;   
-        private EntityQuery damageMessageQuery;
+        private EntityQuery healthQuery;
+        private EntityQuery updatedDamageQuery;
+        private EntityQuery damageUpdateWithHealthParentQuery;
+        private EntityQuery collectDamageQuery;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            var builder = new EntityQueryBuilder(Allocator.Temp)
-                .WithAllRW<HealthDamageBuffer>()
-                .WithAnyRW<HealthData, HealthState>()
-                .WithAnyRW<HealthPhysicsDeath, HealthFeedback>()
-                .WithAny<HealthParent, HealthMultiplier>()
-                .WithNone<Dead>()
-                .WithOptions(EntityQueryOptions.FilterWriteGroup);
-            healthQuery = state.GetEntityQuery(builder);
-                
-            builder = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<HealthData, DestroyOnZeroHealth>()
-                .WithOptions(EntityQueryOptions.Default);
-            destroyQuery = state.GetEntityQuery(builder);
+            // New damage event query
+            collectDamageQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<DamageData>()
+                .Build(ref state);
             
-            builder = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<DamageInstance>()
-                .WithOptions(EntityQueryOptions.Default);
-            damageMessageQuery = state.GetEntityQuery(builder);
+            // Query for damage buffer changes to apply to linked healths, via HealthParent
+            damageUpdateWithHealthParentQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<HealthDamageBuffer>()
+                .WithAll<HealthParent>()
+                .Build(ref state);
+            damageUpdateWithHealthParentQuery.SetChangedVersionFilter(ComponentType.ReadWrite<HealthDamageBuffer>());
+            
+            // Query for damage buffer changes to apply to Health
+            updatedDamageQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<HealthDamageBuffer>()
+                .WithAll<HealthData>()
+                .Build(ref state);
+            updatedDamageQuery.SetChangedVersionFilter(ComponentType.ReadWrite<HealthDamageBuffer>());
+            
+            // Create the damage world singleton
+            state.EntityManager.AddComponentData(state.SystemHandle, new DamageWorldSingleton()
+            {
+                DamageWorld = new DamageWorld(100, state.EntityManager)
+            });
         }
-
-
+        
         /// <summary>
         /// Adds the damage events to a buffer, and then destroys them. They get processed in the following job.
         /// </summary>
         [BurstCompile]
-        private partial struct ProcessDamageEventsJob : IJobEntity
+        private struct GatherDamageInstancesJob : IJobChunk
         {
-            [NativeDisableParallelForRestriction] public BufferLookup<HealthDamageBuffer>         DamageEventBuffer;
-            public                                       EntityCommandBuffer DestroyCommandBuffer;
-                
-            public void Execute(Entity entity, DamageInstance damageInstance)
+            public            EntityCommandBuffer                 DestroyCommandBuffer;
+            public            EntityTypeHandle                    EntityType;
+            [ReadOnly] public ComponentTypeHandle<DamageData> DamageInstanceTypeRO;
+            public            BufferLookup<HealthDamageBuffer>    HealthDamageBufferLookup;
+            
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                if(damageInstance.Receiver.HasComponent(DamageEventBuffer))
+                var entities = chunk.GetNativeArray(EntityType);
+                var damageInstances = chunk.GetNativeArray(ref DamageInstanceTypeRO);
+                
+                for (var i = 0; i < chunk.Count; i++)
                 {
-                    DamageEventBuffer[damageInstance.Receiver].Add(damageInstance);
+                    var entity = entities[i];
+                    var damageInstance = damageInstances[i];
+                    
+                    if(damageInstance.Receiver.HasComponent(HealthDamageBufferLookup))
+                    {
+                        HealthDamageBufferLookup[damageInstance.Receiver].Add(damageInstance);
+                    }
+                    DestroyCommandBuffer.DestroyEntity(entity);
                 }
-                DestroyCommandBuffer.DestroyEntity(entity);
             }
         }
         
+        /// <summary>
+        /// Propagates the damage from the child to the parent.
+        /// </summary>
+        [BurstCompile]
+        private struct PropagateDamageChildToParent : IJobChunk
+        {
+            public            EntityTypeHandle                  EntityType;
+            [ReadOnly] public ComponentTypeHandle<HealthParent> HealthParentTypeRO;
+            public            ComponentTypeHandle<HealthData>   HealthDataTypeRW;
+            public            BufferLookup<HealthDamageBuffer>  HealthDamageBufferLookup;
+            
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                var entities      = chunk.GetNativeArray(EntityType);
+                var healthParents = chunk.GetNativeArray(ref HealthParentTypeRO);
+                var hasHealthData = chunk.Has(ref HealthDataTypeRW);
+                var healthDatas    = chunk.GetNativeArray(ref HealthDataTypeRW);
+                
+                for (var i = 0; i < chunk.Count; i++)
+                {
+                    var entity = entities[i];
+                    var buffer = HealthDamageBufferLookup[entity];
+                    var healthParentEntity = healthParents[i].Value;
+                    
+                    // Apply the damage to the parent
+                    var healthParentDamageBuffer = HealthDamageBufferLookup[healthParentEntity];
+                    // Also record this frame's damage
+                    var totalDamage = 0f;
+                    for (var j = 0; j < buffer.Length; j++)
+                    {
+                        healthParentDamageBuffer.Add(buffer[j]);
+                        totalDamage += buffer[j].Value.Amount;
+                    }
+                    
+                    //if(totalDamage>0)
+                        //Debug.Log($"propagate  { entity } to {healthParentEntity} with damage {totalDamage}");
 
+                    if (hasHealthData)
+                    {
+                        var healthData = healthDatas[i];
+                        healthData.TakeDamage(totalDamage);
+                        
+                        healthDatas[i] = healthData;
+                        
+                        //Debug.Log($"health new value :{healthDatas[i].Value.x} and last value {healthDatas[i].Value.z}");
+                    }
+                    buffer.Clear();
+                }
+            }
+        }
+        
         /// <summary>
         /// Applies the damage to the health component. Todo: merge damage and apply in one go? so can be gibbed?
         /// </summary>
         [BurstCompile]
-        private struct ApplyHealthJob : IJobChunk
+        unsafe private struct ApplyDamageJob : IJobChunk
         {
-            public            EntityCommandBuffer.ParallelWriter      CommandBuffer;
-            public            float                                   ElapsedTime;
-            [ReadOnly] public EntityTypeHandle                        EntityType;
-            public            ComponentTypeHandle<HealthData>             HealthTypeHandle;
-            [ReadOnly] public ComponentTypeHandle<HealthMultiplier>   HealthMultiplierTypeHandle;
-            [ReadOnly] public ComponentTypeHandle<HealthParent>       ParentHealthTypeHandle;
-            public            ComponentTypeHandle<HealthPhysicsDeath> HealthPhysicsDeathTypeHandle;
-            public            BufferTypeHandle<HealthDamageBuffer>    HealthBufferTypeHandle;
-            public            ComponentTypeHandle<HealthState>        HealthStateTypeHandle;
-            public            ComponentTypeHandle<HealthFeedback>     HealthFeedbackTypeHandle;
-            [ReadOnly] public ComponentLookup<LocalToWorld>           LocalToWorldFromEntity;
-            public            uint                                    LastSystemVersion;
+            public            uint                                  LastSystemVersion;
+            [ReadOnly] public EntityTypeHandle                      EntityType;
+            public            BufferTypeHandle<HealthDamageBuffer>  HealthBufferTypeHandle;
+            public            ComponentTypeHandle<HealthData>       HealthTypeHandle;
+            [ReadOnly] public ComponentTypeHandle<HealthMultiplier> HealthMultiplierTypeHandle;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                // note if unchanged, feedback isnt written to and stores last result, resulting in endless feedback
-                /*var changed = chunk.DidOrderChange(LastSystemVersion) || chunk.DidChange(HealthBufferTypeHandle, LastSystemVersion);
-                if (!changed)
-                    return;*/
-
-                var entities            = chunk.GetNativeArray(EntityType);
-                var healths             = chunk.GetNativeArray(ref HealthTypeHandle);
-                var damageBuffers       = chunk.GetBufferAccessor(ref HealthBufferTypeHandle);
-                var healthStates        = chunk.GetNativeArray(ref HealthStateTypeHandle);
-                var healthParents       = chunk.GetNativeArray(ref ParentHealthTypeHandle);
-                var healthMultipliers   = chunk.GetNativeArray(ref HealthMultiplierTypeHandle);
-                var healthPhysicsDeaths = chunk.GetNativeArray(ref HealthPhysicsDeathTypeHandle);
-                var healthFeedbacks     = chunk.GetNativeArray(ref HealthFeedbackTypeHandle);
-                var hasHealth           = chunk.Has(ref HealthTypeHandle);
-                var hasParentHealth     = chunk.Has(ref ParentHealthTypeHandle);
-                var hasMultiplier       = chunk.Has(ref HealthMultiplierTypeHandle);
-                var hasState            = chunk.Has(ref HealthStateTypeHandle);
-                var hasPhysicsDeath     = chunk.Has(ref HealthPhysicsDeathTypeHandle);
-                var hasFeedback         = chunk.Has(ref HealthFeedbackTypeHandle);
-                var count               = chunk.Count;
+                var    entities      = chunk.GetNativeArray(EntityType);
+                var    healths       = (float3*)chunk.GetRequiredComponentDataPtrRO(ref this.HealthTypeHandle);//chunk.GetNativeArray(ref HealthTypeHandle);
+                var    damageBuffers = chunk.GetBufferAccessor(ref HealthBufferTypeHandle);
+                var    hasMultiplier = chunk.Has(ref HealthMultiplierTypeHandle);
+                var    m             = new NativeArray<float>(chunk.Count, Allocator.Temp);
+                float* multipliers   =  (float*)m.GetUnsafePtr();
                 
-                if (hasHealth)
+                if (hasMultiplier)
                 {
-                    for (var i = 0; i < count; i++)
-                    {
-                        var entity = entities[i];
-                        var health      = healths[i];
-                        var damageBuffer = damageBuffers[i];
-                        var multiplier  = 1f;
-                        if(hasMultiplier)
-                            multiplier = healthMultipliers[i].Value;
-                        
-                        //var soloHealth = health.Value <= 0 && !hasParentHealth;
-                        var pendingDamage = damageBuffer.Length > 0;
-
-
-                        // Skip if dead or no events in buffer
-                        //if(soloHealth/* || damageBuffer.Length < 1*/)
-                            //continue;
-                        
-                        Entity senderEntity   = default;
-                        var    perFrameDamage = 0f;
-                        var    perFrameDamageMultiplied = 0f;
-                        var    lastDamage     = 0f;
-                        var    point          = new float3(0f);
-                        
-                        // Get sum total of all the damage in the buffer
-                        for (var j = 0; j < damageBuffer.Length; j++)
-                        {
-                            var multipliedDamage = math.mul(damageBuffer[j].Value.Amount, multiplier);
-                            perFrameDamageMultiplied += multipliedDamage;
-
-                            senderEntity   =  damageBuffer[j].Value.Sender;
-                            lastDamage     =  damageBuffer[j].Value.Amount;
-                            perFrameDamage += damageBuffer[j].Value.Amount;
-                            point          =  damageBuffer[j].Value.Point;
-                        }
-                        
-                        if (hasParentHealth && pendingDamage)
-                        {
-                            var parentHealth  = healthParents[i].Value;
-                            var damageMessage = new DamageInstance
-                            {
-                                Amount   = perFrameDamageMultiplied,
-                                Receiver = parentHealth,
-                                Sender   = senderEntity,
-                                Point    = point,
-                                CreatedBy = entity
-                            };
-                            // Write the new event
-                            var newDamageEntity = CommandBuffer.CreateEntity(unfilteredChunkIndex);
-                            CommandBuffer.AddComponent(unfilteredChunkIndex, newDamageEntity, damageMessage);
-                        }
-                        
-                        
-                        if (hasPhysicsDeath && pendingDamage)
-                        {
-                            var direction = LocalToWorldFromEntity[entity].Position - LocalToWorldFromEntity[senderEntity].Position ;
-                            healthPhysicsDeaths[i]= new HealthPhysicsDeath
-                            {
-                                Force = perFrameDamage,
-                                Direction = direction,
-                                Point = point
-                            };
-                        }
-                        
-                        if (hasFeedback)
-                        {
-                            healthFeedbacks[i] = new HealthFeedback
-                            {
-                                LastFrameDamage = perFrameDamage
-                                //Value = point
-                            };
-                        }
-                        
-                        // Clear the damage buffer
-                        damageBuffer.Clear();
-                        
-                        // Update info(deprecated for below)
-                        //health.LastDamageValue   = lastDamage;
-                        //health.LastDamagerEntity = senderEntity;
-                        
-                        // this could be moved to another job specifically querying for the state component on a per chunk basis
-                        if (hasState)
-                        {
-                            // Update per frame changes from damage events
-                            var state = healthStates[i];                            
-                            // Zero out damage, a bit hacky but should work without needing complexity
-                            if (state.Invulnerable)
-                                perFrameDamage = 0;
-                            state.LastDamagerEntity = senderEntity;
-                            state.LastDamageValue   = lastDamage;
-                            state.TimeLastHurt      = ElapsedTime;
-                            state.TotalDamage       += perFrameDamage;
-                            
-                            healthStates[i] = state;
-                        }
-                        
-                        // Subtract total damage from health
-                        health.Value -= perFrameDamage;
-                        healths[i] = health;
-                    }
+                    m.Dispose();
+                    multipliers      = (float*)chunk.GetRequiredComponentDataPtrRO(ref this.HealthMultiplierTypeHandle);
                 }
+                
+                var entityEnumerator = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
+
+                while (entityEnumerator.NextEntityIndex(out var entityIndex))
+                {
+                    var entity       = entities[entityIndex];
+                    var damageBuffer = damageBuffers[entityIndex];
+                    var multiplier   = hasMultiplier ? multipliers[entityIndex] : 1.0f;
+                    
+                    
+                    var senderEntity             = Entity.Null;
+                    var damage           = 0f;
+                    var perFrameDamageMultiplied = 0f;
+                    var point                    = float3.zero;
+                    
+                    // Get sum total of all the damage in the buffer
+                    for (var j = 0; j < damageBuffer.Length; j++)
+                    {
+                        var multipliedDamage = math.mul(damageBuffer[j].Value.Amount, multiplier);
+                        perFrameDamageMultiplied += multipliedDamage;
+
+                        senderEntity =  damageBuffer[j].Value.Sender;
+                        damage       += damageBuffer[j].Value.Amount;
+                        point        =  damageBuffer[j].Value.Point;
+                    }
+                    // Clear the damage buffer
+                    damageBuffer.Clear();
+
+                    if (chunk.IsComponentEnabled(ref HealthTypeHandle, entityIndex) && damage > 0)
+                    {
+                        healths[entityIndex] = new float3(healths[entityIndex].x - damage, healths[entityIndex].y, damage);
+                        //Debug.Log($"health new value :{healths[entityIndex].x}");
+                    }
+                    
+                }
+                
             }
         }
         
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            state.Dependency = new ProcessDamageEventsJob
+            /*state.Dependency = new IndexDamageJob
             {
-                DamageEventBuffer = SystemAPI.GetBufferLookup<HealthDamageBuffer>(),
-                DestroyCommandBuffer = SystemAPI.GetSingletonRW<DestroyCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged),
-
-            }.Schedule(state.Dependency);
+                StreamReader         = SystemAPI.GetSingletonRW<DamageWorldSingleton>().ValueRW.GetDamageStreamReader(),
+                EntityDamageIndexMap = SystemAPI.GetSingletonRW<DamageWorldSingleton>().ValueRW.DamageWorld.EntityDamageIndexMap.AsParallelWriter()
+            }.Schedule(SystemAPI.GetSingletonRW<DamageWorldSingleton>().ValueRW.Count, 32, state.Dependency);*/
+            state.Dependency = new EntityDamageJob
+            {
+                EntityDamageIndexMap = SystemAPI.GetSingletonRW<DamageWorldSingleton>().ValueRW.DamageWorld.EntityDamageIndexMap
+            }.ScheduleParallel(state.Dependency);
             
-            state.Dependency = new ApplyHealthJob
+            /*state.Dependency = new GatherDamageInstancesJob
             {
-                CommandBuffer                = SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
-                ElapsedTime                  = (float)SystemAPI.Time.ElapsedTime,
+                HealthDamageBufferLookup = SystemAPI.GetBufferLookup<HealthDamageBuffer>(),
+                DestroyCommandBuffer     = SystemAPI.GetSingletonRW<DestroyCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged),
+                EntityType               = SystemAPI.GetEntityTypeHandle(),
+                DamageInstanceTypeRO     = SystemAPI.GetComponentTypeHandle<DamageEvent>(true),
+            }.Schedule(collectDamageQuery, state.Dependency);*/
+            
+            state.Dependency = new PropagateDamageChildToParent
+            {
+                EntityType               = SystemAPI.GetEntityTypeHandle(),
+                HealthParentTypeRO       = SystemAPI.GetComponentTypeHandle<HealthParent>(true),
+                HealthDamageBufferLookup = SystemAPI.GetBufferLookup<HealthDamageBuffer>(),
+                HealthDataTypeRW         = SystemAPI.GetComponentTypeHandle<HealthData>()
+            }.Schedule(damageUpdateWithHealthParentQuery, state.Dependency);
+            
+            state.Dependency = new ApplyDamageJob
+            {
+                LastSystemVersion            = state.LastSystemVersion,
                 EntityType                   = SystemAPI.GetEntityTypeHandle(),
                 HealthTypeHandle             = SystemAPI.GetComponentTypeHandle<HealthData>(),
                 HealthMultiplierTypeHandle   = SystemAPI.GetComponentTypeHandle<HealthMultiplier>(true),
-                ParentHealthTypeHandle       = SystemAPI.GetComponentTypeHandle<HealthParent>(true),
-                HealthPhysicsDeathTypeHandle = SystemAPI.GetComponentTypeHandle<HealthPhysicsDeath>(),
-                HealthBufferTypeHandle       = SystemAPI.GetBufferTypeHandle<HealthDamageBuffer>(),
-                HealthStateTypeHandle        = SystemAPI.GetComponentTypeHandle<HealthState>(),
-                HealthFeedbackTypeHandle     = SystemAPI.GetComponentTypeHandle<HealthFeedback>(),
-                LocalToWorldFromEntity       = SystemAPI.GetComponentLookup<LocalToWorld>(true),
-                LastSystemVersion            = state.LastSystemVersion
-            }.ScheduleParallel(healthQuery, state.Dependency);
+                HealthBufferTypeHandle       = SystemAPI.GetBufferTypeHandle<HealthDamageBuffer>()
+            }.ScheduleParallel(updatedDamageQuery, state.Dependency);
+            
+            state.Dependency = new ClearDamageJob
+            {
+                DamageWorld = SystemAPI.GetSingletonRW<DamageWorldSingleton>().ValueRW.DamageWorld
+            }.Schedule(state.Dependency);
+            
+            //state.Dependency  = NativeStream.ScheduleConstruct(out CollisionEventDataStream, new NativeArray<int>(), state.Dependency , Allocator.Persistent);
         }
 
         [BurstCompile]
-        public void OnDestroy(ref SystemState state) {}
+        public void OnDestroy(ref SystemState state)
+        {
+            SystemAPI.GetSingleton<DamageWorldSingleton>().Dispose();
+            state.EntityManager.RemoveComponent<DamageWorldSingleton>(state.SystemHandle);
+        }
     }
 }

@@ -29,6 +29,7 @@ namespace Junk.Transforms
             
             rotationEulerQuery = new EntityQueryBuilder(Allocator.Temp)
                 .WithAllRW<LocalTransform>()
+                .WithAnyRW<RotationEulerXYZ, PostRotationEulerXYZ>()
                 //.WithOptions(EntityQueryOptions.FilterWriteGroup)
                 .Build(ref state);
             

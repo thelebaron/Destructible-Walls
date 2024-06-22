@@ -6,7 +6,7 @@ namespace Junk.Entities
     /// Denotes an entity that can bleed.
     /// Todo move to Junk.Game.Components
     /// </summary>
-    public struct Bleeds : IComponentData
+    public struct Bleeds : IComponentData, IEnableableComponent
     {
         
     }

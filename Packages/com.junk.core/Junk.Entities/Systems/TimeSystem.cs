@@ -11,7 +11,7 @@ namespace Junk.Entities
     /// A timer that increments by delta time.
     /// </summary>
     [Serializable]
-    public struct Timer : IComponentData
+    public struct Timer : IComponentData, IEnableableComponent
     {
         public float Value;
         
@@ -32,12 +32,19 @@ namespace Junk.Entities
     /// <summary>
     /// Simple component that counts down to 0 using delta time, when zero the entity will be destroyed.
     /// </summary>
-    public struct LifeTime : IComponentData
+    public struct TimeDestroy : IComponentData
     {
         public float Value;
+        
+        // implicit operator
+        public static implicit operator float(TimeDestroy timeDestroy)
+        {
+            return timeDestroy.Value;
+        }
     }
     
     [BurstCompile]
+    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
     public partial struct TimeSystem : ISystem
     {
@@ -48,17 +55,18 @@ namespace Junk.Entities
         [BurstCompile]
         public void OnCreate(ref  SystemState state)
         {
-            var builder = new EntityQueryBuilder(Allocator.Temp);
-            builder.WithAllRW<Cooldown>();
-            cooldownQuery      = state.GetEntityQuery(builder);
+            cooldownQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<Cooldown>()
+                .Build(ref state);
             
-            builder            = new EntityQueryBuilder(Allocator.Temp);
-            builder.WithAllRW<LifeTime>();
-            lifeTimeQuery      = state.GetEntityQuery(builder);
+            lifeTimeQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<TimeDestroy>()
+                .WithDisabledRW<Destroy>()
+                .Build(ref state);
             
-            builder            = new EntityQueryBuilder(Allocator.Temp);
-            builder.WithAllRW<Timer>();
-            timerQuery         = state.GetEntityQuery(builder);
+            timerQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<Timer>()
+                .Build(ref state);
             
             var timeScaleEntity = state.EntityManager.CreateEntity();
             state.EntityManager.AddComponentData(timeScaleEntity, new TimeScale {Value = 1});
@@ -87,16 +95,16 @@ namespace Junk.Entities
         private struct LifeTimeJob : IJobChunk
         {
             public float                         DeltaTime;
-            public ComponentTypeHandle<LifeTime> LifeTimeTypeHandle;
+            public ComponentTypeHandle<TimeDestroy> LifeTimeTypeHandle;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var lifeTimes = chunk.GetNativeArray<LifeTime>(ref LifeTimeTypeHandle);
+                var lifeTimes = chunk.GetNativeArray<TimeDestroy>(ref LifeTimeTypeHandle);
                 var count     = chunk.Count;
                 for (var i = 0; i < count; i++)
                 {
                     var lifeTime = lifeTimes[i];
-                    lifeTime = new LifeTime
+                    lifeTime = new TimeDestroy
                     {
                         Value = math.select(0, lifeTime.Value - DeltaTime, lifeTime.Value > 0)
                     };
@@ -124,6 +132,30 @@ namespace Junk.Entities
                 }
             }
         }
+        
+        
+        [BurstCompile]
+        public unsafe struct LifeTimeDestroyJob : IJobChunk
+        {
+            public ComponentTypeHandle<Destroy>  DestroyHandle;
+            public ComponentTypeHandle<TimeDestroy> LifeTimeHandle;
+            public float                         DeltaTime;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref this.LifeTimeHandle);
+
+                var e = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
+                while (e.NextEntityIndex(out var entityIndex))
+                {
+                    remainings[entityIndex] = math.max(0, remainings[entityIndex] - this.DeltaTime);
+                    if (remainings[entityIndex] == 0)
+                    {
+                        chunk.SetComponentEnabled(ref this.DestroyHandle, entityIndex, true);
+                    }
+                }
+            }
+        }
 
         [BurstCompile]
         public void OnUpdate(ref  SystemState state)
@@ -135,49 +167,18 @@ namespace Junk.Entities
                 
             }.Schedule(cooldownQuery, state.Dependency);
             
-            state.Dependency = new LifeTimeJob
-            {
-                DeltaTime = SystemAPI.Time.DeltaTime,
-                LifeTimeTypeHandle = SystemAPI.GetComponentTypeHandle<LifeTime>()
-            }.Schedule(lifeTimeQuery, state.Dependency);
-            
             state.Dependency = new TimerJob
             {
                 DeltaTime = SystemAPI.Time.DeltaTime,
                 TimerTypeHandle = SystemAPI.GetComponentTypeHandle<Timer>()
             }.Schedule(timerQuery, state.Dependency);
-        }
-    }
-    
-    [BurstCompile]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
-    public partial struct DestroySystem : ISystem
-    {
-        [BurstCompile]
-        public void OnCreate(ref SystemState state)
-        {
-            state.RequireForUpdate<DestroyCommandBufferSystem.Singleton>();
-        }
-        
-        [BurstCompile]
-        public void OnUpdate(ref SystemState state)
-        {
-            state.Dependency = new LifeTimeJob
+            
+            state.Dependency = new LifeTimeDestroyJob
             {
-                CommandBuffer = SystemAPI.GetSingleton<DestroyCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged)
-            }.Schedule(state.Dependency);
-        }
-
-        [BurstCompile]
-        partial struct LifeTimeJob : IJobEntity
-        {
-            public EntityCommandBuffer CommandBuffer;
-
-            public void Execute(Entity entity, in LifeTime lifeTime)
-            {
-                if (lifeTime.Value <= 0)
-                    CommandBuffer.DestroyEntity(entity);
-            }
+                DestroyHandle  = SystemAPI.GetComponentTypeHandle<Destroy>(),
+                LifeTimeHandle = SystemAPI.GetComponentTypeHandle<TimeDestroy>(),
+                DeltaTime      = SystemAPI.Time.DeltaTime
+            }.ScheduleParallel(lifeTimeQuery, state.Dependency);
         }
     }
 }

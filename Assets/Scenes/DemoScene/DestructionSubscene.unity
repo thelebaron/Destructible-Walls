@@ -227,6 +227,144 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1562910196
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1562910201}
+  - component: {fileID: 1562910200}
+  - component: {fileID: 1562910199}
+  - component: {fileID: 1562910198}
+  - component: {fileID: 1562910197}
+  m_Layer: 0
+  m_Name: Cube
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1562910197
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562910196}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.99999994, z: 1.0000001}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1562910198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562910196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ded9764efc8d452fa675bfe123dd8d2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FractureCache: {fileID: 11400000, guid: 691e2acecaffa7c478a8d99e3906cd1e, type: 2}
+  insideMaterial: {fileID: 0}
+  outsideMaterial: {fileID: 0}
+  breakForce: 100
+  FractureWorkingData:
+    RootCache: {fileID: 0}
+    gameObject: {fileID: 0}
+    name: new Destructible
+    seed: 3
+    density: 500
+    totalChunks: 20
+    mesh: {fileID: 0}
+    insideMaterial: {fileID: 0}
+    outsideMaterial: {fileID: 0}
+    jointBreakForce: 100
+    totalMass: 0
+    nodes: []
+--- !u!23 &1562910199
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562910196}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1562910200
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562910196}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1562910201
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562910196}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.25, y: 3.53, z: 3.19}
+  m_LocalScale: {x: 2.0165, y: 1.7714751, z: 0.27672428}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1714660099
 GameObject:
   m_ObjectHideFlags: 0
@@ -263,11 +401,11 @@ MonoBehaviour:
     y: -9.81
     z: -0
   m_SolverIterationCount: 4
-  m_EnableSolverStabilizationHeuristic: 0
+  m_EnableSolverStabilizationHeuristic: 1
   m_MultiThreaded: 1
   m_SynchronizeCollisionWorld: 0
-  m_IncrementalDynamicBroadphase: 0
-  m_IncrementalStaticBroadphase: 0
+  m_IncrementalDynamicBroadphase: 1
+  m_IncrementalStaticBroadphase: 1
 --- !u!4 &1714660102
 Transform:
   m_ObjectHideFlags: 0
@@ -339,12 +477,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ded9764efc8d452fa675bfe123dd8d2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FractureNodeAsset: {fileID: 11400000, guid: 467c97d08a9c8a343b6e05300489ecbe, type: 2}
+  FractureCache: {fileID: 11400000, guid: 467c97d08a9c8a343b6e05300489ecbe, type: 2}
   insideMaterial: {fileID: 0}
   outsideMaterial: {fileID: 0}
   breakForce: 100
   FractureWorkingData:
-    RootNodeAsset: {fileID: 0}
+    RootCache: {fileID: 0}
     gameObject: {fileID: 0}
     name: new Destructible
     seed: 3
@@ -451,4 +589,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 1714660102}
   - {fileID: 759336801}
+  - {fileID: 1562910201}
   - {fileID: 2088526426}

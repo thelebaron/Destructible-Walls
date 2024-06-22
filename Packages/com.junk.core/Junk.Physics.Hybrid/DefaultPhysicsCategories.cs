@@ -23,6 +23,13 @@ namespace Junk.Physics.Hybrid
          * missing: Trigger
          */
         
+        public static PhysicsCategoryTags RagdollRigidbodyKinematicBelongsTo()
+        {
+            var belongsTo = new PhysicsCategoryTags();
+            belongsTo.Category08 = true; // Ragdolls
+            return belongsTo;
+        }
+        
         /// <summary>
         /// Character predefined filters
         /// todo rename for character ragdoll
@@ -55,7 +62,7 @@ namespace Junk.Physics.Hybrid
         /// Character predefined filters
         /// todo rename for character ragdoll
         /// </summary>
-        public static PhysicsCategoryTags DynamicBelongsTo()
+        public static PhysicsCategoryTags Ragdoll_DynamicBelongsTo()
         {
             var belongsTo = new PhysicsCategoryTags();
             belongsTo.Category10 = true;  // Character Ragdoll Collision
@@ -66,17 +73,40 @@ namespace Junk.Physics.Hybrid
         /// Character predefined filters
         /// todo rename for character ragdoll
         /// </summary>
-        public static PhysicsCategoryTags DynamicCollidesWith()
+        public static PhysicsCategoryTags Ragdoll_DynamicCollidesWith()
         {
             var belongsTo = new PhysicsCategoryTags(); 
             belongsTo.Category00 = true; // Static Env
             belongsTo.Category01 = true; // Kineamtic Env
             belongsTo.Category02 = true; // Dynamic Env
-            belongsTo.Category03 = true;  // Characters
+            belongsTo.Category03 = true; // Characters
             belongsTo.Category04 = true; // Vehicles 
             belongsTo.Category05 = true; // Projectiles 
             belongsTo.Category10 = true; // Character Ragdoll Collision
             return belongsTo;
         }
+        
+        /// <summary>
+        /// Character predefined filters
+        /// todo rename for character ragdoll
+        /// </summary>
+        public static PhysicsCategoryTags Ragdoll_BulletsCollidesWith()
+        {
+            var belongsTo = new PhysicsCategoryTags(); 
+            belongsTo.Category05 = true; // Projectiles 
+            return belongsTo;
+        }
+        
+        // Characters
+        /// <summary>
+        /// Character overlap belongs to and collides with Characters layer(03)
+        /// </summary>
+        public static PhysicsCategoryTags CharacterOverlapQueries()
+        {
+            var belongsTo = new PhysicsCategoryTags();
+            belongsTo.Category03 = true; // Characters
+            return belongsTo;
+        }
+        
     }
 }

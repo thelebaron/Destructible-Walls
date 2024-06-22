@@ -4,6 +4,6 @@
     {
         ThirdPerson,
         FirstPerson,
-        FreeLook
+        Cinematic,
     }
 }

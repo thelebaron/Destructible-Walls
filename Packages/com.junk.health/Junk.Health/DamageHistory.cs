@@ -15,7 +15,7 @@ namespace Junk.Hitpoints
         public float Damage;
         public Entity Instigator;
         public Entity Target;
-        public DamageInstance LastDamageInstance;
+        public DamageData LastDamageData;
     
     }
 

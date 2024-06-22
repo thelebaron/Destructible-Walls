@@ -15,7 +15,7 @@ namespace Junk.Cameras
     {
         private EntityQuery                            billboardQuery;
         private EntityQuery                            cameraQuery;
-        private ComponentTypeHandle<MainCamera>        mainCameraType;
+        private ComponentTypeHandle<MainCameraData>        mainCameraType;
         private ComponentTypeHandle<LocalToWorld>      localToWorldType;
         private ComponentTypeHandle<LocalTransform>    localTransformType;
         private ComponentTypeHandle<Billboard>         billboardType;
@@ -164,10 +164,10 @@ namespace Junk.Cameras
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<MainCamera>();
+            state.RequireForUpdate<MainCameraData>();
 
             var builderCamera = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<MainCamera>();
+                .WithAll<MainCameraData>();
             cameraQuery = state.GetEntityQuery(builderCamera);
 
             var builder = new EntityQueryBuilder(Allocator.Temp)
@@ -177,7 +177,7 @@ namespace Junk.Cameras
             .WithAny<BillboardVelocity,BillboardSimple>();
             billboardQuery   = state.GetEntityQuery(builder);
             
-            mainCameraType   = state.GetComponentTypeHandle<MainCamera>(true);
+            mainCameraType   = state.GetComponentTypeHandle<MainCameraData>(true);
             localToWorldType = state.GetComponentTypeHandle<LocalToWorld>(true);
             localTransformType     = state.GetComponentTypeHandle<LocalTransform>();
             billboardType    = state.GetComponentTypeHandle<Billboard>(true);

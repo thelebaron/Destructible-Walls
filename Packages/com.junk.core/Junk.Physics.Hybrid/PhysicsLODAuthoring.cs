@@ -1,9 +1,8 @@
-﻿using Junk.Physics;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Junk.Entities
+namespace Junk.Physics.Hybrid
 {
     public class PhysicsLODAuthoring : MonoBehaviour
     {

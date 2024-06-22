@@ -8,8 +8,9 @@ using Unity.Transforms;
 namespace Junk.Transforms
 {
     [BurstCompile]    
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateAfter(typeof(TransformSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
-    [UpdateInGroup(typeof(TransformSystemGroup))]
     public partial struct VelocitySystem : ISystem
     {
         private EntityQuery                          query;

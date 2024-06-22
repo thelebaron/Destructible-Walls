@@ -1,0 +1,29 @@
+{
+    "name": "Junk.Fracture",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Entities",
+        "Unity.Entities.Graphics",
+        "Unity.Burst",
+        "Unity.Mathematics",
+        "Unity.Deformations",
+        "Unity.Physics",
+        "Unity.Collections",
+        "Unity.Transforms",
+        "Junk.Math",
+        "Junk.Collections",
+        "Junk.Entities",
+        "Junk.Health"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Packages/com.junk.fracture/Junk.Fracture.Hybrid/NvBlast/x64/NvBlast_x64.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

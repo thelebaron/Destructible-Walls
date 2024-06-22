@@ -6,6 +6,7 @@
         "Unity.Entities",
         "Unity.Collections",
         "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
         "Unity.Transforms",
         "UnityEngine.UI"
     ],

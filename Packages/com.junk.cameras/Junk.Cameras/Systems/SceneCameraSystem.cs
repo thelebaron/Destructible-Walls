@@ -1,39 +1,81 @@
 ﻿#if UNITY_EDITOR
 //[WorldSystemFilter(WorldSystemFilterFlags.Editor)]
 using Junk.Entities;
+using Junk.Entities.Editor;
 using Junk.Transforms;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Junk.Cameras
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
     [UpdateAfter(typeof(MainCameraSystem))]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
     public partial class SceneCameraSystem : SystemBase
     {
+        private InputAction fKeyAction;
+        
         protected override void OnCreate()
         {
             RequireForUpdate<UnmanagedKeyboard>();
             RequireForUpdate<UnmanagedMouse>();
+            
+            fKeyAction = new InputAction("FKey", binding: "<Keyboard>/f");
+            fKeyAction.Enable();
+            fKeyAction.performed += OnFKeyPressed;
+        }
+        
+        private void OnFKeyPressed(InputAction.CallbackContext obj)
+        {
+            Debug.Log(" F key pressed ");
         }
         
         protected override void OnUpdate()
         {
             var keyboard = SystemAPI.GetSingleton<UnmanagedKeyboard>();
             var mouse    = SystemAPI.GetSingleton<UnmanagedMouse>();
+            var view     = SceneView.lastActiveSceneView;
+            //Debug.Log(" MainCameraSystem " );
+            var focusOnSelected = keyboard.fKey.isPressed;
+#if UNITY_EDITOR
+            if (Event.current != null && Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.F)
+            {
+                focusOnSelected = Keyboard.current.fKey.isPressed;
+                
+                // Consume the event to prevent it from being processed further
+                //Event.current.Use();
+            }
+#endif
+            //Debug.Log(" selected " + focusOnSelected + " " + EntitySelection.IsSelected + " view:" + isViewNull);
+            /* conflict with regular game
+             if (leftButtonIsPressed || rightButtonIsPressed)
+                Cursor.visible = false;
+            else
+                Cursor.visible = true;*/
+            /*Debug.Log(focusOnSelected);
+            if (focusOnSelected)
+            {
+                var pos = float3.zero;
+                
+                var selectedEntity = EntitySelection.Entity;
+                var hasLocalToWorld = EntityManager.HasComponent<LocalToWorld>(selectedEntity);
+                Debug.Log(" selected " + selectedEntity + " " + hasLocalToWorld + " " + EntityManager.HasComponent<LocalToWorld>(selectedEntity));
+                if (hasLocalToWorld)
+                    pos = EntityManager.GetComponentData<LocalToWorld>(selectedEntity).Position;
+                
+                view.pivot = hasLocalToWorld ? EntityManager.GetComponentData<LocalToWorld>(selectedEntity).Position : view.pivot;
+            }*/
             
             var up                   = keyboard.spaceKey.isPressed;
             var down                 = keyboard.leftCtrlKey.isPressed;
             var leftButtonIsPressed  = mouse.leftButton.isPressed;
             var rightButtonIsPressed = mouse.rightButton.isPressed;
 
-            /* conflict with regular game
-             if (leftButtonIsPressed || rightButtonIsPressed)
-                Cursor.visible = false;
-            else
-                Cursor.visible = true;*/
+
             
             var leftButtonReleasedThisFrame  = mouse.leftButton.wasReleasedThisFrame;
             var rightButtonReleasedThisFrame = mouse.rightButton.wasReleasedThisFrame;
@@ -50,17 +92,17 @@ namespace Junk.Cameras
             newDelta *= -1;
 
 
-            foreach (var (localTransform, mainCamera, sceneCamera, rotationEulerXYZ, localToWorld, entity) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MainCamera>, RefRW<SceneCamera>, RefRW<RotationEulerXYZ>, RefRO<LocalToWorld>>().WithAll<CameraReference>().WithEntityAccess())
+            foreach (var (localTransform, mainCamera, sceneCamera, rotationEulerXYZ, localToWorld, entity) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MainCameraData>, RefRW<SceneCamera>, RefRW<RotationEulerXYZ>, RefRO<LocalToWorld>>().WithAll<Camera>().WithEntityAccess())
             {
-                var reference = EntityManager.GetComponentObject<CameraReference>(entity);
-                if(reference.Camera == null)
+                var reference = EntityManager.GetComponentObject<Camera>(entity);
+                if(reference == null)
                     return;
                 
-                localTransform.ValueRW.Position = reference.Camera.transform.position;
-                localTransform.ValueRW.Rotation = reference.Camera.transform.rotation;
+                localTransform.ValueRW.Position = reference.transform.position;
+                localTransform.ValueRW.Rotation = reference.transform.rotation;
                 
-                mainCamera.ValueRW.NearClipPlane  = reference.Camera.nearClipPlane;
-                mainCamera.ValueRW.Orthographic   = reference.Camera.orthographic;
+                mainCamera.ValueRW.NearClipPlane  = reference.nearClipPlane;
+                mainCamera.ValueRW.Orthographic   = reference.orthographic;
                 mainCamera.ValueRW.LocalToWorldRO = new LocalToWorld{Value = float4x4.TRS(localTransform.ValueRW.Position, localTransform.ValueRW.Rotation, Vector3.one)};
                 
                             

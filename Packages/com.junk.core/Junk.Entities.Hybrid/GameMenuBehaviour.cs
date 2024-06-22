@@ -10,41 +10,84 @@ namespace Junk.Entities.Hybrid
     [RequireComponent(typeof(UIDocument))]
     public class GameMenuBehaviour : MonoBehaviour
     {
-        public UIDocument    UIDocument;
-        public VisualElement Root;
-        public bool          StartDisabled;
-        private void Start()
+        protected VisualElement Root => uiDocument.rootVisualElement;
+        public    bool          StartDisabled;
+
+        private   UIDocument    uiDocument;
+        protected World         world;
+        protected EntityManager entityManager;
+        protected EntityQuery   query;
+        protected Entity        gameEntity;
+
+        protected virtual void Start()
         {
-            Assert.IsNotNull(UIDocument);
-            Root = UIDocument.rootVisualElement;
-            //Root.SetEnabled(false);
+            uiDocument = GetComponent<UIDocument>();
             
             // Make it not visible on screen.
             Root.style.display = DisplayStyle.None;
-       
-            // Make it visible on screen.
-            //Root.style.display = DisplayStyle.Flex;
-
         }
 
-        private void Update()
+        private bool GetWorld()
         {
-            var world = World.DefaultGameObjectInjectionWorld;
-            if (world == null)
+            if (world != null)
+                return true;
+            
+            if (World.DefaultGameObjectInjectionWorld == null)
             {
-                return;
+                return false;
             }
             
-            var entityManager = world.EntityManager;
-            var query         = entityManager.CreateEntityQuery(typeof(Game));
+            world = World.DefaultGameObjectInjectionWorld;
+            
+            entityManager = world.EntityManager;
+            query         = entityManager.CreateEntityQuery(typeof(Game));
+            
+            gameEntity = query.GetSingletonEntity();
+            
+            if (!entityManager.HasComponent<GameMenu>(gameEntity))
+            {
+                //Debug.Log("Adding GameMenu component");
+                entityManager.AddComponent<GameMenu>(gameEntity);
+                //entityManager.AddComponentObject(gameEntity, new GameMenuRef {GameMenuBehaviour = this});
+                
+                entityManager.SetComponentEnabled<GameMenu>(gameEntity, true);
+                
+                if (StartDisabled)
+                {
+                    entityManager.SetComponentEnabled<GameMenu>(gameEntity, false);
+                }
+            }
 
+            return true;
+        }
+        
+        protected void OnLoadPlayableSubscene()
+        {
+            var menu = entityManager.GetComponentData<GameMenu>(gameEntity);
+            menu.PlayableSceneIsLoaded = true;
+            entityManager.SetComponentData(gameEntity, menu);
+        }
+        
+        protected void OnUnloadPlayableSubscene()
+        {
+            var menu = entityManager.GetComponentData<GameMenu>(gameEntity);
+            menu.PlayableSceneIsLoaded = false;
+            entityManager.SetComponentData(gameEntity, menu);
+        }
+
+        protected virtual void Update()
+        {
+            if(!GetWorld())
+                return;
+            
+            gameEntity = query.GetSingletonEntity();
+            /*
             if (query.CalculateEntityCount() < 1)
             {
-                Debug.Log("No entity");
+                Debug.LogError("Error missing menu entity");
                 return;
             }
             
-            var gameEntity = query.GetSingletonEntity();
             if (!entityManager.HasComponent<GameMenu>(gameEntity))
             {
                 entityManager.AddComponent<GameMenu>(gameEntity);
@@ -56,11 +99,7 @@ namespace Junk.Entities.Hybrid
                 {
                     entityManager.SetComponentEnabled<GameMenu>(gameEntity, false);
                 }
-            }
-            
-            enabled = false;
+            }*/
         }
-
-        
     }
 }

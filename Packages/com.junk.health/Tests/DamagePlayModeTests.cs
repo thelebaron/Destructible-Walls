@@ -43,7 +43,7 @@ namespace Junk.Hitpoints.Tests
             //clientSceneSystem.UnloadScene(clientScene);
                 
             var e1 = entityManager.CreateEntity();
-            HealthConversionUtility.AddComponents(e1, entityManager);
+            HealthBakingUtility.AddComponents(e1, entityManager);
             
             // Many ECS tests will only pass if the Jobs Debugger enabled;
             // force it enabled for all tests, and restore the original value at teardown.

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Junk.Math;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities.Serialization;
@@ -15,9 +16,8 @@ namespace Junk.Core.Creation
     /// See https://docs.unity3d.com/ScriptReference/Mesh.html
     /// </summary>
     [Serializable]
-    public class Shape
+    public struct Shape
     {
-        [SerializeField] public string       name;
         [SerializeField] public float4x4[]   bindPoses;
         [SerializeField] public BoneWeight[] boneWeights;
         [SerializeField] public ShapeBounds  shapeBounds;
@@ -40,7 +40,6 @@ namespace Junk.Core.Creation
         /// <param name="mesh">UnityEngine mesh to serialize</param>
         public Shape(Mesh mesh)
         {
-            name = mesh.name;
             shapeBounds = new ShapeBounds
             {
                 Center  = mesh.bounds.center,
@@ -99,7 +98,7 @@ namespace Junk.Core.Creation
         public Mesh GetMesh()
         {
             var mesh = new Mesh();
-            mesh.name = name;
+
             mesh.bounds = new Bounds
             {
                 center  = shapeBounds.Center,
@@ -193,7 +192,6 @@ namespace Junk.Core.Creation
         
         #region Types
 
-        [Serializable]
         public struct ShapeBounds
         {
             public float3 Center;

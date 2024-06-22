@@ -1,6 +1,8 @@
 using System.Linq;
-using Project.Scripts.Utils;
+using Junk.Fracture.Hybrid;
+using Nvidia;
 using UnityEngine;
+using Extensions = Project.Scripts.Utils.Extensions;
 
 namespace Project.Scripts.Fractures
 {
@@ -64,11 +66,10 @@ namespace Project.Scripts.Fractures
             var rb = child.GetComponent<Rigidbody>();
             var mesh = child.GetComponent<MeshFilter>().mesh;
         
-            var overlaps = mesh.vertices
-                .Select(v => child.transform.TransformPoint(v))
-                .SelectMany(v => Physics.OverlapSphere(v, .01f))
-                .Where(o => o.GetComponent<Rigidbody>())
-                .ToSet();
+            var overlaps = Extensions.ToSet(mesh.vertices
+                    .Select(v => child.transform.TransformPoint(v))
+                    .SelectMany(v => Physics.OverlapSphere(v, .01f))
+                    .Where(o => o.GetComponent<Rigidbody>()));
 
             foreach (var overlap in overlaps)
             { 

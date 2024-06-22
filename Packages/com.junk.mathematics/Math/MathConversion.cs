@@ -4,6 +4,11 @@ using UnityEngine;
 
 namespace Junk.Math
 {
+    public static partial class maths
+    {
+
+    }
+    
     public struct ByteBool
     {
         public byte Value;
@@ -68,7 +73,12 @@ namespace Junk.Math
         {
             return (byte) (value ? 1 : 0);
         }
-        
+
+        /*public float toAxisAngle(quaternion q)
+        {
+            var qq = new Quaternion();
+            qq.ToAngleAxis();
+        }*/
         
     }
 

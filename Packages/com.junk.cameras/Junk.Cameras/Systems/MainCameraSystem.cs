@@ -1,8 +1,10 @@
 ﻿using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using Junk.Transforms;
 using Junk.Transforms.Hybrid;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
 
 namespace Junk.Cameras
@@ -12,12 +14,14 @@ namespace Junk.Cameras
     /// </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.Editor | WorldSystemFilterFlags.Default)]
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public partial class MainCameraSystem : SystemBase
+    public partial struct MainCameraSystem : ISystem
     {
-        protected override void OnUpdate()
+        public void OnUpdate(ref SystemState state)
         {
+            /*
             if (!SystemAPI.HasSingleton<MainCamera>())
             {
+                //Debug.Log("MainCamera Sys.");
                 Camera mainCamera = null;
                 // Note using Camera.main may not always work as it requires the camera to be tagged as MainCamera, so we use FindObjectOfType<Camera>()
                 var cameras = Object.FindObjectsOfType(typeof(Camera));
@@ -26,7 +30,7 @@ namespace Junk.Cameras
                     Debug.Log("No cameras found.");
                     return;
                 }
-                
+
                 foreach (var camera in cameras)
                 {
                     if (camera is Camera c && c.gameObject.CompareTag("MainCamera"))
@@ -35,18 +39,13 @@ namespace Junk.Cameras
                         break;
                     }
                 }
-                
+
                 if(mainCamera == null)
                 {
                     Debug.Log("No cameras found.");
                     return;
                 }
 
-                var transformOptions = TransformType.CopyToGameObject;
-                if (mainCamera.gameObject.GetComponent<CameraOptions>() != null)
-                {
-                    transformOptions = mainCamera.gameObject.GetComponent<CameraOptions>().transformType;
-                }
                 var entity = EntityManager.CreateEntity();
                 EntityManager.AddComponent<MainCamera>(entity);
                 //EntityManager.AddComponentData<LocalToWorld>(entity, new LocalToWorld{Value = float4x4.TRS(Vector3.up * 10, quaternion.identity, Vector3.one)});
@@ -55,7 +54,7 @@ namespace Junk.Cameras
 #if UNITY_EDITOR
                 EntityManager.SetName(entity, "# MainCamera");
 #endif
-            
+
                 EntityManager.AddComponentObject(entity, new CameraReference
                 {
                     Camera = mainCamera
@@ -66,11 +65,11 @@ namespace Junk.Cameras
                 });
                 EntityManager.AddComponentData(entity, new HybridTransform
                 {
-                    Options = transformOptions
+                    Options = TransformType.CopyToGameObject
                 });
-                
+
                 //mainCamera.name = "Converted Main Camera";
-                
+
                 EntityManager.AddComponent<RotationEulerXYZ>(entity);
                 const float k_CursorIconSize = 64;
                 EntityManager.AddComponentData(entity, new SceneCamera
@@ -81,34 +80,66 @@ namespace Junk.Cameras
 
                 EntityManager.SetComponentEnabled<SceneCamera>(entity, false);
             }
-            
-            if(SystemAPI.HasSingleton<MainCamera>())
+            if (!SystemAPI.HasSingleton<MainCamera>())
                 return;
-            
-            foreach (var (mainCamera, localToWorld, hybridTransform, localTransform, entity) in SystemAPI.Query<RefRW<MainCamera>, RefRO<LocalToWorld>, RefRO<HybridTransform>, RefRW<LocalTransform>>().WithAll<CameraReference>().WithEntityAccess())
+            */
+
+#if UNITY_EDITOR
+            var isSceneView = !Application.isPlaying;
+#endif
+            foreach (var (mainCamera, localToWorld, hybridTransform, localTransform, entity) in SystemAPI.Query<RefRW<MainCameraData>, RefRO<LocalToWorld>, RefRO<HybridTransform>, RefRW<LocalTransform>>().WithAll<Camera>().WithEntityAccess())
             {
+                var cameraPosition = float3.zero;
+                var cameraRotation = quaternion.identity;
+                
                 // Managed camera copy settings
-                var reference = EntityManager.GetComponentObject<CameraReference>(entity);
-                if (reference.Camera == null)
+                var reference = state.EntityManager.GetComponentObject<Camera>(entity);
+                if (reference == null)
                 {
                     Debug.LogError("CameraReference is null");
                     return;
                 }
+                
+#if UNITY_EDITOR
+                if (isSceneView)
+                {
+                    //Debug.Log("isSceneView");
+                    if (SceneView.lastActiveSceneView.camera != null)
+                    {
+                        
+                        //Debug.Log("SceneView");
+                        cameraPosition = SceneView.lastActiveSceneView.camera.transform.position;
+                        cameraRotation = SceneView.lastActiveSceneView.camera.transform.rotation;
+                        
+                        //reference.Camera.transform.position = cameraPosition;
+                        //reference.Camera.transform.rotation = cameraRotation;
+                        
+                        localTransform.ValueRW.Position = cameraPosition;
+                        localTransform.ValueRW.Rotation = cameraRotation;
+                        
+                        mainCamera.ValueRW.NearClipPlane  = reference.nearClipPlane;
+                        mainCamera.ValueRW.Orthographic   = reference.orthographic;
+                        mainCamera.ValueRW.LocalToWorldRO = localToWorld.ValueRO;
+                        return;
+                    }
+                    
+                }
+#endif
 
                 if (hybridTransform.ValueRO.Options == TransformType.CopyToGameObject)
                 {
-                    reference.Camera.transform.position = localToWorld.ValueRO.Position;
-                    reference.Camera.transform.rotation = localToWorld.ValueRO.Rotation;
+                    reference.transform.position = localToWorld.ValueRO.Position;
+                    reference.transform.rotation = localToWorld.ValueRO.Rotation;
                     return;
                 }
                 if (hybridTransform.ValueRO.Options == TransformType.CopyToEntity)
                 {
-                    localTransform.ValueRW.Position = reference.Camera.transform.position;
-                    localTransform.ValueRW.Rotation = reference.Camera.transform.rotation;
+                    localTransform.ValueRW.Position = reference.transform.position;
+                    localTransform.ValueRW.Rotation = reference.transform.rotation;
                 }
                 
-                mainCamera.ValueRW.NearClipPlane = reference.Camera.nearClipPlane;
-                mainCamera.ValueRW.Orthographic = reference.Camera.orthographic;
+                mainCamera.ValueRW.NearClipPlane  = reference.nearClipPlane;
+                mainCamera.ValueRW.Orthographic   = reference.orthographic;
                 mainCamera.ValueRW.LocalToWorldRO = localToWorld.ValueRO;
                 
                 // Scene camera settings

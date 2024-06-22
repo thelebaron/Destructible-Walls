@@ -2,11 +2,12 @@
     "name": "Junk.Health.Hybrid",
     "rootNamespace": "",
     "references": [
-        "GUID:734d92eba21c94caba915361bd5ac177",
-        "GUID:8819f35a0fc84499b990e90a4ca1911f",
-        "GUID:96c17e17bca3dde4e8df50a918c4c2ee",
-        "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:e0cd26848372d4e5c891c569017e11f1"
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Junk.Entities",
+        "Junk.Health"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

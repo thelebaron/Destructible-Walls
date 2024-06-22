@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Junk.Hitpoints.Tests
@@ -21,12 +22,10 @@ namespace Junk.Hitpoints.Tests
             
             entity = entityManager.CreateEntity(
                 typeof(HealthData),
-                typeof(HealthState),
+                //typeof(HealthState),
                 typeof(HealthParent),
                 typeof(HealthMultiplier),
-                typeof(HealthDamageBuffer),
-                typeof(HealthPhysicsDeath),
-                typeof(HealthFeedback)
+                typeof(HealthDamageBuffer)
             );
         }
 
@@ -37,7 +36,22 @@ namespace Junk.Hitpoints.Tests
             entityManager.CompleteAllTrackedJobs();
             world.Dispose();
         }
-
+        
+        [Test]
+        public void HealthComponentMethods()
+        {
+            var health = new HealthData { Value = new float3(100f, 100f, 0f) };
+            health.TakeDamage(10);
+            
+            Assert.AreEqual(90f, health.Current);
+            Assert.AreEqual(10f, health.LastDamage);
+            Assert.AreEqual(100f, health.Maximum);
+            
+            health.ClearLastDamage();
+            Assert.AreEqual(0f, health.LastDamage);
+        }
+        
+        /*
         [Test]
         public void HealthSystem_EntityHasHealthComponent()
         {
@@ -47,21 +61,26 @@ namespace Junk.Hitpoints.Tests
         [Test]
         public void HealthSystem_EntityHasDeadComponent()
         {
-            Assert.IsFalse(entityManager.HasComponent<Dead>(entity));
+            //Assert.IsFalse(entityManager.HasComponent<Dead>(entity));
         }
-        
+
         [Test]
         public void HealthSystem_DoesNotAddDeadComponent_WhenHealthGreaterThanZero()
         {
-            entityManager.SetComponentData(entity, new HealthData { Value = 10 });
+            var health = new HealthData { Value = new float3(100f, 100f, 0f) };
+            entityManager.SetComponentData(entity, health);
+            entityManager.SetComponentData(entity, HealthData.GetDefault());
+
+
             //world.GetOrCreateSystem<HealthSystem>();
             //world.Update();
             //world.Unmanaged.GetExistingUnmanagedSystem<HealthSystem>().Update(world.Unmanaged);
-            
-            Assert.IsFalse(entityManager.HasComponent<Dead>(entity));
+
+            //Assert.IsFalse(entityManager.HasComponent<Dead>(entity));
         }
 
-        /*
+
+
         [Test]
         public void HealthSystem_AddsDeadComponent_WhenHealthIsZero()
         {

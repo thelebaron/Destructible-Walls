@@ -1,9 +1,12 @@
 ﻿using Unity.Entities;
+using UnityEditor;
+using UnityEngine.Device;
 using UnityEngine.InputSystem;
 
 namespace Junk.Entities
 {
     [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
     internal partial class UnmanagedInputSystem : SystemBase
     {
         protected override void OnCreate()
@@ -15,9 +18,6 @@ namespace Junk.Entities
 
         protected override void OnUpdate()
         {
-            if(!SystemAPI.HasSingleton<UnmanagedMouse>() || !SystemAPI.HasSingleton<UnmanagedKeyboard>())
-                return;
-            
             var mouseQuery    = SystemAPI.GetSingleton<UnmanagedMouse>();
             var keyboardQuery = SystemAPI.GetSingleton<UnmanagedKeyboard>();
             // check for null
@@ -65,6 +65,11 @@ namespace Junk.Entities
             if (Keyboard.current != null)
             {
                 var keyboard = Keyboard.current;
+            #if UNITY_EDITOR
+                var pause = Keyboard.current.pKey.isPressed || Keyboard.current.pauseKey.isPressed;// || Mouse.current.middleButton.isPressed;
+                if(pause)
+                    EditorApplication.isPaused = !EditorApplication.isPaused;
+            #endif
                 
                 keyboardQuery.IsDisconnected = Keyboard.current == null;
 

@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Junk.Math
 {
-    public  static partial class maths
+    public static partial class maths
     {
         private static readonly float3 zeroVector    = new float3(0.0f, 0.0f, 0.0f);
         private static readonly float3 oneVector     = new float3(1f, 1f, 1f);
@@ -21,6 +21,9 @@ namespace Junk.Math
         private static readonly float3 rightVector   = new float3(1f, 0.0f, 0.0f);
         private static readonly float3 forwardVector = new float3(0.0f, 0.0f, 1f);
         private static readonly float3 backVector    = new float3(0.0f, 0.0f, -1f);
+        
+        
+        private static readonly float2 oneVector2     = new float2(1f, 1f);
 
 
         public static float3 zero    => zeroVector;
@@ -31,6 +34,9 @@ namespace Junk.Math
         public static float3 right   => rightVector;
         public static float3 forward => forwardVector;
         public static float3 back    => backVector;
+        
+        public static float2 one2 => oneVector2;
+        
         public static float epsilon => math.EPSILON;
 
         //public static readonly float Epsilon = !MathfInternal.IsFlushToZeroEnabled ? MathfInternal.FloatMinDenormal : MathfInternal.FloatMinNormal;
@@ -258,6 +264,10 @@ namespace Junk.Math
         /// <summary>Returns b if c is true, a otherwise.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static quaternion select(quaternion a, quaternion b, bool c) { return c ? b : a; }
+        
+        /// <summary>Returns b if c is true, a otherwise.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float3 select(float3 a, float3 b, bool c) { return c ? b : a; }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 clampMagnitude(float3 vector, float maxLength)
@@ -991,6 +1001,25 @@ namespace Junk.Math
             float num4 = (float) ((double) from.x * (double) to.y - (double) from.y * (double) to.x);
             float num5 = math.sign((float) ((double) axis.x * (double) num2 + (double) axis.y * (double) num3 + (double) axis.z * (double) num4));
             return num1 * num5;
+        }
+        
+        /// <summary>
+        /// Sets a float3's components to the positive or negative of another float3.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="otherVector"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float3 real(float3 value, float3 otherVector)
+        {
+            value.x = math.select(value.x, -value.x, otherVector.x.IsNegative());
+            value.y = math.select(value.y, -value.y, otherVector.y.IsNegative());
+            value.z = math.select(value.z, -value.z, otherVector.z.IsNegative());
+            
+            /*value.x = otherVector.x < 0.0f ? -value.x : value.x;
+            value.y = otherVector.y < 0.0f ? -value.y : value.y;
+            value.z = otherVector.z < 0.0f ? -value.z : value.z;*/
+            return value;
         }
     }
 }
