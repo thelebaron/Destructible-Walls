@@ -122,16 +122,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FractureCache: {fileID: 11400000, guid: a8acd400cfe9e6142861dae4dc7fbf45, type: 2}
-  FractureWorkingData:
-    RootCache: {fileID: 0}
-    gameObject: {fileID: 0}
-    name: new Destructible
-    seed: 3
-    density: 500
-    totalChunks: 20
-    mesh: {fileID: 0}
-    insideMaterial: {fileID: 0}
-    outsideMaterial: {fileID: 0}
-    jointBreakForce: 100
-    totalMass: 0
-  CleanupRules: 0
+  FracturedObject: {fileID: 6457824574312779879, guid: c74c514b57f529b4b80a4fe5996f23b6,
+    type: 3}

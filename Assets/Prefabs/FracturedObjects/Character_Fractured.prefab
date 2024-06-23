@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2176433887448064647
+--- !u!1 &6457824574312779879
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,23 +8,25 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7502053149863467853}
-  - component: {fileID: 2613507953221871479}
-  - component: {fileID: 8957541821396472868}
+  - component: {fileID: 4457000186747697765}
+  - component: {fileID: 1273084562825243984}
+  - component: {fileID: 6782178441645071343}
+  - component: {fileID: 8067533535122665281}
+  - component: {fileID: 419140791224570869}
   m_Layer: 0
-  m_Name: CharacterBreakable_Fractured
+  m_Name: Character_Fractured
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7502053149863467853
+--- !u!4 &4457000186747697765
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2176433887448064647}
+  m_GameObject: {fileID: 6457824574312779879}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.4, y: 1, z: 2.21}
@@ -33,21 +35,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2613507953221871479
+--- !u!33 &1273084562825243984
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2176433887448064647}
+  m_GameObject: {fileID: 6457824574312779879}
   m_Mesh: {fileID: -3830667402589897459, guid: 053fce98418358544a588ee45e4d8975, type: 3}
---- !u!23 &8957541821396472868
+--- !u!23 &6782178441645071343
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2176433887448064647}
+  m_GameObject: {fileID: 6457824574312779879}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -86,3 +88,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8067533535122665281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6457824574312779879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &419140791224570869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6457824574312779879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f66069cebb94a83a450b04d017fc846, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FractureCache: {fileID: 11400000, guid: a8acd400cfe9e6142861dae4dc7fbf45, type: 2}

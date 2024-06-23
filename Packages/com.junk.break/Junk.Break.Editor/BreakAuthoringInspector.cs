@@ -10,19 +10,6 @@ namespace Junk.Break
     [UnityEditor.CustomEditor(typeof(BreakableAuthoring))]
     public class BreakAuthoringInspector : UnityEditor.Editor
     {
-        private SerializedProperty prefabProperty;
-        
-        private void OnSceneGUI()
-        {
-            var authoring = target as BreakableAuthoring;
-        }
-
-        private void OnEnable()
-        {
-            // Replace "prefabFieldName" with the name of your prefab field in the MonoBehaviour
-            prefabProperty = serializedObject.FindProperty("FracturedObject");
-        }
-
         public override void OnInspectorGUI()
         {
             var breakAuthoring = target as BreakableAuthoring;
@@ -31,10 +18,10 @@ namespace Junk.Break
             {
                 FractureEditorWindow.Open(breakAuthoring);
             }
-            if (breakAuthoring.FractureCache!=null && GUILayout.Button("Reset Cache"))
+            if (breakAuthoring.FractureCache!=null && GUILayout.Button("Delete Cache"))
             {
-                var cache = breakAuthoring.FractureCache;
-                cache.Clear();
+                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(breakAuthoring.FractureCache));
+                breakAuthoring.FractureCache = null;
             }
             
             if(GUILayout.Button("Bake"))

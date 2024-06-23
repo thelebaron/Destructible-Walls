@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Entities;
+using UnityEngine;
 
 namespace Junk.Break.Hybrid
 {
@@ -8,5 +9,23 @@ namespace Junk.Break.Hybrid
     {
         public FractureCache FractureCache;
         public GameObject    FracturedObject;
+    }
+    
+    public class BreakableBaker : Baker<BreakableAuthoring>
+    {
+        public override void Bake(BreakableAuthoring authoring)
+        {
+            // Do not bake if no fracture cache is exists
+            if(authoring.FractureCache == null || authoring.FracturedObject == null)
+                return;
+            
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
+            AddComponent(entity, new Breakable
+            {
+                Prefab = GetEntity(authoring.FracturedObject, TransformUsageFlags.Dynamic)
+            });
+            
+            SetComponentEnabled<Breakable>(entity, false);
+        }
     }
 }

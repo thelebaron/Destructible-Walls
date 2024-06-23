@@ -22,7 +22,11 @@ namespace Junk.Break
             
     }
     
-    
+    public struct Breakable : IComponentData, IEnableableComponent
+    {
+        public Entity Prefab;
+    }
+
     
     
     

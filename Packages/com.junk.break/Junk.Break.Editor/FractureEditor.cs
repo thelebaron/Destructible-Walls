@@ -106,13 +106,11 @@ namespace Junk.Break.Hybrid
 
         public static GameObject CreatePrefab(BreakableAuthoring component)
         {
-            //if(component.FracturedObject != null)
-                //return component.FracturedObject;
-            var meshFilter = component.GetComponent<MeshFilter>();
-            var meshRenderer = component.GetComponent<MeshRenderer>();
-            var materials = meshRenderer.sharedMaterials;
+            var originalFilter = component.GetComponent<MeshFilter>();
+            var originalRenderer = component.GetComponent<MeshRenderer>();
+            var materials = originalRenderer.sharedMaterials;
             
-            if (meshFilter == null)
+            if (originalFilter == null)
             {
                 Debug.LogError("MeshFilter not found");
                 return null;
@@ -132,11 +130,15 @@ namespace Junk.Break.Hybrid
             copy.transform.position   = component.transform.position;
             copy.transform.rotation   = component.transform.rotation;
             copy.transform.localScale = component.transform.localScale;
-
-            copy.AddComponent<MeshFilter>();
-            copy.GetComponent<MeshFilter>().sharedMesh = meshFilter.sharedMesh;
-            copy.AddComponent<MeshRenderer>();
-            copy.GetComponent<MeshRenderer>().sharedMaterials = materials;
+            // standard components
+            var meshFilter = copy.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = originalFilter.sharedMesh;
+            var meshRenderer = copy.AddComponent<MeshRenderer>();
+            meshRenderer.sharedMaterials = materials;
+            
+            // ecs
+            var authoring = copy.AddComponent<FracturedAuthoring>();
+            authoring.FractureCache = component.FractureCache;
             
             PrefabUtility.SaveAsPrefabAsset(copy, "Assets/Prefabs/FracturedObjects/" + name + ".prefab");
             Object.DestroyImmediate(copy);

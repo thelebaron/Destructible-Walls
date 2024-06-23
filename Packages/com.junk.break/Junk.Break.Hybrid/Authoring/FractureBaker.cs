@@ -20,17 +20,17 @@ namespace Junk.Break.Hybrid
         public ushort   SubMeshIndex;
         public int      MaterialIndex;
     }
-    public class FractureBaker : Baker<BreakableAuthoring>
+    
+    public class FractureBaker : Baker<FracturedAuthoring>
     {
-        public override void Bake(BreakableAuthoring authoring)
+        public override void Bake(FracturedAuthoring authoring)
         {
             // Do not bake if no fracture cache is exists
             if(authoring.FractureCache == null)
                 return;
-            
-            var transform        = LocalTransform.FromPositionRotationScale(authoring.transform.position, authoring.transform.rotation, authoring.transform.localScale.x);
-            var entity           = GetEntity(TransformUsageFlags.Dynamic);
-            var fractureChildren = AddBuffer<FractureChild>(entity);
+            var transform         = LocalTransform.FromPositionRotationScale(authoring.transform.position, authoring.transform.rotation, authoring.transform.localScale.x);
+            var entity            = GetEntity(TransformUsageFlags.Dynamic);
+            var fractureChildren  = AddBuffer<FractureChild>(entity);
             
             AddComponent<FractureRoot>(entity);
             AddComponent<Fractured>(entity);

@@ -103,7 +103,13 @@ namespace Junk.Break
                 // enable
                 state.EntityManager.SetComponentEnabled<Fractured>(hit.Entity, true);
             }
-            
+            //Debug.Log($"Hit {hit.Entity} at {hit.Position}");
+            if (state.EntityManager.HasComponent<Breakable>(hit.Entity))
+            {
+                // enable
+                state.EntityManager.SetComponentEnabled<Breakable>(hit.Entity, true);
+            }
+
             if (state.EntityManager.HasComponent<FracturePrefabComponentData>(hit.Entity))
             {
                 var prefab = state.EntityManager.GetComponentData<FracturePrefabComponentData>(hit.Entity).Prefab;
