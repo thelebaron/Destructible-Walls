@@ -1,0 +1,33 @@
+{
+    "name": "Junk.Fracture.Hybrid",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Entities.Graphics",
+        "Unity.Burst",
+        "Unity.Mathematics",
+        "Unity.Deformations",
+        "Unity.Collections",
+        "Unity.Transforms",
+        "Unity.Physics",
+        "Unity.Physics.Hybrid",        
+	"Unity.Physics.Custom",
+        "Junk.Math",
+        "Junk.Collections",
+        "Junk.Entities",
+        "Junk.Physics.Hybrid",
+        "Junk.Fracture"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        ""
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

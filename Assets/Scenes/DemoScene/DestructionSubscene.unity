@@ -257,10 +257,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9062464618633424306, guid: 2a3997ce20b5a3440917a5590600e91f,
         type: 3}
-      propertyPath: FracturedObject
+      propertyPath: FractureCache
       value: 
-      objectReference: {fileID: 6457824574312779879, guid: c74c514b57f529b4b80a4fe5996f23b6,
-        type: 3}
+      objectReference: {fileID: 11400000, guid: a8acd400cfe9e6142861dae4dc7fbf45,
+        type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

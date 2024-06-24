@@ -1,5 +1,4 @@
-﻿using Junk.Break.Hybrid;
-using Unity.Assertions;
+﻿using Unity.Assertions;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -10,7 +9,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using RaycastHit = Unity.Physics.RaycastHit;
 
-namespace Junk.Break
+namespace Junk.Fracture
 {
     public partial struct RaycastDestroySystem : ISystem
     {
@@ -104,10 +103,10 @@ namespace Junk.Break
                 state.EntityManager.SetComponentEnabled<Fractured>(hit.Entity, true);
             }
             //Debug.Log($"Hit {hit.Entity} at {hit.Position}");
-            if (state.EntityManager.HasComponent<Breakable>(hit.Entity))
+            if (state.EntityManager.HasComponent<Fracturable>(hit.Entity))
             {
                 // enable
-                state.EntityManager.SetComponentEnabled<Breakable>(hit.Entity, true);
+                state.EntityManager.SetComponentEnabled<Fracturable>(hit.Entity, true);
             }
 
             if (state.EntityManager.HasComponent<FracturePrefabComponentData>(hit.Entity))

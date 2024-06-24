@@ -1,0 +1,36 @@
+{
+    "name": "Junk.Fracture.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Entities",
+        "Unity.Entities.Editor",
+        "Unity.Entities.Hybrid",
+        "Unity.Entities.UI",
+        "Unity.Entities.UI.Editor",
+        "Unity.Entities.Graphics",
+        "Unity.Burst",
+        "Unity.Mathematics",
+        "Unity.Deformations",
+        "Unity.Collections",
+        "Unity.Transforms",
+        "Unity.Physics",        
+	"Unity.Physics.Custom",
+        "Unity.Physics.Custom.Editor",
+        "Junk.Collections",
+        "Junk.Math",
+        "Junk.Fracture",
+        "Junk.Fracture.Hybrid"
+
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
