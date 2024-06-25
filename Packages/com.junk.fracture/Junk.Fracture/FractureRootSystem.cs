@@ -24,7 +24,7 @@ namespace Junk.Fracture
                 for (int i = 0; i < graphArray.Length; i++)
                 {
                     var node      = graphArray[i].Node;
-                    var isFractured = SystemAPI.IsComponentEnabled<Fractured>(node);
+                    var isFractured = SystemAPI.IsComponentEnabled<IsFractured>(node);
 
                     if (isFractured)
                     {

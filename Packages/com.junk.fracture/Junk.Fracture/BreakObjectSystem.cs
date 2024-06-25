@@ -38,7 +38,7 @@ namespace Junk.Fracture
             
             
             // ReSharper disable once Unity.Entities.MustBeSurroundedWithRefRwRo
-            foreach (var (fractureChildren, localToWorld, localTransform, entity) in SystemAPI.Query<DynamicBuffer<FractureChild>, RefRO<LocalToWorld>, RefRO<LocalTransform>>().WithAll<Fractured>().WithEntityAccess())
+            foreach (var (fractureChildren, localToWorld, localTransform, entity) in SystemAPI.Query<DynamicBuffer<FractureChild>, RefRO<LocalToWorld>, RefRO<LocalTransform>>().WithAll<IsFractured>().WithEntityAccess())
             {
                 foreach (var fractureChild in fractureChildren)
                 {

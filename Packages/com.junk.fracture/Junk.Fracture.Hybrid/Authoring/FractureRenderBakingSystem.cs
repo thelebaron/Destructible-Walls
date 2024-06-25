@@ -26,7 +26,7 @@ namespace Junk.Fracture.Hybrid
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var entities = query.ToEntityArray(Allocator.TempJob);
+            var entities = query.ToEntityArray(Allocator.Temp);
             
             for (int i = 0; i < entities.Length; i++)
             {

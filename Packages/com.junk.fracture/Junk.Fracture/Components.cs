@@ -1,3 +1,4 @@
+using System;
 using Unity.Entities;
 
 namespace Junk.Fracture
@@ -23,9 +24,16 @@ namespace Junk.Fracture
     {
         public Entity Child;
     }
-        
     
-    public struct Fractured : IComponentData, IEnableableComponent
+    /// <summary>
+    /// Added to each fracturable chunk to store an index for nearest neighbor calculations.
+    /// </summary>
+    public struct Fracture : IComponentData
+    {
+        public int Id;
+    }
+    
+    public struct IsFractured : IComponentData, IEnableableComponent
     {
         
     }
@@ -33,16 +41,43 @@ namespace Junk.Fracture
     /// <summary>
     /// All nodes within a fracture object.
     /// </summary>
-    public struct FractureGraph : IBufferElementData, IEnableableComponent
+    public struct FractureGraph : IBufferElementData, IEnableableComponent, IEquatable<Entity>, IComparable<Entity>
     {
         public Entity Node;
         public bool   Destroyed;
         public int    Id;
         
         public static implicit operator Entity(FractureGraph e) => e.Node;
+        
+        public bool Equals(Entity other)
+        {
+            return Node == other;
+        }
+
+        public int CompareTo(Entity other)
+        {
+            return Node.Index.CompareTo(other.Index);
+        }
     }
     
-    
+    public struct Connection : IBufferElementData, IEquatable<Entity>, IComparable<Entity>
+    {
+        public Entity ConnectedEntity;
+
+        public bool Equals(Entity other)
+        {
+            return ConnectedEntity == other;
+        }
+
+        public int CompareTo(Entity other)
+        {
+            return ConnectedEntity.Index.CompareTo(other.Index);
+        }
+        
+        // Implicit operators
+        public static implicit operator Entity(Connection e) => e.ConnectedEntity;
+        public static implicit operator Connection(Entity e) => new Connection {ConnectedEntity = e};
+    }
     
     
     
