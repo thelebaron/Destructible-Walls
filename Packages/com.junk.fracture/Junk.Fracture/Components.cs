@@ -2,26 +2,45 @@ using Unity.Entities;
 
 namespace Junk.Fracture
 {
+    public struct Fracturable : IComponentData, IEnableableComponent
+    {
+        public Entity                           Prefab;
+        public BlobAssetReference<FractureData> Data;
+    }
+
+    /// <summary>
+    /// The root entity of a fracture object.
+    /// </summary>
     public struct FractureRoot : IComponentData
     {
-        
+        public BlobAssetReference<FractureGraphData> data;
     }
     
+    /// <summary>
+    /// A buffer of all child fractures of a fracture entity.
+    /// </summary>
     public struct FractureChild : IBufferElementData
     {
         public Entity Child;
     }
         
+    
     public struct Fractured : IComponentData, IEnableableComponent
     {
-            
+        
     }
     
-    public struct Fracturable : IComponentData, IEnableableComponent
+    /// <summary>
+    /// All nodes within a fracture object.
+    /// </summary>
+    public struct FractureGraph : IBufferElementData, IEnableableComponent
     {
-        public Entity Prefab;
+        public Entity Node;
+        public bool   Destroyed;
+        public int    Id;
+        
+        public static implicit operator Entity(FractureGraph e) => e.Node;
     }
-
     
     
     

@@ -27,7 +27,7 @@ namespace Junk.Fracture.Editor
             if(GUILayout.Button("Bake"))
             {
                 var prefab = FractureEditorWindow.CreatePrefab(breakAuthoring);
-                breakAuthoring.FracturedObject = prefab;
+                breakAuthoring.FracturedPrefab = prefab;
                 EditorUtility.SetDirty(breakAuthoring);
             }
             DrawDefaultInspector();

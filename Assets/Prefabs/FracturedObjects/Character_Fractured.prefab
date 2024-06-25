@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4457000186747697765}
   - component: {fileID: 1273084562825243984}
   - component: {fileID: 6782178441645071343}
-  - component: {fileID: 8067533535122665281}
   - component: {fileID: 419140791224570869}
   m_Layer: 0
   m_Name: Character_Fractured
@@ -88,18 +87,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8067533535122665281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6457824574312779879}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &419140791224570869
 MonoBehaviour:
   m_ObjectHideFlags: 0

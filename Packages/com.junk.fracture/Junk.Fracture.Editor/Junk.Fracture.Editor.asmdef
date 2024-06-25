@@ -13,14 +13,16 @@
         "Unity.Deformations",
         "Unity.Collections",
         "Unity.Transforms",
-        "Unity.Physics",        
-	"Unity.Physics.Custom",
+        "Unity.Physics",
+        "Unity.Physics.Custom",
         "Unity.Physics.Custom.Editor",
         "Junk.Collections",
         "Junk.Math",
+        "Junk.Entities",
+        "Junk.Entities.Hybrid",
+        "Junk.Entities.Editor",
         "Junk.Fracture",
         "Junk.Fracture.Hybrid"
-
     ],
     "includePlatforms": [
         "Editor"

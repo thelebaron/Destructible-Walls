@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Junk.Entities.Hybrid;
+using Unity.Entities;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,8 +10,12 @@ namespace Junk.Fracture.Hybrid
     /// An asset that stores a list of fractures
     /// </summary>
     [CreateAssetMenu(fileName = "Fracture Cache", menuName = "Fracturing", order = 0)]
-    public class FractureCache : ScriptableObject
+    public class FractureCache : BakedScriptableObject<FractureData>
     {
+        // ECS data
+        public bool UseAnchors;
+        
+        // Unity data
         public                            Mesh                Mesh;
         public                            Material            InsideMaterial;
         public                            Material            OutsideMaterial;
@@ -17,6 +23,14 @@ namespace Junk.Fracture.Hybrid
         [HideInInspector] public          FractureCache       Parent;
         [HideInInspector] public          List<FractureCache> Children = new();
         public ulong               StableHash;
+        
+        protected override void BakeToBlobData(ref FractureData data, ref BlobBuilder blobBuilder)
+        {
+            data = new FractureData
+            {
+                UseAnchors = UseAnchors,
+            };
+        }
         
         public void Add(Mesh mesh, Material insideMaterial, Material outsideMaterial)
         {

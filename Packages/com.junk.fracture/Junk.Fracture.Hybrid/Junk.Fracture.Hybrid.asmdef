@@ -17,7 +17,8 @@
         "Junk.Collections",
         "Junk.Entities",
         "Junk.Physics.Hybrid",
-        "Junk.Fracture"
+        "Junk.Fracture",
+        "Junk.Entities.Hybrid"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

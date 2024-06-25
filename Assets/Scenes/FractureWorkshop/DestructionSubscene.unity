@@ -259,8 +259,7 @@ PrefabInstance:
         type: 3}
       propertyPath: FractureCache
       value: 
-      objectReference: {fileID: 11400000, guid: a8acd400cfe9e6142861dae4dc7fbf45,
-        type: 2}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2880,6 +2879,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: Character
       objectReference: {fileID: 0}
+    - target: {fileID: 9062464618633424306, guid: 2a3997ce20b5a3440917a5590600e91f,
+        type: 3}
+      propertyPath: FractureCache
+      value: 
+      objectReference: {fileID: 11400000, guid: a8acd400cfe9e6142861dae4dc7fbf45,
+        type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

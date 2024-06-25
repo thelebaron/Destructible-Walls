@@ -7,8 +7,8 @@ namespace Junk.Fracture.Hybrid
     [RequireComponent(typeof(MeshRenderer))]
     public class BreakableAuthoring : MonoBehaviour
     {
-        public FractureCache FractureCache;
-        public GameObject    FracturedObject;
+        public FractureCache      FractureCache;
+        public GameObject         FracturedPrefab;
     }
     
     public class BreakableBaker : Baker<BreakableAuthoring>
@@ -16,13 +16,14 @@ namespace Junk.Fracture.Hybrid
         public override void Bake(BreakableAuthoring authoring)
         {
             // Do not bake if no fracture cache is exists
-            if(authoring.FractureCache == null || authoring.FracturedObject == null)
+            if(authoring.FractureCache == null || authoring.FracturedPrefab == null)
                 return;
             
             var entity = GetEntity(TransformUsageFlags.Dynamic);
             AddComponent(entity, new Fracturable
             {
-                Prefab = GetEntity(authoring.FracturedObject, TransformUsageFlags.Dynamic)
+                Prefab = GetEntity(authoring.FracturedPrefab, TransformUsageFlags.Dynamic),
+                Data = authoring.FractureCache.BakeToBlob(this)
             });
             
             SetComponentEnabled<Fracturable>(entity, false);

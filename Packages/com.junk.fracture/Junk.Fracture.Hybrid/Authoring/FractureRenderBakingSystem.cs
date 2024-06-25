@@ -10,7 +10,7 @@ namespace Junk.Fracture.Hybrid
     [RequireMatchingQueriesForUpdate]
     [UpdateInGroup(typeof(PostBakingSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
-    public partial struct FractureBakingSystem : ISystem
+    public partial struct FractureRenderBakingSystem : ISystem
     {
         private EntityQuery query;
         
