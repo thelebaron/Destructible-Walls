@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Junk.Collections;
 using Junk.Entities;
 using Unity.Assertions;
 using Unity.Collections;
@@ -33,7 +34,7 @@ namespace Junk.Fracture.Hybrid
     /// <summary>
     /// Helper to store child fracture data for calculating overlaps
     /// </summary>
-    public class FractureBakingData : IEquatable<Entity>, IComparable<Entity>
+    public class FractureBakingData 
     {
         public Entity     Entity;
         public int        Id;
@@ -45,14 +46,14 @@ namespace Junk.Fracture.Hybrid
         
         public static implicit operator Entity(FractureBakingData e) => e.Entity;
         
-        public bool Equals(Entity other)
+        public bool Equals(int other)
         {
-            return Entity == other;
+            return Id == other;
         }
 
-        public int CompareTo(Entity other)
+        public int CompareTo(int other)
         {
-            return Entity.Index.CompareTo(other.Index);
+            return Id.CompareTo(other);
         }
     }
     
@@ -84,7 +85,23 @@ namespace Junk.Fracture.Hybrid
             GetOverlaps(bakedFractureChildData);
             
             // Calculate the shortest path between all fractures
-            FindAllShortestPaths(bakedFractureChildData);
+            var allPaths = FindAllPaths(bakedFractureChildData);
+
+            foreach (var child in bakedFractureChildData)
+            {
+                var childEntity = child.Entity;
+                var childId     = child.Id;
+                
+                Dictionary<int, List<int>> kvp = allPaths[childId];
+                
+                
+                AddComponent<Fracture>(childEntity, new Fracture
+                {
+                    Id = childEntity.Index,
+                    ConnectionMap = BakeMappingToBlob(this, kvp)
+                });
+            }
+
             
             // Cleanup and destroy all temp gameobjects used for overlap detection
             Cleanup(bakedFractureChildData);
@@ -95,6 +112,10 @@ namespace Junk.Fracture.Hybrid
             foreach (var data in bakedFractureChildData)
             {
                 UnityEngine.Object.DestroyImmediate(data.GameObject);
+            }
+            foreach (var data in bakedFractureChildData)
+            {
+                Assert.IsTrue(data.GameObject == null, "Gameobject not destroyed");
             }
         }
 
@@ -110,7 +131,6 @@ namespace Junk.Fracture.Hybrid
             {
                 var child = CreateAdditionalEntity(TransformUsageFlags.ManualOverride, false, node.name);
                 var id    = child.Index;
-                AddComponent<Fracture>(child, new Fracture { Id = id });
                 
                 graph.Add(new FractureGraph {Node = child, Id = id});
                 AddComponent(child, LocalTransform.Identity);
@@ -145,10 +165,11 @@ namespace Junk.Fracture.Hybrid
         private FractureBakingData GetFractureBakingData(Entity entity, LocalTransform tr, Mesh mesh)
         {
             var data = new FractureBakingData();
-            data.Entity = entity;
-            data.Id = entity.Index;
-            data.Mesh = mesh;
-            data.GameObject = UnityEngine.Object.Instantiate(new GameObject());
+            data.Entity               = entity;
+            data.Id                   = entity.Index;
+            data.Mesh                 = mesh;
+            data.GameObject           = UnityEngine.Object.Instantiate(new GameObject("Fracture_" + entity.Index));
+            data.GameObject.hideFlags = HideFlags.DontSave;
             
             data.GameObject.transform.position = tr.Position;
             data.GameObject.transform.rotation = tr.Rotation;
@@ -284,7 +305,11 @@ namespace Junk.Fracture.Hybrid
                             var otherEntity = dictionary.First(kvp => kvp.Value == other).Key;
                             if (otherEntity != entity && !buffer.AsNativeArray().Contains(otherEntity))
                             {
-                                buffer.Add(new Connection { ConnectedEntity = otherEntity });
+                                buffer.Add(new Connection
+                                {
+                                    ConnectedEntity = otherEntity,
+                                    ConnectedId = otherEntity.Index
+                                });
                             }
                         }
                     }
@@ -292,37 +317,34 @@ namespace Junk.Fracture.Hybrid
             }
         }
         
-        /// <summary>
-        /// Finds all shortest paths between all fractures
-        /// </summary>
-        public static Dictionary<Entity, Dictionary<Entity, List<Entity>>> FindAllShortestPaths(List<FractureBakingData> dataList)
+        public static Dictionary<int, Dictionary<int, List<int>>> FindAllPaths(List<FractureBakingData> dataList)
         {
-            var shortestPaths = new Dictionary<Entity, Dictionary<Entity, List<Entity>>>();
+            var shortestPaths = new Dictionary<int, Dictionary<int, List<int>>>();
 
             // Initialize shortest paths dictionary
             foreach (var data in dataList)
             {
-                var entity  = data.Entity;
+                var id  = data.Id;
                 var anchors = data.ConnectionsBuffer.AsNativeArray();
                 
                 // Initialize dictionary for entity
-                shortestPaths[entity] = new Dictionary<Entity, List<Entity>>();
+                shortestPaths[id] = new Dictionary<int, List<int>>();
                 
                 foreach (var other in dataList)
                 {
-                    var otherEntity = other.Entity;
+                    var otherId = other.Id;
                     
-                    if (entity == otherEntity)
+                    if (id == otherId)
                     {
-                        shortestPaths[entity][otherEntity] = new List<Entity> { entity };
+                        shortestPaths[id][otherId] = new List<int> { id };
                     }
-                    else if (anchors.Any(anchor => anchor.ConnectedEntity == otherEntity))
+                    else if (anchors.Any(anchor => anchor.ConnectedId == otherId))
                     {
-                        shortestPaths[entity][otherEntity] = new List<Entity> { entity, otherEntity };
+                        shortestPaths[id][otherId] = new List<int> { id, otherId };
                     }
                     else
                     {
-                        shortestPaths[entity][otherEntity] = null;
+                        shortestPaths[id][otherId] = null;
                     }
                 }
             }
@@ -334,15 +356,14 @@ namespace Junk.Fracture.Hybrid
                 {
                     foreach (var j in dataList)
                     {
-                        if (shortestPaths[i][k] != null && shortestPaths[k][j] != null)
+                        if (shortestPaths[i.Id][k.Id] != null && shortestPaths[k.Id][j.Id] != null)
                         {
-                            
-                            var newPath = new List<Entity>(shortestPaths[i][k]);
-                            newPath.AddRange(shortestPaths[k][j].Skip(1));
+                            var newPath = new List<int>(shortestPaths[i.Id][k.Id]);
+                            newPath.AddRange(shortestPaths[k.Id][j.Id].Skip(1));
 
-                            if (shortestPaths[i][j] == null || newPath.Count < shortestPaths[i][j].Count)
+                            if (shortestPaths[i.Id][j.Id] == null || newPath.Count < shortestPaths[i.Id][j.Id].Count)
                             {
-                                shortestPaths[i][j] = newPath;
+                                shortestPaths[i.Id][j.Id] = newPath;
                             }
                         }
                     }
@@ -351,7 +372,7 @@ namespace Junk.Fracture.Hybrid
             
             return shortestPaths;
         }
-
+        
         [InternalBufferCapacity(10)]
         public struct FractureIdEntityPath : IBufferElementData
         {
@@ -363,6 +384,50 @@ namespace Junk.Fracture.Hybrid
         public struct FracturePath : IBufferElementData
         {
             public int    Id;
+        }
+        
+        /// <summary>
+        /// What this does:
+        /// Each fracture has all paths to each other fracture mapped out as an array of ids
+        /// StartFracture --- [1, 2, 3, 4, 5] ---> EndFracture
+        ///
+        /// The fractures are stored as Ids, the entity indexes only for the path
+        /// We build these into a blob, that stores a hashmap of the Ids to the array of Ids
+        /// So for use, lookup the id of the fracture you want to find the path to, and you get an index which is used on the mappingIndex
+        /// </summary>
+        public static BlobAssetReference<FractureConnectionMapData> BakeMappingToBlob(IBaker baker, Dictionary<int, List<int>> dictionary)
+        {
+            var builder    = new BlobBuilder(Allocator.Temp);
+            ref var root = ref builder.ConstructRoot<FractureConnectionMapData>();
+    
+            var mainBuilderArray = builder.Allocate(ref root.ConnectionMap, dictionary.Count);
+            
+            var hashMapBuilder = builder.AllocateHashMap(ref root.MappingIndex, dictionary.Count);
+            for (int i = 0; i < dictionary.Count; i++)
+            {
+                var kvp       = dictionary.ElementAt(i);
+                var keyId     = kvp.Key;
+                
+                hashMapBuilder.Add(keyId, i);
+                
+                var valueList = kvp.Value;
+                if (kvp.Value == null)
+                {
+                    Debug.Log("No path found for fracture " + keyId);
+                    continue;
+                }
+                var blobBuilderArray  = builder.Allocate(ref mainBuilderArray[i], valueList.Count);
+                for (int j = 0; j < valueList.Count; j++)
+                {
+                    blobBuilderArray[j] = valueList[j];
+                }
+            }
+        
+            var blobReference = builder.CreateBlobAssetReference<FractureConnectionMapData>(Allocator.Persistent);
+            baker.AddBlobAsset(ref blobReference, out var hash);
+            builder.Dispose();
+        
+            return blobReference;
         }
     }
 }

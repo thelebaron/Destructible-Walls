@@ -9,6 +9,7 @@
 #endif
 
 using System;
+using System.Collections.Generic;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -18,11 +19,11 @@ namespace Junk.Collections
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-        private BlobBuilderArray<TValue> values;
-        private BlobBuilderArray<TKey> keys;
-        private BlobBuilderArray<int> next;
-        private BlobBuilderArray<int> buckets;
-        private BlobBuilderArray<int> count;
+        internal BlobBuilderArray<TValue> values;
+        private  BlobBuilderArray<TKey>   keys;
+        private  BlobBuilderArray<int>    next;
+        private  BlobBuilderArray<int>    buckets;
+        private  BlobBuilderArray<int>    count;
 
         // we store these values in the builder because we cannot access BlobHashMapData
         // itself (it must live in blob storage)
@@ -52,7 +53,7 @@ namespace Junk.Collections
             buckets[bucket] = index;
             return true;
         }
-
+        
         internal bool ContainsKey(TKey key)
         {
             int bucket = key.GetHashCode() & bucketCapacityMask;

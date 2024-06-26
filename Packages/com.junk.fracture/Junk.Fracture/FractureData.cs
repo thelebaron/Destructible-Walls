@@ -1,5 +1,6 @@
 ﻿using System;
 using Junk.Collections;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace Junk.Fracture
@@ -9,12 +10,21 @@ namespace Junk.Fracture
     {
         public bool                                           UseAnchors;
         public BlobHashMap<int, BlobHashMap<int, BlobArray<int>>> PathLookup;
-        //Dictionary<Entity, Dictionary<Entity, List<Entity>>>();
     }
     
     [Serializable]
     public struct FractureGraphData
     {
         public BlobArray<Entity> Nodes;
+    }
+    
+    [Serializable]
+    public struct FractureConnectionMapData
+    {
+        // id -> index
+        public BlobHashMap<int, int> MappingIndex;
+        // index -> list of connections
+        public BlobArray<BlobArray<int>> ConnectionMap;
+
     }
 }

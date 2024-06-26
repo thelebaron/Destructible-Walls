@@ -30,7 +30,8 @@ namespace Junk.Fracture
     /// </summary>
     public struct Fracture : IComponentData
     {
-        public int Id;
+        public int                                        Id;
+        public BlobAssetReference<FractureConnectionMapData> ConnectionMap;
     }
     
     public struct IsFractured : IComponentData, IEnableableComponent
@@ -63,6 +64,7 @@ namespace Junk.Fracture
     public struct Connection : IBufferElementData, IEquatable<Entity>, IComparable<Entity>
     {
         public Entity ConnectedEntity;
+        public int    ConnectedId;
 
         public bool Equals(Entity other)
         {
