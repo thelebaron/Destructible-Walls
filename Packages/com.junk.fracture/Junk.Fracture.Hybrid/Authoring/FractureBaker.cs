@@ -39,7 +39,10 @@ namespace Junk.Fracture.Hybrid
         public Entity     Entity;
         public int        Id;
         public Mesh       Mesh;
-        public GameObject GameObject;
+        public float3     Position;
+        public quaternion Rotation;
+        
+        //public GameObject GameObject;
         
         // Filled out in GetOverlaps
         public DynamicBuffer<Connection> ConnectionsBuffer;
@@ -101,22 +104,6 @@ namespace Junk.Fracture.Hybrid
                     ConnectionMap = BakeMappingToBlob(this, kvp)
                 });
             }
-
-            
-            // Cleanup and destroy all temp gameobjects used for overlap detection
-            Cleanup(bakedFractureChildData);
-        }
-
-        private void Cleanup(List<FractureBakingData> bakedFractureChildData)
-        {
-            foreach (var data in bakedFractureChildData)
-            {
-                UnityEngine.Object.DestroyImmediate(data.GameObject);
-            }
-            foreach (var data in bakedFractureChildData)
-            {
-                Assert.IsTrue(data.GameObject == null, "Gameobject not destroyed");
-            }
         }
 
         /// <summary>
@@ -168,24 +155,8 @@ namespace Junk.Fracture.Hybrid
             data.Entity               = entity;
             data.Id                   = entity.Index;
             data.Mesh                 = mesh;
-            data.GameObject           = UnityEngine.Object.Instantiate(new GameObject("Fracture_" + entity.Index));
-            data.GameObject.hideFlags = HideFlags.DontSave;
-            
-            data.GameObject.transform.position = tr.Position;
-            data.GameObject.transform.rotation = tr.Rotation;
-            var meshCollider = data.GameObject.AddComponent<UnityEngine.MeshCollider>();
-            var rigidBody    = data.GameObject.AddComponent<UnityEngine.Rigidbody>();
-            rigidBody.mass          = 1;
-            rigidBody.isKinematic   = true;
-            meshCollider.sharedMesh = mesh;
-            var meshFilter = data.GameObject.AddComponent<UnityEngine.MeshFilter>();
-            meshFilter.sharedMesh = mesh;
-            var meshRenderer = data.GameObject.AddComponent<UnityEngine.MeshRenderer>();
-            
-            meshRenderer.sharedMaterials = new[]
-            {
-                new UnityEngine.Material(Shader.Find("Universal Render Pipeline/Lit"))
-            };
+            data.Position             = tr.Position;
+            data.Rotation             = tr.Rotation;
             return data;
         }
 
@@ -271,13 +242,9 @@ namespace Junk.Fracture.Hybrid
         /// </summary>
         private void GetOverlaps(List<FractureBakingData> dataList, float touchRadius = 0.01f)
         {
-            var list = dataList.Select(data => data.GameObject).ToList();
-            var dictionary      = dataList.ToDictionary(data => data.Entity, data => data.GameObject);
-            
             foreach (var data in dataList)
             {
                 var entity     = data.Entity;
-                var gameObject = data.GameObject;
                 var mesh       = data.Mesh;
             
                 var buffer = AddBuffer<Connection>(entity);
@@ -285,24 +252,23 @@ namespace Junk.Fracture.Hybrid
                 
                 // get mesh data to calculate overlaps
                 var vertices  = mesh.vertices;
-                var transform = gameObject.transform;
 
                 for (var i = 0; i < vertices.Length; i++)
                 {
                     var vertex        = vertices[i];
-                    var worldPosition = transform.TransformPoint(vertex);
+                    var worldPosition = math.transform(float4x4.TRS(data.Position, data.Rotation, 1), vertex);
 
-                    foreach (var other in list)
+                    foreach (var other in dataList)
                     {
-                        var otherMesh = other.GetComponent<MeshFilter>().sharedMesh;
+                        var otherEntity = other.Entity;
+                        var otherMesh = other.Mesh;
                         foreach (var otherVertex in otherMesh.vertices)
                         {
-                            var otherPosition = other.transform.TransformPoint(otherVertex);
+                            var otherPosition = math.transform(float4x4.TRS(other.Position, other.Rotation, 1), otherVertex);
                             
                             if (!(Vector3.Distance(worldPosition, otherPosition) <= touchRadius)) 
                                 continue;
                             
-                            var otherEntity = dictionary.First(kvp => kvp.Value == other).Key;
                             if (otherEntity != entity && !buffer.AsNativeArray().Contains(otherEntity))
                             {
                                 buffer.Add(new Connection
