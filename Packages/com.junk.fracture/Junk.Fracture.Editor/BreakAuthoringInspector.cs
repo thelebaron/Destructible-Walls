@@ -3,7 +3,6 @@ using Junk.Fracture.Hybrid;
 using UnityEngine;
 using UnityEditor;
 
-
 namespace Junk.Fracture.Editor
 {
     [CanEditMultipleObjects]
@@ -13,6 +12,13 @@ namespace Junk.Fracture.Editor
         public override void OnInspectorGUI()
         {
             var breakAuthoring = target as BreakableAuthoring;
+            
+            var cacheIsNull  = breakAuthoring.FractureCache == null;
+            // show warning if cache is null
+            if (cacheIsNull)
+            {
+                EditorGUILayout.HelpBox("Fracture Cache is not set. Please bake the fracture cache.", MessageType.Warning);
+            }
             
             if (GUILayout.Button("Open Fracture Editor"))
             {

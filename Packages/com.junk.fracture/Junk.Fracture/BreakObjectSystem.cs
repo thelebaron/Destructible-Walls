@@ -13,7 +13,7 @@ namespace Junk.Fracture
             var ecb = SystemAPI.GetSingletonRW<BeginInitializationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged);
             
             // ReSharper disable once Unity.Entities.MustBeSurroundedWithRefRwRo
-            foreach (var (breakable, localToWorld, entity) in SystemAPI.Query<RefRO<Fracturable>, RefRO<LocalToWorld>>().WithEntityAccess())
+            foreach (var (breakable, localToWorld, entity) in SystemAPI.Query<RefRO<Breakable>, RefRO<LocalToWorld>>().WithEntityAccess())
             {
                 var prefab = breakable.ValueRO.Prefab;
                 var fractureBuffer = state.EntityManager.GetBuffer<FractureChild>(prefab);

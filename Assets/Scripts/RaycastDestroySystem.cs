@@ -103,10 +103,10 @@ namespace Junk.Fracture
                 state.EntityManager.SetComponentEnabled<IsFractured>(hit.Entity, true);
             }
             //Debug.Log($"Hit {hit.Entity} at {hit.Position}");
-            if (state.EntityManager.HasComponent<Fracturable>(hit.Entity))
+            if (state.EntityManager.HasComponent<Breakable>(hit.Entity))
             {
                 // enable
-                state.EntityManager.SetComponentEnabled<Fracturable>(hit.Entity, true);
+                state.EntityManager.SetComponentEnabled<Breakable>(hit.Entity, true);
             }
 
             if (state.EntityManager.HasComponent<FracturePrefabComponentData>(hit.Entity))

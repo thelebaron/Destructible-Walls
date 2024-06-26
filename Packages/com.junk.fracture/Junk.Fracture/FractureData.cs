@@ -8,8 +8,7 @@ namespace Junk.Fracture
     [Serializable]
     public struct FractureData
     {
-        public bool                                           UseAnchors;
-        public BlobHashMap<int, BlobHashMap<int, BlobArray<int>>> PathLookup;
+        public bool UseAnchors;
     }
     
     [Serializable]

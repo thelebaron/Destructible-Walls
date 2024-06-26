@@ -20,13 +20,13 @@ namespace Junk.Fracture.Hybrid
                 return;
             
             var entity = GetEntity(TransformUsageFlags.Dynamic);
-            AddComponent(entity, new Fracturable
+            AddComponent(entity, new Breakable
             {
                 Prefab = GetEntity(authoring.FracturedPrefab, TransformUsageFlags.Dynamic),
                 Data = authoring.FractureCache.BakeToBlob(this)
             });
             
-            SetComponentEnabled<Fracturable>(entity, false);
+            SetComponentEnabled<Breakable>(entity, false);
         }
     }
 }

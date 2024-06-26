@@ -3,10 +3,17 @@ using Unity.Entities;
 
 namespace Junk.Fracture
 {
-    public struct Fracturable : IComponentData, IEnableableComponent
+    public struct Breakable : IComponentData, IEnableableComponent
     {
         public Entity                           Prefab;
         public BlobAssetReference<FractureData> Data;
+        
+        public enum AfterBreakAction
+        {
+            Destroy, // Destroys the entity
+            Disable, // Adds a Disabled component
+            Hide // Disable renderers
+        }
     }
 
     /// <summary>
