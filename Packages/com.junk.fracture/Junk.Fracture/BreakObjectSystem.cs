@@ -5,6 +5,7 @@ using Unity.Transforms;
 
 namespace Junk.Fracture
 {
+    [DisableAutoCreation]
     public partial struct BreakObjectSystem : ISystem
     {
         [BurstCompile]

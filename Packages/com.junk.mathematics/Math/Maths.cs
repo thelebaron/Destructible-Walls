@@ -121,6 +121,18 @@ namespace Junk.Math
             return math.abs(b - a) < (double) math.max(1E-06f * math.max(math.abs(a), math.abs(b)), epsilon * 8f);
         }
         
+        /// <summary>
+        /// Returns true if less than 0.01f
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool almost(float a, float b)
+        {
+            return math.abs(a - b) <= 0.01f;
+        }
+        
         // Compares two floating point values if they are similar.
         // taken from https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Mathf.cs#L279
         public static bool approximately2(float a, float b)
@@ -135,34 +147,46 @@ namespace Junk.Math
             return math.abs(b - a) < math.max(0.000001f * math.max(math.abs(a), math.abs(b)), math.EPSILON * 8);
         }
         
+        /// <summary>
+        /// returns true if each component are 0.5f of each other
+        /// </summary>
+        /// <param name="rhs"></param>
+        /// <param name="lhs"></param>
+        /// <returns></returns>
+        public static bool almost(float3 rhs, float3 lhs)
+        {
+            return almost(rhs.x, lhs.x) && almost(rhs.y, lhs.y) && almost(rhs.z, lhs.z);
+        }
+        
         public static bool approximately(float3 rhs, float3 lhs)
         {
             return approximately(rhs.x, lhs.x) && approximately(rhs.y, lhs.y) && approximately(rhs.z, lhs.z);
         }
-                    // untested brunocoimbra
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public static bool Approximately(float a, float b)
-                    {
-                        return math.abs(b - a) < (double)math.max(1E-06f * math.max(math.abs(a), math.abs(b)), math.FLT_MIN_NORMAL * 8f);
-                    }
+        
+        // untested brunocoimbra
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Approximately(float a, float b)
+        {
+            return math.abs(b - a) < (double)math.max(1E-06f * math.max(math.abs(a), math.abs(b)), math.FLT_MIN_NORMAL * 8f);
+        }
 
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public static bool Approximately(double a, double b)
-                    {
-                        return math.abs(b - a) < math.max(1E-06 * math.max(math.abs(a), math.abs(b)), math.DBL_MIN_NORMAL * 8);
-                    }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Approximately(double a, double b)
+        {
+            return math.abs(b - a) < math.max(1E-06 * math.max(math.abs(a), math.abs(b)), math.DBL_MIN_NORMAL * 8);
+        }
 
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public static bool Approximately(float a, float b, float tolerance)
-                    {
-                        return math.abs(a - b) <= tolerance;
-                    }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Approximately(float a, float b, float tolerance)
+        {
+            return math.abs(a - b) <= tolerance;
+        }
 
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public static bool Approximately(double a, double b, double tolerance)
-                    {
-                        return math.abs(a - b) <= tolerance;
-                    }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Approximately(double a, double b, double tolerance)
+        {
+            return math.abs(a - b) <= tolerance;
+        }
         
         /// <summary>
         /// equiv of Quaternion.Angle

@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Junk.Fracture
 {
+    [DisableAutoCreation]
     public partial struct ConnectionGraphSystem : ISystem
     {
         [BurstCompile]

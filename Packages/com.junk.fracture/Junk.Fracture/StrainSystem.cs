@@ -1,3 +1,4 @@
+using Junk.Health;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -5,11 +6,7 @@ using Unity.Physics;
 
 namespace Junk.Fracture
 {
-    public struct HealthData : IComponentData
-    {
-        public float3 Value;
-    }
-    
+    [DisableAutoCreation]
     public partial struct StrainEventSystem : ISystem
     {
         private EntityQuery destroyLinkEventQuery;
@@ -131,7 +128,6 @@ namespace Junk.Fracture
         private partial struct CheckHealth : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
-
             
             public void Execute(Entity entity, [EntityIndexInQuery] int entityIndexInQuery, ref HealthData health)
             {

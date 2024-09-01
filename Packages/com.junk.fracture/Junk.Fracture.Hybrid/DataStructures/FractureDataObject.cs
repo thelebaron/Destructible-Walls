@@ -3,6 +3,7 @@ using Unity.Entities;
 
 namespace Junk.Fracture.Hybrid
 {
+    #if UNITY_EDITOR
     public class FractureDataObject : BakedScriptableObject<FractureData>
     {
         public bool UseAnchors;
@@ -15,4 +16,5 @@ namespace Junk.Fracture.Hybrid
             };
         }
     }
+    #endif
 }

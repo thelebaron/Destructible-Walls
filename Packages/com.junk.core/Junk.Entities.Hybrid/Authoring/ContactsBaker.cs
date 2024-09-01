@@ -32,11 +32,11 @@ namespace Junk.Entities.Hybrid
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-            foreach (var prefabEntityData in SystemAPI.Query<PrefabEntityData>())
+            foreach (var prefabEntityData in SystemAPI.Query<RefRO<PrefabEntityData>>())
             {
-                ecb.AddComponent<Contact>(prefabEntityData.BulletHoleTiny);
-                ecb.AddComponent<Contact>(prefabEntityData.BloodSplatTiny);
-                ecb.AddComponent<Contact>(prefabEntityData.DebrisTiny1);
+                ecb.AddComponent<Contact>(prefabEntityData.ValueRO.BulletHoleTiny);
+                ecb.AddComponent<Contact>(prefabEntityData.ValueRO.BloodSplatTiny);
+                ecb.AddComponent<Contact>(prefabEntityData.ValueRO.DebrisTiny1);
             }
             ecb.Playback(state.EntityManager);
             ecb.Dispose();

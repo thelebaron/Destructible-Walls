@@ -1,5 +1,6 @@
 ﻿using System;
 using Junk.Entities;
+using Junk.Math;
 using Junk.Physics.Stateful;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
@@ -17,36 +18,28 @@ namespace Junk.Physics
     [Serializable]
     public struct Platform : IComponentData, IEnableableComponent
     {
-        public PhysicsMoverState State;
-        public float  Delay;
+        public PlatformState State;
+        public float         Delay;
+        public float         Time;
+        public float         Speed;
+        public float3        TargetPosition;
+        public float3        OriginalPosition;
         
-        public float3 TranslationAxis;
-        public float TranslationAmplitude;
-        public float TranslationSpeed;
-        public float RotationSpeed;
-        public float3 RotationAxis;
-
-        [HideInInspector]
-        public bool IsInitialized;
-        [HideInInspector]
-        public float3 OriginalPosition;
-        [HideInInspector]
-        public quaternion OriginalRotation;
-        
-        // make default
         public static Platform Default => new Platform
         {
-            State = PhysicsMoverState.Stopped,
+            State = PlatformState.Stopped,
             Delay = 0f,
-            TranslationAxis = math.down(),
-            TranslationAmplitude = 10f,
-            TranslationSpeed = 1f,
-            RotationSpeed = 0f,
-            RotationAxis = float3.zero,
-            IsInitialized = false,
+            Speed = 1f,
             OriginalPosition = float3.zero,
-            OriginalRotation = quaternion.identity,
         };
+        
+        public enum PlatformState
+        {
+            Stopped,
+            Moving,    // Moving to end position
+            StoppedAtTarget,
+            Returning, // Returning to start position
+        }
     }
     
     /// <summary>
@@ -59,12 +52,6 @@ namespace Junk.Physics
         public float                   Delay;
     }
     
-    public enum PhysicsMoverState
-    {
-        Stopped,
-        Moving, // Moving to end position
-        Returning, // Returning to start position
-    }
     public enum PhysicsMoverTriggerType
     {
         Start,
@@ -121,7 +108,6 @@ namespace Junk.Physics
             {
                 DeltaTime                 = deltaTime,
                 InvDeltaTime              = invDeltaTime,
-                ElapsedTime               = time,
                 PhysicsMoverTypeHandle    = SystemAPI.GetComponentTypeHandle<Platform>(),
                 PhysicsVelocityTypeHandle = SystemAPI.GetComponentTypeHandle<PhysicsVelocity>(),
                 PhysicsMassTypeHandle     = SystemAPI.GetComponentTypeHandle<PhysicsMass>(true),
@@ -134,13 +120,81 @@ namespace Junk.Physics
         {
             public            float                                DeltaTime;
             public            float                                InvDeltaTime;
-            public            float                                ElapsedTime;
             public            ComponentTypeHandle<Platform>    PhysicsMoverTypeHandle;
             public            ComponentTypeHandle<PhysicsVelocity> PhysicsVelocityTypeHandle;
             [ReadOnly] public ComponentTypeHandle<PhysicsMass>     PhysicsMassTypeHandle;
             [ReadOnly] public ComponentTypeHandle<LocalTransform>  LocalTransformTypeHandle;
             
-            static float3 CalculateTargetPosition(LocalTransform transform, float3 targetPos, float maxSpeed, float deltaTime)
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                var physicsMovers     = chunk.GetNativeArray(ref PhysicsMoverTypeHandle);
+                var physicsVelocities = chunk.GetNativeArray(ref PhysicsVelocityTypeHandle);
+                var physicsMasses     = chunk.GetNativeArray(ref PhysicsMassTypeHandle);
+                var localTransforms   = chunk.GetNativeArray(ref LocalTransformTypeHandle);
+                
+                var entityEnumerator = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
+                while (entityEnumerator.NextEntityIndex(out var entityIndex))
+                {
+                    var enabled   = chunk.IsComponentEnabled(ref PhysicsMoverTypeHandle, entityIndex);
+                    var platform  = physicsMovers[entityIndex];
+                    var mass      = physicsMasses[entityIndex];
+                    var localTransform = localTransforms[entityIndex];
+                    var velocity  = physicsVelocities[entityIndex];
+
+                    if(platform.Time > 0)
+                    {
+                        platform.Time                  -= DeltaTime;
+                        velocity.Linear                =  float3.zero;
+                        physicsVelocities[entityIndex] =  velocity;
+                        physicsMovers[entityIndex]     =  platform;
+                        return;
+                    }
+                    
+                    if (platform.State == Platform.PlatformState.Moving)
+                    {
+                        var nextPosition = CalculateTargetPosition(localTransform, platform.TargetPosition, platform.Speed, DeltaTime);
+                        
+                        // Move with velocity
+                        velocity = PhysicsVelocity.CalculateVelocityToTarget(in mass, localTransform.Position, localTransform.Rotation, new RigidTransform(quaternion.identity, nextPosition), InvDeltaTime);
+
+                        if (maths.approximately(localTransform.Position, platform.TargetPosition))
+                        {
+                            platform.State = Platform.PlatformState.StoppedAtTarget;
+                            platform.Time  = platform.Delay;
+                        }
+                    }
+
+                    if (platform.State == Platform.PlatformState.StoppedAtTarget)
+                    {
+                        platform.State = Platform.PlatformState.Returning;
+                    }
+
+                    if (platform.State == Platform.PlatformState.Returning)
+                    {
+                        var    nextPosition = CalculateTargetPosition(localTransform, platform.OriginalPosition, platform.Speed, DeltaTime);
+
+                        // Move with velocity
+                        velocity = PhysicsVelocity.CalculateVelocityToTarget(in mass, localTransform.Position, localTransform.Rotation, new RigidTransform(quaternion.identity, nextPosition), InvDeltaTime);
+                        
+                        if (maths.approximately(localTransform.Position, platform.OriginalPosition))
+                        {
+                            platform.State = Platform.PlatformState.Stopped;
+                            platform.Time  = platform.Delay;
+                        }
+                    }
+                    
+                    if (platform.State == Platform.PlatformState.Stopped || platform.State == Platform.PlatformState.StoppedAtTarget)
+                    {
+                        // lerp to zero
+                        velocity.Linear = math.lerp(velocity.Linear, float3.zero, DeltaTime * 15f);
+                    }
+                    
+                    physicsVelocities[entityIndex] = velocity;
+                    physicsMovers[entityIndex]     = platform;
+                }
+            }
+            
+            private static float3 CalculateTargetPosition(LocalTransform transform, float3 targetPos, float maxSpeed, float deltaTime)
             {
                 // Calculate the direction towards the target
                 float3 direction = math.normalize(targetPos - transform.Position);
@@ -161,72 +215,6 @@ namespace Junk.Physics
                 {
                     // Calculate the new position by moving towards the target with the max speed
                     return transform.Position + direction * maxDistance;
-                }
-            }
-            
-            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
-            {
-                var physicsMovers     = chunk.GetNativeArray(ref PhysicsMoverTypeHandle);
-                var physicsVelocities = chunk.GetNativeArray(ref PhysicsVelocityTypeHandle);
-                var physicsMasses     = chunk.GetNativeArray(ref PhysicsMassTypeHandle);
-                var localTransforms   = chunk.GetNativeArray(ref LocalTransformTypeHandle);
-                
-                var entityEnumerator = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
-                while (entityEnumerator.NextEntityIndex(out var i))
-                {
-                    var enabled   = chunk.IsComponentEnabled(ref PhysicsMoverTypeHandle, i);
-                    var platform  = physicsMovers[i];
-                    var mass      = physicsMasses[i];
-                    var transform = localTransforms[i];
-                    var velocity  = physicsVelocities[i];
-                    
-                    if(!platform.IsInitialized)
-                    {
-                        // Remember initial pos/rot, because our calculations depend on them
-                        //platform.OriginalPosition = transform.Position;
-                        //platform.OriginalRotation = transform.Rotation;
-                        platform.IsInitialized = true;
-                    }
-
-                    if(platform.Delay > 0)
-                    {
-                        platform.Delay       -= DeltaTime;
-                        velocity.Linear      =  float3.zero;
-                        physicsVelocities[i] =  velocity;
-                        physicsMovers[i] = platform;
-                        return;
-                    }
-                    
-                    if (platform.State == PhysicsMoverState.Moving)
-                    {
-                        var    targetPos = CalculateTargetPosition(transform, platform.OriginalPosition + 
-                            (math.normalizesafe(platform.TranslationAxis) * platform.TranslationAmplitude), 
-                            platform.TranslationSpeed, DeltaTime);
-
-                        var rotationFromMovement = quaternion.Euler(math.normalizesafe(platform.RotationAxis) * platform.RotationSpeed * ElapsedTime);
-                        var targetRot = math.mul(rotationFromMovement, platform.OriginalRotation);
-
-                        // Move with velocity
-                        velocity = PhysicsVelocity.CalculateVelocityToTarget(in mass, transform.Position, transform.Rotation, new RigidTransform(targetRot, targetPos), InvDeltaTime);
-
-                    }
-                    if (platform.State == PhysicsMoverState.Returning)
-                    {
-                        var    targetPos         =CalculateTargetPosition(transform, platform.OriginalPosition, platform.TranslationSpeed, DeltaTime);
-
-                        quaternion rotationFromMovement = quaternion.Euler(math.normalizesafe(platform.RotationAxis) * platform.RotationSpeed * ElapsedTime);
-                        quaternion targetRot = math.mul(rotationFromMovement, platform.OriginalRotation);
-
-                        // Move with velocity
-                        velocity = PhysicsVelocity.CalculateVelocityToTarget(in mass, transform.Position, transform.Rotation, new RigidTransform(targetRot, targetPos), InvDeltaTime);
-                    }
-                    if (platform.State == PhysicsMoverState.Stopped)
-                    {
-                        // lerp to zero
-                        velocity.Linear = math.lerp(velocity.Linear, float3.zero, DeltaTime * 15f);
-                    }
-                    
-                    physicsVelocities[i] = velocity;
                 }
             }
         }
@@ -282,10 +270,10 @@ namespace Junk.Physics
                     {
                         if (triggerEvent.State == StatefulEventState.Enter) // && !emitterEnabled)
                         {
-                            if (platform.State == PhysicsMoverState.Stopped)
+                            if (platform.State == Platform.PlatformState.Stopped)
                             {
-                                platform.State                     = PhysicsMoverState.Moving;
-                                platform.Delay                     = trigger.Delay;
+                                platform.State              = Platform.PlatformState.Moving;
+                                platform.Delay              = trigger.Delay;
                                 PlatformLookup[moverEntity] = platform;
                             }
                         }
@@ -297,10 +285,10 @@ namespace Junk.Physics
 
                         if (triggerEvent.State == StatefulEventState.Enter) // && !emitterEnabled)
                         {
-                            if (platform.State == PhysicsMoverState.Moving)
+                            if (platform.State == Platform.PlatformState.Moving)
                             {
-                                platform.State                     = PhysicsMoverState.Returning;
-                                platform.Delay                     = trigger.Delay;
+                                platform.State              = Platform.PlatformState.Returning;
+                                platform.Delay              = trigger.Delay;
                                 PlatformLookup[moverEntity] = platform;
                             }
                         }
@@ -310,10 +298,10 @@ namespace Junk.Physics
                     case PhysicsMoverTriggerType.Stop:
                         if (triggerEvent.State == StatefulEventState.Enter) // && !emitterEnabled)
                         {
-                            if (platform.State == PhysicsMoverState.Returning)
+                            if (platform.State == Platform.PlatformState.Returning)
                             {
-                                platform.State                     = PhysicsMoverState.Stopped;
-                                platform.Delay                     = trigger.Delay;
+                                platform.State              = Platform.PlatformState.Stopped;
+                                platform.Delay              = trigger.Delay;
                                 PlatformLookup[moverEntity] = platform;
                             }
                         }

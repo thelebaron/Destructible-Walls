@@ -2,8 +2,8 @@
 {
     using Unity.Entities;
 
-    [UpdateAfter(typeof(EndSimulationEntityCommandBufferSystem))]
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
+    //[UpdateAfter(typeof(EndSimulationEntityCommandBufferSystem))]
+    [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     public partial class DestroySystemGroup : ComponentSystemGroup
     {
     }

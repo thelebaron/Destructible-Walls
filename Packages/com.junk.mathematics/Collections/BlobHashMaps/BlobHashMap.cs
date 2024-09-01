@@ -103,12 +103,9 @@ namespace Junk.Collections
 #endif
         }
 
-        public bool TryAdd(TKey      key, TValue value) => data.TryAdd(key, value, false);
+        public bool TryAdd(TKey key, TValue value) => data.TryAdd(key, value, false);
         public bool ContainsKey(TKey key) => data.ContainsKey(key);
-        public int  Capacity              => data.keyCapacity;
-        public int  Count                 => data.Count;
+        public int Capacity => data.keyCapacity;
+        public int Count => data.Count;
     }
-    
-    
-    
 }

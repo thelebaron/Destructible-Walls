@@ -12,7 +12,7 @@ namespace Junk.Fracture.Editor
             var target = EditorUtility.InstanceIDToObject(instanceID) as FractureCache;
             if(target != null) 
             {
-                FractureEditorWindow.Open(target);
+                FractureEditor.Open(target);
                 Selection.activeObject = target;
                 return true;
             }

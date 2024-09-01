@@ -1,0 +1,35 @@
+{
+    "name": "Junk.Physics.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Entities.Editor",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Physics",
+        "Unity.Physics.Hybrid",        
+	    "Unity.Physics.Editor",
+        "Unity.Physics.Custom",
+        "Unity.Mathematics",
+        "Unity.Transforms",
+        "Junk.Entities",
+        "Junk.Entities.Hybrid",        
+	    "Junk.Physics",
+        "Junk.Physics.Hybrid",
+        "Unity.Entities.UI.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

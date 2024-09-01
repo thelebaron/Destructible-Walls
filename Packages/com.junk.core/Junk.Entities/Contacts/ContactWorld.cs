@@ -1,6 +1,4 @@
 ﻿using System;
-using Junk.Entities;
-using Unity.Assertions;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;

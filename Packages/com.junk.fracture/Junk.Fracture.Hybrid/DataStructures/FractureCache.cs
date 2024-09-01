@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Junk.Fracture.Hybrid
 {
+    #if UNITY_EDITOR
     /// <summary>
     /// An asset that stores a list of fractures
     /// </summary>
@@ -16,13 +17,14 @@ namespace Junk.Fracture.Hybrid
         public bool UseAnchors;
         
         // Unity data
-        public                            Mesh                Mesh;
-        public                            Material            InsideMaterial;
-        public                            Material            OutsideMaterial;
-        [HideInInspector] public          FractureCache       Root;
-        [HideInInspector] public          FractureCache       Parent;
-        [HideInInspector] public          List<FractureCache> Children = new();
-        public ulong               StableHash;
+        public                   Mesh                Mesh;
+        
+        public                   Material            InsideMaterial;
+        public                   Material            OutsideMaterial;
+        [HideInInspector] public FractureCache       Root;
+        [HideInInspector] public FractureCache       Parent;
+        [HideInInspector] public List<FractureCache> Children = new();
+        public                   ulong               StableHash;
         
         protected override void BakeToBlobData(ref FractureData data, ref BlobBuilder blobBuilder)
         {
@@ -54,7 +56,6 @@ namespace Junk.Fracture.Hybrid
                 
                 DestroyImmediate(fracture.Mesh, true);
                 DestroyImmediate(fracture, true);
-                
                 //AssetDatabase.RemoveObjectFromAsset(fracture.Mesh);
                 //AssetDatabase.RemoveObjectFromAsset(fracture);
             }
@@ -69,4 +70,5 @@ namespace Junk.Fracture.Hybrid
         }
         
     }
+    #endif
 }

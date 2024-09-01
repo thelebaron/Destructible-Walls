@@ -15,7 +15,7 @@ namespace Junk.Collections.Tests
 {
     public class SafetyTests : MonoBehaviour
     {
-        void Start()
+        private void Start()
         {
             #if !BLOBHASHMAP_SAFE
             Debug.LogError("BLOBHASHMAP_SAFE needs to be defined for safety tests");
@@ -38,14 +38,14 @@ namespace Junk.Collections.Tests
             Debug.Log("All test passed!");
         }
 
-        void HashMapsFull()
+        private void HashMapsFull()
         {
             // Hashmap full check
             //Assert.<InvalidOperationException>(() =>
             //{
             try
             {
-                BlobBuilder builder = new BlobBuilder(Allocator.Temp);
+                var builder = new BlobBuilder(Allocator.Temp);
                 ref var root = ref builder.ConstructRoot<BlobHashMap<int2, int>>();
                 var hashMapBuilder = builder.AllocateHashMap(ref root, 5);
                 for (int i = 0; i < 10; i++)
@@ -53,7 +53,7 @@ namespace Junk.Collections.Tests
                     hashMapBuilder.Add(new int2(i, 0), 0);
                 }
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
                 Debug.Log("OK");
             }
@@ -90,7 +90,7 @@ namespace Junk.Collections.Tests
                 ref var root = ref builder.ConstructRoot<BlobHashMap<int2, int>>();
                 builder.AllocateHashMap(ref root, 0);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 Debug.Log("OK");
             }
@@ -102,14 +102,14 @@ namespace Junk.Collections.Tests
                 ref var root = ref builder.ConstructRoot<BlobMultiHashMap<int2, int>>();
                 builder.AllocateMultiHashMap(ref root, 0);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 Debug.Log("OK");
             }
 
         }
 
-        void HashMapsEmpty()
+        private void HashMapsEmpty()
         {
             // Zero elements with capacity > 0 hashmap read:
             try
@@ -224,7 +224,7 @@ namespace Junk.Collections.Tests
             {
                 dummy = blobRef.Value[0] + blobRef.Value[1];
             }
-            catch (KeyNotFoundException e)
+            catch (KeyNotFoundException)
             {
                 Debug.Log("OK");
             }

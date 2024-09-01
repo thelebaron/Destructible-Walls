@@ -16,7 +16,8 @@
         "Junk.Math",
         "Junk.Entities",
         "Junk.Transforms",
-        "Junk.Physics"
+        "Junk.Physics",
+        "Junk.Health"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

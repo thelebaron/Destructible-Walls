@@ -16,94 +16,79 @@ namespace Junk.Physics.Hybrid
 {
     public class PlatformAuthoring : MonoBehaviour
     {
-        public bool HideGizmos = false;
-        public float StartDelay = 1.25f;
+        public bool  HideGizmos;
+        public float Delay  = 1.25f;
         public float ReturnDelay = 2.5f;
-
-        [Header("Platform")]
-        public float3              TranslationAxis;
-        public float               TranslationAmplitude;
-        public float               TranslationSpeed;
-        public float               RotationSpeed;
-        public float3              RotationAxis;
+        public float Height;
+        public float Speed;
         
         [Header("Trigger")]
         public float3              TriggerOffset       = float3.zero;
         public Bounds              TriggerBounds       = new Bounds(new Vector3(2, 2, 2), new Vector3(2, 1, 2));
         public PhysicsCategoryTags TriggerBelongsTo    = PhysicsEnvironmentTags.TriggerBelongsTo;
         public PhysicsCategoryTags TriggerCollidesWith = PhysicsEnvironmentTags.TriggerCollidesWith;
-
+        
         [Header("Collider")]
         public float3 ColliderPosition = float3.zero;
         public Bounds ColliderBounds = new Bounds(new Vector3(2, 0, 2), new Vector3(2, 0.5f, 2));
         public PhysicsCategoryTags ColliderBelongsTo = PhysicsEnvironmentTags.TriggerBelongsTo; // use same as trigger
         public PhysicsCategoryTags ColliderCollidesWith = PhysicsEnvironmentTags.ColliderCollidesWith;
         
-        public float3 CalculateEndTargetPosition(Vector3 originalPosition, Vector3 translationAxis, float translationSpeed, float translationAmplitude)
-        {
-            // Calculate the displacement based on sinusoidal motion
-            var displacement = translationAmplitude * translationAxis.normalized;
-
-            // Calculate the end target position
-            var endTargetPosition = originalPosition + displacement;
-
-            return endTargetPosition;
-        }
         public void OnDrawGizmos()
         {
-            float3 originalPosition = transform.position;
-            var    axis             = TranslationAxis;
-            var    speed            = TranslationSpeed;
-            var    amplitude        = TranslationAmplitude;
-            var    time             = Time.time;
-            var    endTargetPos     = originalPosition + (math.normalizesafe(axis) * math.sin(time * speed) * TranslationAmplitude);
-            
             Gizmos.color = Color.magenta;
-            Gizmos.DrawWireCube(CalculateEndTargetPosition(originalPosition, axis, speed, amplitude) + TriggerOffset, TriggerBounds.size);
+            var endPosition = ColliderPosition + (float3)transform.position + (float3)ColliderBounds.center;
+            endPosition.y += Height;
+            Gizmos.DrawWireCube(endPosition, ColliderBounds.size);
+            
+            // Calculate the corners of the current position
+            Vector3 currentCenter = (float3)transform.position + (float3)ColliderBounds.center;
+            Vector3 halfSize      = TriggerBounds.size * 0.5f;
+
+            Vector3[] currentCorners = new Vector3[8];
+            currentCorners[0] = currentCenter + new Vector3(-halfSize.x, -halfSize.y, -halfSize.z);
+            currentCorners[1] = currentCenter + new Vector3(-halfSize.x, -halfSize.y, halfSize.z);
+            currentCorners[2] = currentCenter + new Vector3(-halfSize.x, halfSize.y, -halfSize.z);
+            currentCorners[3] = currentCenter + new Vector3(-halfSize.x, halfSize.y, halfSize.z);
+            currentCorners[4] = currentCenter + new Vector3(halfSize.x, -halfSize.y, -halfSize.z);
+            currentCorners[5] = currentCenter + new Vector3(halfSize.x, -halfSize.y, halfSize.z);
+            currentCorners[6] = currentCenter + new Vector3(halfSize.x, halfSize.y, -halfSize.z);
+            currentCorners[7] = currentCenter + new Vector3(halfSize.x, halfSize.y, halfSize.z);
+
+            // Calculate the corners of the end position
+            Vector3[] endCorners = new Vector3[8];
+            endCorners[0] = endPosition + new float3(-halfSize.x, -halfSize.y, -halfSize.z);
+            endCorners[1] = endPosition + new float3(-halfSize.x, -halfSize.y, halfSize.z);
+            endCorners[2] = endPosition + new float3(-halfSize.x, halfSize.y, -halfSize.z);
+            endCorners[3] = endPosition + new float3(-halfSize.x, halfSize.y, halfSize.z);
+            endCorners[4] = endPosition + new float3(halfSize.x, -halfSize.y, -halfSize.z);
+            endCorners[5] = endPosition + new float3(halfSize.x, -halfSize.y, halfSize.z);
+            endCorners[6] = endPosition + new float3(halfSize.x, halfSize.y, -halfSize.z);
+            endCorners[7] = endPosition + new float3(halfSize.x, halfSize.y, halfSize.z);
+
+            // Draw lines between corresponding corners
+            Gizmos.color = Color.cyan;
+            for (int i = 0; i < 8; i++)
+            {
+                Gizmos.DrawLine(currentCorners[i], endCorners[i]);
+            }
         }
 
         public void OnDrawGizmosSelected()
         {
             if (HideGizmos)
                 return;
-            // Draw trigger
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(TriggerOffset + (float3)transform.position + (float3)TriggerBounds.center, TriggerBounds.size);
-            Gizmos.color = new Color(0, 1, 0, 0.25f);
-            Gizmos.DrawCube(TriggerOffset + (float3)transform.position + (float3)TriggerBounds.center, TriggerBounds.size);
-
+            
             // Draw collider
             Gizmos.color = Color.green;
             Gizmos.DrawCube(ColliderPosition + (float3)transform.position + (float3)ColliderBounds.center, ColliderBounds.size);
+            
+            // Draw trigger
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireCube(TriggerOffset + (float3)transform.position + (float3)TriggerBounds.center, TriggerBounds.size);
+            Gizmos.color = new Color(0, 1, 1, 0.75f);
+            Gizmos.DrawCube(TriggerOffset + (float3)transform.position + (float3)TriggerBounds.center, TriggerBounds.size);
 
-            // Draw endpoint
-            //Assert.IsTrue(IsSingleAxis(Platform.TranslationAxis));
-
-            // Draw endpoint
-            {
-                var displacement = math.normalizesafe(TranslationAxis) * TranslationAmplitude;
-                var endPosition = (float3)transform.position + TriggerOffset + displacement;
-                // Draw trigger
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireCube(endPosition + (float3)TriggerBounds.center, TriggerBounds.size);
-
-                Gizmos.color = new Color(1, 1, 0, 0.25f);
-                Gizmos.DrawCube( endPosition + (float3)TriggerBounds.center, TriggerBounds.size);
-            }
-        }
-
-        // Method returns true if only one axis is not zero of a float3
-        private static bool IsSingleAxis(float3 value)
-        {
-            var count = 0;
-            if (value.x != 0) count++;
-            if (value.y != 0) count++;
-            if (value.z != 0) count++;
-
-            if (count != 1)
-                throw new System.Exception("MoveAxis must have only one non-zero axis.");
-
-            return true;
         }
     }
 
@@ -112,23 +97,21 @@ namespace Junk.Physics.Hybrid
         public override void Bake(PlatformAuthoring authoring)
         {
             var entity = GetEntity(TransformUsageFlags.Dynamic | TransformUsageFlags.WorldSpace);
+            
+            var endPosition = authoring.ColliderPosition + (float3)authoring.transform.position + (float3)authoring.ColliderBounds.center;
+            endPosition.y += authoring.Height;
 
             var platform = Platform.Default;
-            platform.State                = PhysicsMoverState.Stopped;
-            platform.Delay                = authoring.StartDelay;
-            platform.TranslationAxis      = authoring.TranslationAxis;
-            platform.TranslationAmplitude = authoring.TranslationAmplitude;
-            platform.TranslationSpeed     = authoring.TranslationSpeed;
-            platform.RotationSpeed        = authoring.RotationSpeed;
-            platform.RotationAxis         = authoring.RotationAxis;
-            platform.OriginalPosition     = authoring.transform.position;
-            platform.OriginalRotation     = authoring.transform.rotation;
+            platform.Delay            = authoring.Delay;
+            platform.Speed            = authoring.Speed;
+            platform.OriginalPosition = authoring.transform.position;
+            platform.TargetPosition   = endPosition;
             
             AddComponent(entity, platform);
             AddComponent<StatefulTriggerEvent>(entity);
 
-            RigidTransform currentTransform = new RigidTransform(authoring.transform.rotation, authoring.transform.position);
-            TrackedTransform trackedTransform = new TrackedTransform
+            var currentTransform = new RigidTransform(authoring.transform.rotation, authoring.transform.position);
+            var trackedTransform = new TrackedTransform
             {
                 CurrentFixedRateTransform = currentTransform,
                 PreviousFixedRateTransform = currentTransform,
@@ -143,45 +126,8 @@ namespace Junk.Physics.Hybrid
             {
                 PhysicsMoverEntity = entity,
                 TriggerType = PhysicsMoverTriggerType.Start,
-                Delay = authoring.StartDelay,
+                Delay = authoring.Delay,
             });
-
-            // Create return trigger
-            // this is the trigger that the platform will collide with to return the platform
-            var returnpointCollidesWith = PhysicsEnvironmentTags.TriggerBelongsTo;
-
-            var displacement = math.normalizesafe(authoring.TranslationAxis) * authoring.TranslationAmplitude;
-            CreateTrigger(entity, authoring, authoring.TriggerBelongsTo, returnpointCollidesWith, authoring.TriggerBounds,
-                authoring.TriggerOffset + displacement, " return", out var returnTriggerEntity);
-            AddComponent(returnTriggerEntity, new PlatformTrigger
-            {
-                PhysicsMoverEntity = entity,
-                TriggerType = PhysicsMoverTriggerType.Return,
-                Delay = authoring.ReturnDelay,
-            });
-
-            // Create stop trigger
-            // this is the trigger that the platform will collide with to stop the platform
-            // theres some oddity with stop trigger position when its positive on the y axis
-            var stopCollidesWith = returnpointCollidesWith;
-            var triggerOffset    = authoring.TriggerOffset;
-            var triggerBounds    = authoring.TriggerBounds;
-            if (authoring.TranslationAxis.y.IsPositive())
-            {
-                triggerOffset += new float3(0, -1.5f, 0);
-                var center = triggerBounds.center;
-                center.y             = -center.y;
-                triggerBounds.center = center;
-            }
-            
-            CreateTrigger(entity, authoring, authoring.TriggerBelongsTo, stopCollidesWith, triggerBounds, triggerOffset, " stop", out var stopTriggerEntity);
-            AddComponent(stopTriggerEntity, new PlatformTrigger
-            {
-                PhysicsMoverEntity = entity,
-                TriggerType = PhysicsMoverTriggerType.Stop,
-                Delay = 0,
-            });
-
             // Create collider
             CreateKinematicRigidbody(entity, authoring, authoring.ColliderBelongsTo, authoring.ColliderCollidesWith, authoring.ColliderBounds, authoring.ColliderPosition);
         }

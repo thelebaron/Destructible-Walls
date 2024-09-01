@@ -12,7 +12,8 @@
         "Unity.Transforms",
         "Junk.Math",
         "Junk.Collections",
-        "Junk.Entities"
+        "Junk.Entities",
+        "Junk.Health"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

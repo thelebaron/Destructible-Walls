@@ -12,6 +12,7 @@ namespace Junk.Fracture.Hybrid
         /// <summary> Create main directory if doesnt exist </summary>
         public static void CreateMeshDirectories(string name)
         {
+            #if UNITY_EDITOR
             //if it doesn't, create it
             if(!Directory.Exists(MainPath))
                 Directory.CreateDirectory(MainPath);
@@ -20,6 +21,7 @@ namespace Junk.Fracture.Hybrid
             //if it doesn't, create it
             if(!Directory.Exists(subPath))
                 Directory.CreateDirectory(subPath);
+            #endif
         }
         
         /*public static void CreateAssetInFolder(Object newAsset, string parentFolder, string assetName )
@@ -40,10 +42,12 @@ namespace Junk.Fracture.Hybrid
         
         public static void CreateAssetInFolder(Object newAsset, string parentFolder, string assetName)
         {
+#if UNITY_EDITOR
             System.IO.DirectoryInfo dirInfo = new System.IO.DirectoryInfo(string.Format("{0}/{1}", Application.dataPath, parentFolder));
             dirInfo.Create();
     
             AssetDatabase.CreateAsset(newAsset, string.Format("Assets/{0}/{1}.asset", parentFolder, assetName));
+#endif
         }
 
         /// <summary>

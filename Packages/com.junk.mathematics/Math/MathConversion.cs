@@ -6,7 +6,16 @@ namespace Junk.Math
 {
     public static partial class maths
     {
-
+        public static float3 GetPosition(this float4x4 matrix)
+        {
+            return matrix.c3.xyz;
+        }
+        
+        public static quaternion GetRotation(this float4x4 matrix)
+        {
+            // Extract the rotation quaternion from the upper-left 3x3 part of the matrix
+            return new quaternion(matrix);
+        }
     }
     
     public struct ByteBool

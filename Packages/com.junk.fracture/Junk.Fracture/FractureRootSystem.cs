@@ -7,6 +7,7 @@ using Unity.Physics;
 
 namespace Junk.Fracture
 {
+    [DisableAutoCreation]
     [WorldSystemFilter(WorldSystemFilterFlags.Default)]
     public partial struct FractureRootSystem : ISystem
     {

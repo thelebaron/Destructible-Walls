@@ -2,6 +2,7 @@
 using Junk.Math;
 using Unity.Mathematics;
 using Unity.Physics;
+using UnityEngine.Serialization;
 
 namespace Junk.Physics.Hybrid
 {
@@ -9,9 +10,9 @@ namespace Junk.Physics.Hybrid
     /// Just an authoring class to assist with making the fields look a little tidier.
     /// </summary>
     [Serializable]
-    public class AuthoringPhysicsData
+    public struct AuthoringPhysicsData
     {
-        public enum PhysicsAuthoringColliderType
+        public enum GeoType
         {
             Box,
             Sphere,
@@ -20,17 +21,19 @@ namespace Junk.Physics.Hybrid
             Mesh
         }
 
-        public float3                       Size;
-        public float3                       Offset;
-        public float                        Mass     = 1;
-        public PhysicsAuthoringColliderType Geometry = PhysicsAuthoringColliderType.Box;
+        public float3          Center;
+        public float3          Extents;
+        public float           Mass;
+        public GeoType         Geometry;
+        public CollisionFilter Filter;
 
-        public AuthoringPhysicsData(float3 size, float3 offset = default,  float mass = 1, PhysicsAuthoringColliderType geometry = PhysicsAuthoringColliderType.Box)
+        public AuthoringPhysicsData(float3 extents, float3 center = default,  float mass = 1, GeoType geometry = GeoType.Box)
         {
-            Size   = size;
-            Offset = offset;
-            Mass   = mass;
+            Extents  = extents;
+            Center   = center;
+            Mass     = mass;
             Geometry = geometry;
+            Filter   = CollisionFilter.Default;
         }
         
     }

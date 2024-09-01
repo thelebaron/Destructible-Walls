@@ -1,3 +1,4 @@
+using System;
 using Unity.Assertions;
 using Unity.Entities;
 using UnityEngine;
@@ -14,10 +15,10 @@ namespace Junk.Entities.Hybrid
         public    bool          StartDisabled;
 
         private   UIDocument    uiDocument;
-        protected World         world;
-        protected EntityManager entityManager;
-        protected EntityQuery   query;
-        protected Entity        gameEntity;
+        protected World         World;
+        protected EntityManager EntityManager;
+        protected EntityQuery   Query;
+        protected Entity        GameEntity;
 
         protected virtual void Start()
         {
@@ -27,9 +28,14 @@ namespace Junk.Entities.Hybrid
             Root.style.display = DisplayStyle.None;
         }
 
+        protected void OnDestroy()
+        {
+            Query.Dispose();
+        }
+
         private bool GetWorld()
         {
-            if (world != null)
+            if (World != null)
                 return true;
             
             if (World.DefaultGameObjectInjectionWorld == null)
@@ -37,24 +43,24 @@ namespace Junk.Entities.Hybrid
                 return false;
             }
             
-            world = World.DefaultGameObjectInjectionWorld;
+            World = World.DefaultGameObjectInjectionWorld;
             
-            entityManager = world.EntityManager;
-            query         = entityManager.CreateEntityQuery(typeof(Game));
+            EntityManager = World.EntityManager;
+            Query         = EntityManager.CreateEntityQuery(typeof(Game));
             
-            gameEntity = query.GetSingletonEntity();
+            GameEntity = Query.GetSingletonEntity();
             
-            if (!entityManager.HasComponent<GameMenu>(gameEntity))
+            if (!EntityManager.HasComponent<GameMenu>(GameEntity))
             {
                 //Debug.Log("Adding GameMenu component");
-                entityManager.AddComponent<GameMenu>(gameEntity);
+                EntityManager.AddComponent<GameMenu>(GameEntity);
                 //entityManager.AddComponentObject(gameEntity, new GameMenuRef {GameMenuBehaviour = this});
                 
-                entityManager.SetComponentEnabled<GameMenu>(gameEntity, true);
+                EntityManager.SetComponentEnabled<GameMenu>(GameEntity, true);
                 
                 if (StartDisabled)
                 {
-                    entityManager.SetComponentEnabled<GameMenu>(gameEntity, false);
+                    EntityManager.SetComponentEnabled<GameMenu>(GameEntity, false);
                 }
             }
 
@@ -63,16 +69,16 @@ namespace Junk.Entities.Hybrid
         
         protected void OnLoadPlayableSubscene()
         {
-            var menu = entityManager.GetComponentData<GameMenu>(gameEntity);
+            var menu = EntityManager.GetComponentData<GameMenu>(GameEntity);
             menu.PlayableSceneIsLoaded = true;
-            entityManager.SetComponentData(gameEntity, menu);
+            EntityManager.SetComponentData(GameEntity, menu);
         }
         
         protected void OnUnloadPlayableSubscene()
         {
-            var menu = entityManager.GetComponentData<GameMenu>(gameEntity);
+            var menu = EntityManager.GetComponentData<GameMenu>(GameEntity);
             menu.PlayableSceneIsLoaded = false;
-            entityManager.SetComponentData(gameEntity, menu);
+            EntityManager.SetComponentData(GameEntity, menu);
         }
 
         protected virtual void Update()
@@ -80,7 +86,7 @@ namespace Junk.Entities.Hybrid
             if(!GetWorld())
                 return;
             
-            gameEntity = query.GetSingletonEntity();
+            GameEntity = Query.GetSingletonEntity();
             /*
             if (query.CalculateEntityCount() < 1)
             {

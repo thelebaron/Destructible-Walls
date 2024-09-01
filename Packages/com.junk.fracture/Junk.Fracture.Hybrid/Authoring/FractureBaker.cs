@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Junk.Collections;
 using Junk.Entities;
+using Junk.Physics;
 using Unity.Assertions;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Extensions;
+using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
 using Material = UnityEngine.Material;
@@ -18,17 +20,8 @@ namespace Junk.Fracture.Hybrid
     [TemporaryBakingType]
     public class FractureRenderData : IComponentData
     {
-        public Mesh     Mesh;
-        public Material InsideMaterial;
-        public Material OutsideMaterial;
-        public ushort   SubMeshIndex;
-        public int      MaterialIndex;
-    }
-    
-    //[TemporaryBakingType]
-    public class ColliderMesh : IComponentData
-    {
-        public Mesh Mesh;
+        public MaterialMeshInfo MaterialMeshInfo;
+        public RenderMeshArray  RenderMeshArray;
     }
 
     /// <summary>
@@ -59,7 +52,7 @@ namespace Junk.Fracture.Hybrid
             return Id.CompareTo(other);
         }
     }
-    
+    #if UNITY_EDITOR
     public class FractureBaker : Baker<FracturedAuthoring>
     {
         public override void Bake(FracturedAuthoring authoring)
@@ -101,7 +94,7 @@ namespace Junk.Fracture.Hybrid
                 AddComponent<Fracture>(childEntity, new Fracture
                 {
                     Id = childEntity.Index,
-                    ConnectionMap = BakeMappingToBlob(this, kvp)
+                    //ConnectionMap = BakeMappingToBlob(this, kvp)
                 });
             }
         }
@@ -121,15 +114,16 @@ namespace Junk.Fracture.Hybrid
                 
                 graph.Add(new FractureGraph {Node = child, Id = id});
                 AddComponent(child, LocalTransform.Identity);
-                AddComponent(child, new LocalToWorld{Value = float4x4.TRS(tr.Position, tr.Rotation, tr.Scale)});
+                //AddComponent(child, new LocalToWorld{Value = float4x4.TRS(tr.Position, tr.Rotation, tr.Scale)});
+                AddComponent(child, new LocalToWorld{Value = float4x4.identity});
                 AddComponent<LocalTransform>(child);
                 AddComponent<IsFractured>(child);
                 SetComponentEnabled<IsFractured>(child, false);
                 AddComponent<Prefab>(child);
-                AddComponent(child, new TimeDestroy{Value = 5});
+                AddComponent(child, new TimeDestroy{Value = 25});
                 
                 // Render Entities
-                AddGraphicsComponents(node, child);
+                AddGraphicsComponents(node, child, true);
                 children.Add(new FractureChild {Child = child});
 
                 // Physics Components Setup
@@ -176,8 +170,14 @@ namespace Junk.Fracture.Hybrid
                 triangles[index] = node.Mesh.triangles[index];
 
             //var colliderBlob = Unity.Physics.MeshCollider.Create(vertices, triangles), filter, material);
+
+            var collisionFilter = CollisionFilter.Default;
+            collisionFilter.BelongsTo = Junk.Physics.Layers.Environment(false, true, false);
+            collisionFilter.CollidesWith = Junk.Physics.Layers.WorldCollisionMatrix(true);
+            
             var colliderBlob = ConvexCollider.Create(vertices, ConvexHullGenerationParameters.Default, CollisionFilter.Default);
-                    
+            //colliderBlob.Value.IsUnique = true;
+            
             AddBlobAsset(ref colliderBlob, out var blobhash);
             AddComponent(child, new PhysicsCollider { Value = colliderBlob });
             var massdist = new MassDistribution
@@ -201,10 +201,10 @@ namespace Junk.Fracture.Hybrid
             mesh = colliderBlob.Value.ToMesh();
         }
 
-        private void AddGraphicsComponents(FractureCache node, Entity child)
+        private void AddGraphicsComponents(FractureCache node, Entity child, bool reuse)
         {
-            var submeshCount = node.Mesh.subMeshCount;
-            if (submeshCount > 1)
+             var submeshCount = node.Mesh.subMeshCount;
+            if (!reuse)
             {
                 var linkedEntities = AddBuffer<LinkedEntityGroup>(child);
                 linkedEntities.Add(new LinkedEntityGroup { Value = child });
@@ -214,27 +214,41 @@ namespace Junk.Fracture.Hybrid
                     AddComponent<Prefab>(renderEntity);
                     AddComponent(renderEntity, LocalTransform.Identity);
                     AddComponent(renderEntity, new LocalToWorld { Value = float4x4.identity });
+                    
+                    var material = i == 0 ? node.InsideMaterial : node.OutsideMaterial;
                     AddComponentObject(renderEntity, new FractureRenderData
                     {
-                        Mesh            = node.Mesh,
-                        SubMeshIndex    = (ushort)i,
-                        MaterialIndex   = i,
-                        InsideMaterial  = node.InsideMaterial,
-                        OutsideMaterial = node.OutsideMaterial
-                    });
+                        MaterialMeshInfo = MaterialMeshInfo.FromRenderMeshArrayIndices(0, 0, (ushort)i),
+                        RenderMeshArray = new RenderMeshArray(
+                        new Material[1] { material },
+                        new Mesh[1] { node.Mesh }
+                        /*,
+                        */
+                    ) });
                     AddComponent(renderEntity, new Parent { Value    = child });
                     linkedEntities.Add(new LinkedEntityGroup { Value = renderEntity });
                 }
             }
             else
             {
+                // Create MaterialMeshInfo that uses both submeshes
                 AddComponentObject(child, new FractureRenderData
                 {
-                    Mesh            = node.Mesh,
-                    InsideMaterial  = node.InsideMaterial,
-                    OutsideMaterial = node.OutsideMaterial
+                    //Mesh             = node.Mesh,
+                    //Material         = node.OutsideMaterial,
+                    MaterialMeshInfo = MaterialMeshInfo.FromMaterialMeshIndexRange(0, node.Mesh.subMeshCount),
+                    RenderMeshArray = new RenderMeshArray(
+                        new Material[2] { node.OutsideMaterial, node.InsideMaterial },
+                        new Mesh[1] { node.Mesh },
+                        new MaterialMeshIndex[]
+                        {
+                            new MaterialMeshIndex { MaterialIndex = 1, MeshIndex = 0, SubMeshIndex = 0 },
+                            new MaterialMeshIndex { MaterialIndex = 0, MeshIndex = 0, SubMeshIndex = 1 }
+                        }
+                    )
                 });
             }
+            
         }
         
         /// <summary>
@@ -396,4 +410,5 @@ namespace Junk.Fracture.Hybrid
             return blobReference;
         }
     }
+    #endif
 }

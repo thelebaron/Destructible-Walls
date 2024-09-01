@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Junk.Entities.Hybrid
 {
+    #if UNITY_EDITOR
     public abstract class BakedScriptableObject<T> : ScriptableObject where T : unmanaged
     {
         public BlobAssetReference<T> BakeToBlob(IBaker baker)
@@ -24,7 +25,7 @@ namespace Junk.Entities.Hybrid
     
         protected abstract void BakeToBlobData(ref T data, ref BlobBuilder blobBuilder);
     }
-    
+    #endif
     /*
     // Example usage
     [Serializable]

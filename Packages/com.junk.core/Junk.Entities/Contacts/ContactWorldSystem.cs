@@ -194,7 +194,7 @@ namespace Junk.Entities
                 var randomScale   = Random.NextFloat(data.ScaleMinMax.x, data.ScaleMinMax.y);
                 var surfaceNormal = data.Hit.SurfaceNormal;
                 
-                if (surfaceNormal.Equals(maths.up) || surfaceNormal.Equals(-maths.up))
+                //if (surfaceNormal.Equals(maths.up) || surfaceNormal.Equals(-maths.up))
                 {
                     var randomTilt = new float3(Random.NextFloat(-0.0001f, 0.0001f), 0, Random.NextFloat(-0.0001f, 0.0001f));
                     if (randomTilt.Equals(0f))

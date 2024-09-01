@@ -12,7 +12,8 @@
         "UnityEngine.UI",
         "Unity.Mathematics.Extensions",
         "Junk.Entities",
-        "Junk.Math"
+        "Junk.Math",
+        "Junk.Transforms"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -21,6 +22,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.radiatoryang.scopa",
+            "expression": "1.0.0",
+            "define": "SCOPA_1_0_0_OR_NEWER"
+        }
+    ],
     "noEngineReferences": false
 }

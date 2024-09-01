@@ -22,7 +22,9 @@
         "Junk.Entities.Hybrid",
         "Junk.Entities.Editor",
         "Junk.Fracture",
-        "Junk.Fracture.Hybrid"
+        "Junk.Fracture.Hybrid",
+        "Autodesk.Fbx",
+        "Unity.Formats.Fbx.Editor"
     ],
     "includePlatforms": [
         "Editor"

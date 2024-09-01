@@ -16,6 +16,7 @@
         "Junk.Math",
         "Junk.Collections",
         "Junk.Entities",
+        "Junk.Physics",
         "Junk.Physics.Hybrid",
         "Junk.Fracture",
         "Junk.Entities.Hybrid"

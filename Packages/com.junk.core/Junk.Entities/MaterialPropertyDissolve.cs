@@ -31,7 +31,7 @@ namespace Junk.Entities
     
     [UpdateInGroup(typeof(PresentationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
-    public partial struct SetHumanRagdollSystem : ISystem
+    public partial struct DissolveSystem : ISystem
     {
         
        /* [BurstCompile]

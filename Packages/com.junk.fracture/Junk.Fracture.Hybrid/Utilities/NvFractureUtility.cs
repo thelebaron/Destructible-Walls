@@ -3,24 +3,32 @@ using UnityEngine;
 
 namespace Junk.Fracture.Hybrid
 {
+    #if UNITY_EDITOR
     public static class NvFractureUtility
     {
-        // extract to separate class
+        public enum NvFractureType
+        {
+            Voronoi,
+            Clustered,
+            Slicing
+        }
+        
         public static void Voronoi(NvFractureTool fractureTool, NvMesh nvMesh, int totalChunks)
         {
             var sites = new NvVoronoiSitesGenerator(nvMesh);
             sites.uniformlyGenerateSitesInMesh(totalChunks);
             fractureTool.voronoiFracturing(0, sites);
         }
-        private static void Clustered(NvFractureTool fractureTool, NvMesh mesh, int clusters, int sitesPerCluster, float clusterRadius)
+        
+        public static void Clustered(NvFractureTool fractureTool, NvMesh mesh, int clusters, int sitesPerCluster, float clusterRadius)
         {
             NvVoronoiSitesGenerator sites = new NvVoronoiSitesGenerator(mesh);
             sites.clusteredSitesGeneration(clusters, sitesPerCluster, clusterRadius);
             fractureTool.voronoiFracturing(0, sites);
         }
         
-        private static void Slicing(NvFractureTool fractureTool, NvMesh mesh, Vector3Int slices, int offset_variations, 
-            int angle_variations, float amplitude, float frequency, int octaveNumber, int surfaceResolution)
+        public static void Slicing(NvFractureTool fractureTool, NvMesh mesh, Vector3Int slices, int offset_variations, 
+                                   int angle_variations, float amplitude, float frequency, int octaveNumber, int surfaceResolution)
         {
             SlicingConfiguration conf = new SlicingConfiguration();
             conf.slices            = slices;
@@ -44,16 +52,17 @@ namespace Junk.Fracture.Hybrid
             return fractureTool;
         }
 
-        public static NvMesh Mesh(FractureWorkingData fractureWorking)
+        public static NvMesh Mesh(NvFractureData nvFracture)
         {
             return new NvMesh(
-                fractureWorking.mesh.vertices,
-                fractureWorking.mesh.normals,
-                fractureWorking.mesh.uv,
-                fractureWorking.mesh.vertexCount,
-                fractureWorking.mesh.GetIndices(0),
-                (int) fractureWorking.mesh.GetIndexCount(0)
+                nvFracture.mesh.vertices,
+                nvFracture.mesh.normals,
+                nvFracture.mesh.uv,
+                nvFracture.mesh.vertexCount,
+                nvFracture.mesh.GetIndices(0),
+                (int) nvFracture.mesh.GetIndexCount(0)
             );
         }
     }
+    #endif
 }
