@@ -1,35 +1,32 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Junk.Fracture.Hybrid;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
+using Random = Unity.Mathematics.Random;
 
 namespace Junk.Fracture.Editor
 {
-    public enum EditorMode
+    public class FractureEditor : EditorWindow
     {
-        OpenEditor,
-        CreateAssets,
-        CreateCache,
-        SaveMeshMaterialData,
-        FractureWorkshop
-    }
+        private       FractureSetupData data;
+        private const string            umxlPath = "Packages/com.junk.fracture/Junk.Fracture.Editor/Resources/FractureEditorMain.uxml";
+        private const string            stylePath = "Packages/com.junk.fracture/Junk.Fracture.Editor/Resources/FractureEditorMain_Style.uss";
 
-    public partial class FractureEditor : EditorWindow
-    {
-        private FractureSetupData data;
+        private       ObjectField  objectField;
+        private       Button       randomSeedButton;
+        private       IntegerField seedIntField;
 
-        // ReSharper disable Unity.PerformanceAnalysis
         public static void Open(Object target)
         {
             var window = (FractureEditor)GetWindow(typeof(FractureEditor));
             window.Clear();
-
-            var data = new FractureSetupData();
-            data.target = target;
-            window.data = data;
-
-            FractureEditorMethods.Setup(data, EditorMode.OpenEditor);
+            
+            FractureEditorMethods.Setup(ref window.data, target, EditorMode.OpenEditor);
             window.Show();
         }
 
@@ -37,6 +34,46 @@ namespace Junk.Fracture.Editor
         public static void ShowWindow()
         {
             GetWindow<FractureEditor>("Fracture Editor");
+        }
+
+        public void CreateGUI()
+        {
+            // Load the UXML file
+            var uxmlAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(umxlPath);
+
+            var root = rootVisualElement;
+            uxmlAsset.CloneTree(root);
+
+            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(stylePath);
+            root.styleSheets.Add(styleSheet);
+
+            SetupVisualElements();
+            SetupReferences();
+        }
+
+        private void SetupReferences()
+        {
+            objectField.objectType = typeof(GameObject); // Ensure it only accepts GameObjects
+
+            // Optionally bind an initial GameObject
+            objectField.value = Selection.activeGameObject;
+
+            // Handle value changes
+            objectField.RegisterValueChangedCallback(evt =>
+            {
+                //Debug.Log("Selected GameObject: " + evt.newValue);
+            });
+            
+            randomSeedButton.RegisterCallback<ClickEvent>(ev => seedIntField.value = UnityEngine.Random.Range(0, int.MaxValue));
+        }
+
+        private void SetupVisualElements()
+        {
+            var rootElement = rootVisualElement;
+
+            objectField = rootElement.Q<ObjectField>("object-field");
+            randomSeedButton = rootElement.Q<Button>("randomseed-button");
+            seedIntField = rootElement.Q<IntegerField>("seed-intfield");
         }
 
         private void Clear()
@@ -51,9 +88,8 @@ namespace Junk.Fracture.Editor
             if (data == null)
             {
                 
-                return;
             }
-            
+            return;
             GUILayout.Label("Welcome !");
             data.labelText = Selection.activeObject == null ? data.labelText : Selection.activeObject.name;
             data.labelText = EditorGUILayout.TextField(data.labelText);
@@ -196,6 +232,11 @@ namespace Junk.Fracture.Editor
             // Since this is the most important window in the editor, let's use our
             // resources to make this nice and smooth, even when running in the background.
             Repaint();
+        }
+
+        public void OnEnable()
+        {
+            // NO-OP - ignore any initialization for creategui
         }
     }
 }

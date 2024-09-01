@@ -8,8 +8,11 @@ namespace Junk.Fracture.Editor
 {
     internal static class FractureEditorMethods
     {
-        internal static void Setup(FractureSetupData data, EditorMode mode)
+        internal static void Setup(ref FractureSetupData data, Object target, EditorMode mode)
         {
+            data = new FractureSetupData();
+            data.target = target;
+            
             string path;
             
             switch (mode)
