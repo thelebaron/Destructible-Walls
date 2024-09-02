@@ -7,7 +7,7 @@
             <ui:SliderInt label="Fracture Levels" high-value="4" name="fracture-slider" low-value="1" value="0">
                 <ui:Label text="1" name="fracture-nesting-label" />
             </ui:SliderInt>
-            <ui:Slider picking-mode="Ignore" label="Preview Distance" value="0.5" high-value="5" name="preview-distance-slider" style="width: 289px; display: none;">
+            <ui:Slider picking-mode="Ignore" label="Preview Distance" value="0.5" high-value="2" name="preview-distance-slider" style="width: 289px; display: flex;">
                 <ui:Label text="0" name="preview-distance-label" />
             </ui:Slider>
             <ui:Toggle label="Apply To Object" name="apply-to-object-toggle" value="true" />

@@ -28,6 +28,8 @@ namespace Junk.Fracture.Editor
         private ObjectField  outsideMaterialField;
         private SliderInt    fractureSlider;
         private Label        fractureSliderLabel;
+        private Slider    previewDistanceSlider;
+        private Label previewDistanceLabel;
         private Toggle       applyToObjectToggle;
         private IntegerField fractureCountField;
         private Button       fractureButton;
@@ -98,6 +100,13 @@ namespace Junk.Fracture.Editor
             outsideMaterialField.value = AssetDatabase.LoadAssetAtPath<Material>(outsideMaterialPath);
             
             fractureSlider.RegisterValueChangedCallback(ev => fractureSliderLabel.text = $"{fractureSlider.value}");
+            previewDistanceSlider.RegisterValueChangedCallback(ev =>
+                {
+                    previewDistanceLabel.text = $"{previewDistanceSlider.value}";
+                    var gameObject = (GameObject)objectField.value;
+                    GeometryEx.SetPreviewDistance(gameObject, previewDistanceSlider.value);
+                }
+            );
             
             fractureButton.RegisterCallback<ClickEvent>(ev => FractureObject());
             createBondsButton.RegisterCallback<ClickEvent>(ev => CreateBonds());
@@ -197,21 +206,23 @@ namespace Junk.Fracture.Editor
         {
             var rootElement = rootVisualElement;
 
-            objectField = rootElement.Q<ObjectField>("object-field");
-            randomSeedButton = rootElement.Q<Button>("randomseed-button");
-            seedIntField = rootElement.Q<IntegerField>("seed-intfield");
-            insideMaterialField = rootElement.Q<ObjectField>("inside-material-field");
-            outsideMaterialField = rootElement.Q<ObjectField>("outside-material-field");
-            meshField = rootElement.Q<ObjectField>("mesh-field");
-            fractureSlider = rootElement.Q<SliderInt>("fracture-slider");
-            applyToObjectToggle = rootElement.Q<Toggle>("apply-to-object-toggle");
-            fractureCountField = rootElement.Q<IntegerField>("fracture-count");
-            fractureSliderLabel = rootElement.Q<Label>("fracture-nesting-label");
-            fractureButton = rootElement.Q<Button>("fracture-button");
-            createBondsButton = rootElement.Q<Button>("create-bonds-button");
-            resetButton = rootElement.Q<Button>("reset-button");
-            saveButton = rootElement.Q<Button>("save-button");
-            logField = rootElement.Q<TextField>("log-field");
+            objectField           = rootElement.Q<ObjectField>("object-field");
+            randomSeedButton      = rootElement.Q<Button>("randomseed-button");
+            seedIntField          = rootElement.Q<IntegerField>("seed-intfield");
+            insideMaterialField   = rootElement.Q<ObjectField>("inside-material-field");
+            outsideMaterialField  = rootElement.Q<ObjectField>("outside-material-field");
+            meshField             = rootElement.Q<ObjectField>("mesh-field");
+            fractureSlider        = rootElement.Q<SliderInt>("fracture-slider");
+            previewDistanceSlider = rootElement.Q<Slider>("preview-distance-slider");
+            previewDistanceLabel  = rootElement.Q<Label>("preview-distance-label");
+            applyToObjectToggle   = rootElement.Q<Toggle>("apply-to-object-toggle");
+            fractureCountField    = rootElement.Q<IntegerField>("fracture-count");
+            fractureSliderLabel   = rootElement.Q<Label>("fracture-nesting-label");
+            fractureButton        = rootElement.Q<Button>("fracture-button");
+            createBondsButton     = rootElement.Q<Button>("create-bonds-button");
+            resetButton           = rootElement.Q<Button>("reset-button");
+            saveButton            = rootElement.Q<Button>("save-button");
+            logField              = rootElement.Q<TextField>("log-field");
         }
 
         private void LogToConsole(string message)
@@ -239,6 +250,12 @@ namespace Junk.Fracture.Editor
             var gameObject    = (GameObject) objectField.value;
             var path = EditorUtility.SaveFilePanel("Save", "Assets/", name, "fbx");
             AssetHandlingUtility.ExportMesh(gameObject, path);
+        }
+
+        private void OnDisable()
+        {
+            var gameObject = (GameObject) objectField.value;
+            GeometryEx.ResetPreviewDistance(gameObject);
         }
     }
 }

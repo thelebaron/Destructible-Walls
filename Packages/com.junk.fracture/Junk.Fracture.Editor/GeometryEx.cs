@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Junk.Fracture.Hybrid;
 using Unity.Mathematics;
 using UnityEngine;
@@ -7,6 +8,62 @@ namespace Junk.Fracture.Editor
 {
     public static class GeometryEx
     {
+        public static void SetPreviewDistance(GameObject gameObject, float distance)
+        {
+            // Get the current GameObject's MeshRenderer bounds center
+            MeshRenderer currentMeshRenderer = gameObject.GetComponent<MeshRenderer>();
+            if (currentMeshRenderer == null) 
+                return;
+
+            Vector3 center = currentMeshRenderer.bounds.center;
+
+            var chunks = gameObject.GetComponentsInChildren<ModelChunkInfo>();
+            if(chunks.Length<1)
+                return;
+
+            // Draw a line from this GameObject to each connected GameObject
+            foreach (var other in chunks)
+            {
+                if (other == null) 
+                    continue;
+
+                if (distance.Equals(0))
+                {
+                    //other.transform.position = Vector3.zero;
+                    //continue;
+                }
+        
+                var mr = other.GetComponent<MeshRenderer>();
+                if (mr != null)
+                {
+                    Vector3 currentCenter = mr.bounds.center;
+
+                    // Calculate the direction from the center to the current chunk
+                    Vector3 direction = (currentCenter - center).normalized;
+            
+                    // Set the new position based on the direction and distance
+                    other.transform.position = center + direction * distance;
+                }
+            }
+        }
+        
+        public static void ResetPreviewDistance(GameObject gameObject)
+        {
+            var chunks = gameObject.GetComponentsInChildren<Transform>().ToList();
+            if(chunks.Count < 1)
+                return;
+            
+            if(chunks.Contains(gameObject.transform))
+                chunks.Remove(gameObject.transform);
+            
+            // Draw a line from this GameObject to each connected GameObject
+            foreach (var other in chunks)
+            {
+                if (other.GetComponent<ModelChunkInfo>()!=null)
+                    other.transform.localPosition = Vector3.zero;
+            }
+        }
+        
         public static void GetOverlaps(List<(GameObject, Mesh)> chunks, float touchRadius = 0.01f)
         {
             foreach (var chunk in chunks)
