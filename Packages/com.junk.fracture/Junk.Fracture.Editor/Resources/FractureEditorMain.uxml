@@ -1,35 +1,27 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Packages/com.junk.fracture/Junk.Fracture.Editor/Resources/FractureEditorMain_Style.uss?fileID=7433441132597879392&amp;guid=6e03ea35509b04c4a81772c583a7f558&amp;type=3#FractureEditorMain_Style" />
-    <ui:HelpBox text="Help info" message-type="Info" name="the-uxml-help-box">
-        <ui:Label text="Notes: Should not be used with hierarchical objects as LitterBug currently does not support merging hierarchies. You have been warned!" style="height: auto; width: 295.8px; white-space: normal; color: rgb(96, 96, 96); justify-content: center; align-items: auto; padding-top: 1px; padding-bottom: 5px;" />
-    </ui:HelpBox>
-    <ui:VisualElement name="Root" style="position: relative; opacity: 1; flex-direction: row; justify-content: flex-start; right: 45px; left: 2px; top: 2px; height: auto; min-width: auto; width: auto;">
-        <ui:VisualElement name="Tools" class="buttons-container" style="align-items: flex-start; justify-content: flex-start; position: absolute; left: auto; flex-direction: row; right: auto; bottom: auto; top: 18px; max-width: none; width: 305px; flex-wrap: wrap;">
-            <ui:Button text="Fracture" name="Fracture" tooltip="Create smaller chunks of an object" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
-            <ui:Button text="Reset" name="Reset" tooltip="Reset any fractured object" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
-            <ui:Button text="Save" name="save" tooltip="Reset any fractured object" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
-            <ui:Button text="Export" name="Export" tooltip="Export to fbx" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px;" />
-        </ui:VisualElement>
-        <ui:VisualElement name="Toggles" style="position: absolute; height: 445.2px; width: 302.2857px; top: 54px; left: 2px;">
+    <ui:VisualElement name="Root" style="position: relative; opacity: 1; flex-direction: row; right: 45px; left: 2px; top: 2px;">
+        <ui:VisualElement name="Toggles">
             <uie:ObjectField label="Object" name="object-field" focusable="true" tooltip="Object to fracture" type="UnityEngine.GameObject, UnityEngine.CoreModule" style="display: flex; visibility: visible; width: auto;" />
-            <uie:ObjectField label="Mesh" name="mesh-input" focusable="true" tooltip="Root container gameobject prefabs spawn inside" style="display: flex; visibility: visible; width: auto;" />
-            <ui:SliderInt label="Fracture Levels" high-value="4" name="fracture-nesting-label" low-value="1" value="0">
-                <ui:Label text="0" name="fracture-nesting-label" />
+            <uie:ObjectField label="Mesh" name="mesh-field" focusable="true" tooltip="Root container gameobject prefabs spawn inside" style="display: flex; visibility: visible; width: auto;" />
+            <ui:SliderInt label="Fracture Levels" high-value="4" name="fracture-slider" low-value="1" value="0">
+                <ui:Label text="1" name="fracture-nesting-label" />
             </ui:SliderInt>
             <ui:Slider picking-mode="Ignore" label="Preview Distance" value="0.5" high-value="5" name="preview-distance-slider" style="width: 289px; display: none;">
                 <ui:Label text="0" name="preview-distance-label" />
             </ui:Slider>
-            <uie:EnumField label="Fracture Type" value="Off" include-obsolete-values="false" name="FractureType" binding-path="fractureType" style="width: 300px; background-color: rgb(156, 156, 156); -unity-font-style: normal; margin-top: 11px; margin-bottom: 11px; font-size: 12px; color: rgb(0, 0, 0); height: 25px;" />
+            <ui:Toggle label="Apply To Object" name="apply-to-object-toggle" value="true" />
+            <uie:EnumField label="Fracture Type" value="Off" include-obsolete-values="false" name="FractureType" binding-path="fractureType" style="width: 300px; background-color: rgb(156, 156, 156); -unity-font-style: normal; margin-top: 11px; margin-bottom: 11px; font-size: 12px; color: rgb(0, 0, 0); height: 25px; display: none;" />
             <ui:Label text="Object" style="left: 0; margin-left: 3px; margin-right: 3px; margin-top: 12px; -unity-font-style: bold-and-italic; margin-bottom: 5px;" />
             <uie:FloatField label="Density" value="15" name="Density" tooltip="Total density/mass of the object(each chunk is divided by the num of chunks and this)" style="display: none;" />
             <uie:IntegerField label="Seed" value="12345" name="seed-intfield">
                 <ui:Button text="Random Seed" name="randomseed-button" style="height: 13px; margin-left: 0; margin-right: 0; margin-top: 3px; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 85px; justify-content: flex-start;" />
             </uie:IntegerField>
-            <uie:ObjectField label="Material Inside" name="MaterialInside" />
-            <uie:ObjectField label="Material Outside" name="MaterialOutside" />
+            <uie:ObjectField label="Material Inside" name="inside-material-field" />
+            <uie:ObjectField label="Material Outside" name="outside-material-field" />
             <ui:Toggle label="Postprocess" text=" " value="true" tooltip="Add the kaos fracturing conversion components" name="postprocess-option" style="display: none;" />
             <ui:Label text="Voronoi" style="left: 0; margin-left: 3px; margin-right: 3px; margin-top: 12px; -unity-font-style: bold-and-italic; margin-bottom: 5px;" />
-            <uie:IntegerField label="Fracture Count" value="5" name="FractureCount" tooltip="How many chunks a fractured object should be split into" />
+            <uie:IntegerField label="Count" value="5" name="fracture-count" tooltip="How many chunks a fractured object should be split into" />
             <ui:Toggle label="Shell" name="Shell" tooltip="Should every chunk be an anchor(ie in a thin wall situation)" style="display: none;" />
             <uie:EnumField label="Rotation Type" value="Off" include-obsolete-values="false" name="RotationType" binding-path="prefabRotationType" tooltip="Randomize rotation or not" style="width: 299px; display: none;" />
             <uie:FloatField label="Prefab scale" value="1" name="Scale" tooltip="Adjust prefab scale" binding-path="scale" style="display: none;" />
@@ -51,6 +43,14 @@
                 <uie:IntegerField label="Surface Resolution" value="2" tooltip="Resolution" name="slices-surface-resolution" />
             </ui:VisualElement>
             <ui:VisualElement name="helpbox" style="height: 73px; position: absolute; top: 669.8px; left: 5.4px; width: 285px; display: none;" />
+            <ui:VisualElement name="Tools" class="buttons-container" style="align-self: center;">
+                <ui:Button text="Fracture" name="fracture-button" tooltip="Create smaller chunks of an object" style="width: 125px; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px; align-self: center;" />
+                <ui:Button text="Create Bonds" name="create-bonds-button" tooltip="Finds and connects chunks with bonds. Could take a long time!" style="width: 125px; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px; align-self: center;" />
+                <ui:Button text="Reset" name="reset-button" tooltip="Reset any fractured object" style="width: 125px; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px; align-self: center;" />
+                <ui:Button text="Save" name="save-button" tooltip="Reset any fractured object" style="width: 125px; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px; align-self: center;" />
+                <ui:Button text="Export" name="Export" tooltip="Export to fbx" style="width: auto; height: 32px; margin-left: 1px; margin-right: 1px; padding-left: 1px; display: none;" />
+            </ui:VisualElement>
+            <ui:TextField name="log-field" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -12,5 +12,12 @@ namespace Junk.Fracture.Editor
             Debug.Log(selection.name);
             Debug.Log(AssetDatabase.GetAssetPath(selection));
         }
+
+        [MenuItem("Junk/Fracture Window")]
+        public static void OpenFractureWindow()
+        {
+            var selection = Selection.activeObject;
+            FractureEditor.Open(selection);
+        }
     }
 }

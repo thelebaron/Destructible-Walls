@@ -9,7 +9,7 @@ namespace Junk.Fracture.Hybrid
     [Serializable]
     public class NvFractureData
     {
-        public FractureCache  RootCache;
+        //public FractureCache  RootCache;
         public int                seed = 3;
         public int                totalChunks = 20;
         public Mesh               mesh;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Junk.Fracture.Hybrid;
 using UnityEngine;
@@ -13,18 +14,32 @@ namespace Junk.Fracture.Editor
 {
     public class FractureEditor : EditorWindow
     {
-        private       FractureSetupData data;
-        private const string            umxlPath = "Packages/com.junk.fracture/Junk.Fracture.Editor/Resources/FractureEditorMain.uxml";
-        private const string            stylePath = "Packages/com.junk.fracture/Junk.Fracture.Editor/Resources/FractureEditorMain_Style.uss";
+        private       FracturingData data;
+        private const string            umxlPath           = "Packages/com.junk.fracture/Junk.Fracture.Editor/Resources/FractureEditorMain.uxml";
+        private const string            stylePath          = "Packages/com.junk.fracture/Junk.Fracture.Editor/Resources/FractureEditorMain_Style.uss";
+        private const string            insideMaterialPath = "Packages/com.junk.fracture/Junk.Fracture/Materials/InsideMaterial.mat";
+        private const string            outsideMaterialPath = "Packages/com.junk.fracture/Junk.Fracture/Materials/OutsideMaterial.mat";
 
-        private       ObjectField  objectField;
-        private       Button       randomSeedButton;
-        private       IntegerField seedIntField;
+        private ObjectField  objectField;
+        private ObjectField  meshField;
+        private Button       randomSeedButton;
+        private IntegerField seedIntField;
+        private ObjectField  insideMaterialField;
+        private ObjectField  outsideMaterialField;
+        private SliderInt    fractureSlider;
+        private Label        fractureSliderLabel;
+        private Toggle       applyToObjectToggle;
+        private IntegerField fractureCountField;
+        private Button       fractureButton;
+        private Button       createBondsButton;
+        private Button       resetButton;
+        private Button       saveButton;
+        private TextField    logField;
 
         public static void Open(Object target)
         {
             var window = (FractureEditor)GetWindow(typeof(FractureEditor));
-            window.Clear();
+            window.minSize = new Vector2(290, 370);
             
             FractureEditorMethods.Setup(ref window.data, target, EditorMode.OpenEditor);
             window.Show();
@@ -54,17 +69,128 @@ namespace Junk.Fracture.Editor
         private void SetupReferences()
         {
             objectField.objectType = typeof(GameObject); // Ensure it only accepts GameObjects
-
+            meshField.objectType = typeof(Mesh);
+            
             // Optionally bind an initial GameObject
             objectField.value = Selection.activeGameObject;
 
-            // Handle value changes
-            objectField.RegisterValueChangedCallback(evt =>
+            var go = (GameObject)objectField.value;
+            if (go.GetComponent<MeshFilter>())
             {
+                meshField.value = go.GetComponent<MeshFilter>().sharedMesh;
+            }
+
+            // Handle value changes
+            objectField.RegisterValueChangedCallback(evt => {
                 //Debug.Log("Selected GameObject: " + evt.newValue);
             });
             
             randomSeedButton.RegisterCallback<ClickEvent>(ev => seedIntField.value = UnityEngine.Random.Range(0, int.MaxValue));
+            
+            seedIntField.RegisterValueChangedCallback(ev => EditorPrefs.SetInt("FractureEditor_Seed", seedIntField.value));
+            
+            seedIntField.value =  EditorPrefs.GetInt("FractureEditor_Seed", defaultValue: 12345); 
+            
+            insideMaterialField.objectType = typeof(Material);
+            outsideMaterialField.objectType = typeof(Material);
+            
+            insideMaterialField.value = AssetDatabase.LoadAssetAtPath<Material>(insideMaterialPath);
+            outsideMaterialField.value = AssetDatabase.LoadAssetAtPath<Material>(outsideMaterialPath);
+            
+            fractureSlider.RegisterValueChangedCallback(ev => fractureSliderLabel.text = $"{fractureSlider.value}");
+            
+            fractureButton.RegisterCallback<ClickEvent>(ev => FractureObject());
+            createBondsButton.RegisterCallback<ClickEvent>(ev => CreateBonds());
+            resetButton.RegisterCallback<ClickEvent>(ev => ResetValues());
+            saveButton.RegisterCallback<ClickEvent>(ev => Save());
+        }
+
+        private void FractureObject()
+        {
+            // remove existing fractures
+            var gameObject = (GameObject)objectField.value;
+            var children   = gameObject.GetComponentsInChildren<ModelChunkInfo>().ToList();
+            if(children.Count>1)
+            {
+                for (int i = 0; i < children.Count; i++)
+                {
+                    if (children[i].gameObject != gameObject) continue;
+                    children.RemoveAt(i);
+                    break;
+                }
+
+                foreach (var c in children)
+                {
+                    Object.DestroyImmediate(c.gameObject);
+                }
+            }
+            
+            data.seed            = EditorGUILayout.IntField(data.seed);
+            data.targetObject    = (GameObject)objectField.value;
+            data.targetMesh      = (Mesh)meshField.value;
+            data.insideMaterial  = (Material)insideMaterialField.value;
+            data.outsideMaterial = (Material)outsideMaterialField.value;
+            //fractureType
+            data.fractureType  = FractureType.Voronoi;
+            data.density       = 500;
+            data.totalChunks   = fractureCountField.value;
+            data.applyToObject = applyToObjectToggle.value;
+            
+            data.fractureList ??= new List<GameObject>();
+            
+            /*
+                data.clusterRadius   = EditorGUILayout.FloatField(data.clusterRadius);
+                data.clusters        = EditorGUILayout.IntField(data.clusters);
+                data.sitesPerCluster = EditorGUILayout.IntField(data.sitesPerCluster);
+            */
+            
+            NvidiaBridgeUtility.Intialize(data, out var message);
+            LogToConsole(message);
+        }
+        
+        private void CreateBonds()
+        {
+            var gameObject = (GameObject)objectField.value;
+            var children   = gameObject.GetComponentsInChildren<Transform>().ToList();
+            children.Remove(gameObject.transform);
+            
+            var chunks = new List<(GameObject, Mesh)>();
+
+            foreach (var c in children)
+            {
+                var meshFilter = c.gameObject.GetComponent<MeshFilter>();
+                if (meshFilter != null && meshFilter.sharedMesh != null)
+                {
+                    chunks.Add((c.gameObject, meshFilter.sharedMesh));
+                }
+            }
+            
+            GeometryEx.GetOverlaps(chunks, 0.05f);
+        }
+        
+        private void ResetValues()
+        {
+            fractureSlider.value     = 1;
+            fractureCountField.value = 5;
+            
+            if(data.fractureList!=null)
+            {
+                foreach (var go in data.fractureList)
+                {
+                    Object.DestroyImmediate(go);
+                }
+                data.fractureList.Clear();
+            }
+
+            var gameObject = (GameObject)objectField.value;
+            var children   = gameObject.GetComponentsInChildren<Transform>().ToList();
+            children.Remove(gameObject.transform);
+            
+            foreach (var go in children)
+            {
+                if(go.GetComponent<ModelChunkInfo>())
+                    Object.DestroyImmediate(go.gameObject);
+            }
         }
 
         private void SetupVisualElements()
@@ -74,154 +200,23 @@ namespace Junk.Fracture.Editor
             objectField = rootElement.Q<ObjectField>("object-field");
             randomSeedButton = rootElement.Q<Button>("randomseed-button");
             seedIntField = rootElement.Q<IntegerField>("seed-intfield");
+            insideMaterialField = rootElement.Q<ObjectField>("inside-material-field");
+            outsideMaterialField = rootElement.Q<ObjectField>("outside-material-field");
+            meshField = rootElement.Q<ObjectField>("mesh-field");
+            fractureSlider = rootElement.Q<SliderInt>("fracture-slider");
+            applyToObjectToggle = rootElement.Q<Toggle>("apply-to-object-toggle");
+            fractureCountField = rootElement.Q<IntegerField>("fracture-count");
+            fractureSliderLabel = rootElement.Q<Label>("fracture-nesting-label");
+            fractureButton = rootElement.Q<Button>("fracture-button");
+            createBondsButton = rootElement.Q<Button>("create-bonds-button");
+            resetButton = rootElement.Q<Button>("reset-button");
+            saveButton = rootElement.Q<Button>("save-button");
+            logField = rootElement.Q<TextField>("log-field");
         }
 
-        private void Clear()
+        private void LogToConsole(string message)
         {
-            if (data != null)
-                if (data.cache != null)
-                    data.cache = null;
-        }
-
-        private void OnGUI()
-        {
-            if (data == null)
-            {
-                
-            }
-            return;
-            GUILayout.Label("Welcome !");
-            data.labelText = Selection.activeObject == null ? data.labelText : Selection.activeObject.name;
-            data.labelText = EditorGUILayout.TextField(data.labelText);
-            
-            GUILayout.Label("Fracture Cache:");
-            data.cache = (FractureCache)EditorGUILayout.ObjectField(data.cache, typeof(FractureCache), true);
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(20);
-            GUILayout.Label("Seed:");
-            data.seed = EditorGUILayout.IntField(data.seed);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            EditorGUILayout.ObjectField(data.cache.Mesh, typeof(Mesh), false);
-            
-            
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(20);
-            GUILayout.Label("Inside Material:");
-            data.insideMaterial = (Material)EditorGUILayout.ObjectField(data.insideMaterial, typeof(Material), true);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(20);
-            GUILayout.Label("Outside Material:");
-            data.outsideMaterial = (Material)EditorGUILayout.ObjectField(data.outsideMaterial, typeof(Material), true);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            EditorGUI.indentLevel++;
-            EditorGUI.indentLevel++;
-            //fractureType
-            data.fractureType =(FractureType)EditorGUILayout.EnumPopup(data.fractureType);
-            // switch
-            switch (data.fractureType)
-            {
-                case FractureType.Voronoi:
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(20);
-                    GUILayout.Label("Density:");
-                    data.density = EditorGUILayout.FloatField(data.density);
-                    GUILayout.FlexibleSpace();
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(20);
-                    GUILayout.Label("Total Chunks:");
-                    data.totalChunks = EditorGUILayout.IntField(data.totalChunks);
-                    GUILayout.FlexibleSpace();
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    EditorGUI.indentLevel++;
-                    GUILayout.Space(20);
-
-
-                    GUILayout.FlexibleSpace();
-                    GUILayout.EndHorizontal();
-
-                    break;
-                case FractureType.Clustered:
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(20);
-                    GUILayout.Label("Clusters:");
-                    data.clusters = EditorGUILayout.IntField(data.clusters);
-                    GUILayout.FlexibleSpace();
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(20);
-                    GUILayout.Label("Sites Per Cluster:");
-                    data.sitesPerCluster = EditorGUILayout.IntField(data.sitesPerCluster);
-                    GUILayout.FlexibleSpace();
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Space(20);
-                    GUILayout.Label("Cluster Radius:");
-                    data.clusterRadius = EditorGUILayout.FloatField(data.clusterRadius);
-                    GUILayout.EndHorizontal();
-                    break;
-            }
-            
-            if (GUILayout.Button("Fracture node"))
-            {
-                if (data.seed == -1)
-                    data.seed = new System.Random().Next();
-                data.cache.Clear();
-                NvidiaBridgeUtility.Intialize(data.cache, data);
-
-                AssetDatabase.Refresh();
-                // refresh inspector
-                EditorUtility.SetDirty(data.cache);
-            }
-
-            EditorGUI.indentLevel--;
-            EditorGUI.indentLevel--;
-
-            EditorGUI.indentLevel++;
-
-            if (data.cache.Children.Count > 0)
-            {
-                GUILayout.BeginHorizontal();
-                EditorGUI.indentLevel++;
-                GUILayout.Space(20);
-                if (GUILayout.Button("Fracture children"))
-                {
-                    if (data.seed == -1)
-                        data.seed = new System.Random().Next();
-                    for (var index = 0; index < data.cache.Children.Count; index++)
-                    {
-                        var child = data.cache.Children[index];
-                        child.Clear();
-                        NvidiaBridgeUtility.Intialize(child, data);
-                    }
-
-                    AssetDatabase.Refresh();
-                    // refresh inspector
-                    EditorUtility.SetDirty(data.cache);
-                }
-
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-
-                EditorGUILayout.Space();
-            }
-
-            EditorGUI.indentLevel--;
-            EditorGUI.indentLevel--;
+            logField.value = message;
         }
 
         private void Update()
@@ -237,6 +232,13 @@ namespace Junk.Fracture.Editor
         public void OnEnable()
         {
             // NO-OP - ignore any initialization for creategui
+        }
+        
+        private void Save()
+        {
+            var gameObject    = (GameObject) objectField.value;
+            var path = EditorUtility.SaveFilePanel("Save", "Assets/", name, "fbx");
+            AssetHandlingUtility.ExportMesh(gameObject, path);
         }
     }
 }

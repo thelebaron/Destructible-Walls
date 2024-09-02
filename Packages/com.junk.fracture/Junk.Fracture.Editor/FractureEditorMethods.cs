@@ -8,9 +8,9 @@ namespace Junk.Fracture.Editor
 {
     internal static class FractureEditorMethods
     {
-        internal static void Setup(ref FractureSetupData data, Object target, EditorMode mode)
+        internal static void Setup(ref FracturingData data, Object target, EditorMode mode)
         {
-            data = new FractureSetupData();
+            data = new FracturingData();
             data.target = target;
             
             string path;
@@ -22,19 +22,19 @@ namespace Junk.Fracture.Editor
                     if (data.target is DestructibleAuthoring authoring)
                     {
                         data.authoring = (DestructibleAuthoring)data.target;
-                        data.cache     = authoring.Cache;
+                        //data.cache     = authoring.Cache;
                     }
 
                     if (data.target is FractureCache cache)
                     {
-                        data.cache           = (FractureCache)data.target;
+                        //data.cache           = (FractureCache)data.target;
                         data.insideMaterial  = cache.InsideMaterial;
                         data.outsideMaterial = cache.OutsideMaterial;
                     }
 
-                    if (data.cache == null)
+                    //if (data.cache == null)
                     {
-                        goto case EditorMode.CreateAssets;
+                        //goto case EditorMode.CreateAssets;
                     }
                     
                     break;
@@ -152,7 +152,7 @@ namespace Junk.Fracture.Editor
                         DirectoriesUtility.Truncate(ref path);
                         AssetDatabase.CreateAsset(cacheAsset, path);
 
-                        data.cache = cacheAsset;
+                        //data.cache = cacheAsset;
 
                         // If we are working with a fracture authoring component, set the fracture node asset
                         if (data.authoring != null) 

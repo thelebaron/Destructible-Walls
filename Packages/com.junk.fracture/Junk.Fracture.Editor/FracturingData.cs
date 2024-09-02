@@ -1,4 +1,7 @@
-﻿using Junk.Fracture.Hybrid;
+﻿using System.Collections.Generic;
+using Junk.Entities;
+using Junk.Fracture.Hybrid;
+using Unity.Entities;
 using UnityEngine;
 
 namespace Junk.Fracture.Editor
@@ -10,11 +13,17 @@ namespace Junk.Fracture.Editor
         Slicing
     }
     
-    public class FractureSetupData
+    public class FracturingData
     {
-        public Object        target;
-        public FractureCache cache;
-        public string        labelText = "";
+        public UnityObjectRef<Object> targetObject;
+        public UnityObjectRef<Mesh>   targetMesh;
+        public bool                   applyToObject;
+        public List<GameObject>       fractureList;
+        public string                 name;
+        
+        public Object                 target;
+        //public FractureCache          cache;
+        public string                 labelText = "";
 
         // voronoi settings
         public float density     = 500;
@@ -42,7 +51,6 @@ namespace Junk.Fracture.Editor
         public DestructibleAuthoring authoring;
 
         public NvFractureData nvFractureData;
-        public string         name;
         public Mesh           meshAsset;
         public Material       materialAsset;
         public Material[]     materialAssets;

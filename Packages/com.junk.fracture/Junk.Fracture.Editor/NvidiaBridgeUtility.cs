@@ -9,19 +9,20 @@ namespace Junk.Fracture.Hybrid
 {
     public static class NvidiaBridgeUtility
     {
-        public static void Intialize(FractureCache cache, FractureSetupData data)
+        public static void Intialize(FracturingData data, out string message)
         {
-            var mesh         = cache.Mesh;
+            message = "";
+            var mesh    = data.targetMesh.Value;
             
             // We create a working data type and store its data and pass it through the helper methods
             var nvData = new NvFractureData
             {
-                RootCache       = cache,
+                //RootCache       = cache,
                 seed            = data.seed,
                 totalChunks     = data.totalChunks,
                 mesh            = mesh,
-                insideMaterial  = cache.InsideMaterial,
-                outsideMaterial = cache.OutsideMaterial
+                insideMaterial  = data.insideMaterial,
+                outsideMaterial = data.outsideMaterial
             };
 
             NvBlastExtUnity.setSeed(nvData.seed);
@@ -48,37 +49,75 @@ namespace Junk.Fracture.Hybrid
                     break;
             }
 
+            
 
             // Creates resulting fractured mesh geometry from intermediate format 
             fractureTool.finalizeFracturing();
 
             // Pass the data on to make editor objects
-            SaveAssets(fractureTool, nvData);
+            SaveAssets(fractureTool, nvData, out message, data);
         }
 
         /// <summary> Create editor friendly gameobjects for the resulting baked data </summary>
-        private static void SaveAssets(NvFractureTool fractureTool, NvFractureData nvFracture)
+        private static void SaveAssets(NvFractureTool fractureTool, NvFractureData nvFracture, out string message, FracturingData data)
         {
-            Debug.Log("CreateSubFractures called for " + fractureTool.getChunkCount());
-            // Iterate through all generated chunks
-            for (var i = 1; i < fractureTool.getChunkCount(); i++)
+            message = "CreateSubFractures called for " + fractureTool.getChunkCount();
+            if (!data.applyToObject)
             {
-                var insideMaterial   = nvFracture.outsideMaterial;
-                var outsideMaterial  = nvFracture.insideMaterial;
-                var outsideChunkMesh = fractureTool.getChunkMesh(i, false);
-                var insideChunkMesh  = fractureTool.getChunkMesh(i, true);
-            
-                var mesh  = outsideChunkMesh.toUnityMesh();
-                mesh.subMeshCount = 2;
-                mesh.SetIndices(insideChunkMesh.getIndexes(), MeshTopology.Triangles, 1);
-                mesh.name = nvFracture.mesh.name + "_Chunk_" + i;
-                nvFracture.RootCache.Add(mesh, insideMaterial, outsideMaterial);
-                AssetDatabase.AddObjectToAsset(mesh, nvFracture.RootCache);
-            
-                // Save cacheAsset
-                EditorUtility.SetDirty(nvFracture.RootCache);
-                AssetDatabase.SaveAssets();
+                // Iterate through all generated chunks
+                for (var i = 1; i < fractureTool.getChunkCount(); i++)
+                {
+                    var insideMaterial   = nvFracture.outsideMaterial;
+                    var outsideMaterial  = nvFracture.insideMaterial;
+                    var outsideChunkMesh = fractureTool.getChunkMesh(i, false);
+                    var insideChunkMesh  = fractureTool.getChunkMesh(i, true);
+
+                    var mesh = outsideChunkMesh.toUnityMesh();
+                    mesh.subMeshCount = 2;
+                    mesh.SetIndices(insideChunkMesh.getIndexes(), MeshTopology.Triangles, 1);
+                    mesh.name = nvFracture.mesh.name + "_Chunk_" + i;
+                    //nvFracture.RootCache.Add(mesh, insideMaterial, outsideMaterial);
+                    //AssetDatabase.AddObjectToAsset(mesh, nvFracture.RootCache);
+
+                    // Save cacheAsset
+                    //EditorUtility.SetDirty(nvFracture.RootCache);
+                    //AssetDatabase.SaveAssets();
+                }
             }
+            else
+            {
+                // Iterate through all generated chunks
+                for (var i = 1; i < fractureTool.getChunkCount(); i++)
+                {
+                    var outsideChunkMesh = fractureTool.getChunkMesh(i, false);
+                    var insideChunkMesh  = fractureTool.getChunkMesh(i, true);
+
+                    var mesh = outsideChunkMesh.toUnityMesh();
+                    mesh.subMeshCount = 2;
+                    mesh.SetIndices(insideChunkMesh.getIndexes(), MeshTopology.Triangles, 1);
+                    mesh.name = nvFracture.mesh.name + "_a" + i;
+                    
+                    var gameObject = new GameObject();
+                    gameObject.name = data.targetObject.Value.name + "_a" + i;
+
+                    var parent = data.targetObject.Value as GameObject;
+                    gameObject.transform.SetParent(parent.transform, false);
+                    
+                    var meshFilter = gameObject.AddComponent<MeshFilter>();
+                    var meshRenderer = gameObject.AddComponent<MeshRenderer>();
+                    
+                    meshFilter.sharedMesh = mesh;
+                    meshRenderer.sharedMaterials = new[] {data.outsideMaterial, data.insideMaterial};
+                    
+                    if(!data.fractureList.Contains(gameObject))
+                        data.fractureList.Add(gameObject);
+
+                    var info = gameObject.AddComponent<ModelChunkInfo>();
+                    info.ChunkIndex  = i.ToString();
+                    info.ChunkSeries = "a";
+                }
+            }
+
         }
     }
 }
